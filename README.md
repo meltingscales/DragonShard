@@ -63,6 +63,63 @@ docker-compose -f docker-compose.test.yml down
 
 **Note:** Docker tests are optional and will be skipped if Docker is not available.
 
+## Development Automation
+
+### Quick Commands
+Use the Makefile for convenient development tasks:
+
+```bash
+# Show all available commands
+make help
+
+# Linting and formatting
+make lint          # Run linting checks
+make lint-fix      # Auto-fix linting issues
+make lint-unsafe   # Auto-fix with unsafe fixes
+make format        # Format code
+make format-check  # Check formatting
+make security      # Run security checks
+make all-checks    # Run all checks
+
+# Testing
+make test          # Run unit tests
+make test-docker   # Run Docker tests
+
+# Development workflows
+make dev           # Lint-fix + format + test
+make ci            # All checks + tests
+make clean         # Clean up cache files
+```
+
+### Python Script
+Use the custom linting script for more control:
+
+```bash
+# Basic linting
+python scripts/lint.py
+
+# Auto-fix issues
+python scripts/lint.py --fix
+
+# Format code
+python scripts/lint.py --format
+
+# Run all checks
+python scripts/lint.py --all
+
+# Security checks only
+python scripts/lint.py --security
+```
+
+### VS Code Integration
+Tasks are available in VS Code (Ctrl+Shift+P → "Tasks: Run Task"):
+- **Lint Check** - Run ruff linting
+- **Lint Fix** - Auto-fix linting issues
+- **Format Code** - Format with ruff
+- **Security Check** - Run security checks
+- **Run Tests** - Run unit tests
+- **All Checks** - Run comprehensive checks
+
 ## CI/CD
 
 The project includes comprehensive CI/CD setup with multiple providers:
