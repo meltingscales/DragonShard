@@ -61,7 +61,44 @@ class TestScanner(unittest.TestCase):
         # Create a proper mock host object that has a state() method
         mock_host = MagicMock()
         mock_host.state.return_value = "up"
-        mock_host.__getitem__.side_effect = lambda x: self.mock_nmap_data["127.0.0.1"][x]
+        
+        # Create the data structure that the scanner expects
+        tcp_data = {
+            22: {
+                "state": "open",
+                "name": "ssh",
+                "version": "OpenSSH 8.2p1",
+                "product": "OpenSSH",
+                "extrainfo": "Ubuntu 4ubuntu0.2"
+            },
+            80: {
+                "state": "open",
+                "name": "http",
+                "version": "nginx 1.18.0",
+                "product": "nginx",
+                "extrainfo": ""
+            }
+        }
+        
+        udp_data = {
+            53: {
+                "state": "open",
+                "name": "domain",
+                "version": "BIND 9.16.1",
+                "product": "BIND",
+                "extrainfo": ""
+            }
+        }
+        
+        # Set up the mock to return the correct data structure
+        mock_host.__getitem__.side_effect = lambda x: {
+            "tcp": tcp_data,
+            "udp": udp_data
+        }[x]
+        
+        # Make the mock support 'in' operator for tcp and udp
+        mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
+        
         mock_host.all_tcp.return_value = [22, 80]
         mock_host.all_udp.return_value = [53]
         
@@ -108,7 +145,43 @@ class TestScanner(unittest.TestCase):
         # Create a proper mock host object
         mock_host = MagicMock()
         mock_host.state.return_value = "up"
-        mock_host.__getitem__.side_effect = lambda x: self.mock_nmap_data["127.0.0.1"][x]
+        
+        # Create the data structure that the scanner expects
+        tcp_data = {
+            22: {
+                "state": "open",
+                "name": "ssh",
+                "version": "OpenSSH 8.2p1",
+                "product": "OpenSSH",
+                "extrainfo": "Ubuntu 4ubuntu0.2"
+            },
+            80: {
+                "state": "open",
+                "name": "http",
+                "version": "nginx 1.18.0",
+                "product": "nginx",
+                "extrainfo": ""
+            }
+        }
+        
+        udp_data = {
+            53: {
+                "state": "open",
+                "name": "domain",
+                "version": "BIND 9.16.1",
+                "product": "BIND",
+                "extrainfo": ""
+            }
+        }
+        
+        mock_host.__getitem__.side_effect = lambda x: {
+            "tcp": tcp_data,
+            "udp": udp_data
+        }[x]
+        
+        # Make the mock support 'in' operator for tcp and udp
+        mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
+        
         mock_host.all_tcp.return_value = [22, 80]
         mock_host.all_udp.return_value = [53]
         
@@ -138,7 +211,43 @@ class TestScanner(unittest.TestCase):
         # Create a proper mock host object
         mock_host = MagicMock()
         mock_host.state.return_value = "up"
-        mock_host.__getitem__.side_effect = lambda x: self.mock_nmap_data["127.0.0.1"][x]
+        
+        # Create the data structure that the scanner expects
+        tcp_data = {
+            22: {
+                "state": "open",
+                "name": "ssh",
+                "version": "OpenSSH 8.2p1",
+                "product": "OpenSSH",
+                "extrainfo": "Ubuntu 4ubuntu0.2"
+            },
+            80: {
+                "state": "open",
+                "name": "http",
+                "version": "nginx 1.18.0",
+                "product": "nginx",
+                "extrainfo": ""
+            }
+        }
+        
+        udp_data = {
+            53: {
+                "state": "open",
+                "name": "domain",
+                "version": "BIND 9.16.1",
+                "product": "BIND",
+                "extrainfo": ""
+            }
+        }
+        
+        mock_host.__getitem__.side_effect = lambda x: {
+            "tcp": tcp_data,
+            "udp": udp_data
+        }[x]
+        
+        # Make the mock support 'in' operator for tcp and udp
+        mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
+        
         mock_host.all_tcp.return_value = [22, 80]
         mock_host.all_udp.return_value = [53]
         
@@ -216,7 +325,32 @@ class TestScanner(unittest.TestCase):
         # Create a proper mock host object
         mock_host = MagicMock()
         mock_host.state.return_value = "up"
-        mock_host.__getitem__.side_effect = lambda x: self.mock_nmap_data["127.0.0.1"][x]
+        
+        # Create the data structure that the scanner expects
+        tcp_data = {
+            22: {
+                "state": "open",
+                "name": "ssh",
+                "version": "OpenSSH 8.2p1",
+                "product": "OpenSSH",
+                "extrainfo": "Ubuntu 4ubuntu0.2"
+            },
+            80: {
+                "state": "open",
+                "name": "http",
+                "version": "nginx 1.18.0",
+                "product": "nginx",
+                "extrainfo": ""
+            }
+        }
+        
+        mock_host.__getitem__.side_effect = lambda x: {
+            "tcp": tcp_data
+        }[x]
+        
+        # Make the mock support 'in' operator for tcp
+        mock_host.__contains__.side_effect = lambda x: x in ["tcp"]
+        
         mock_host.all_tcp.return_value = [22, 80]
         
         mock_scanner.__getitem__.return_value = mock_host

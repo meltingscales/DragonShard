@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # DVWA (Damn Vulnerable Web Application)
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: dragonshard-dvwa-test
+    ports:
+      - "8080:80"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # OWASP Juice Shop (Modern vulnerable web app)
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: dragonshard-juice-shop-test
+    ports:
+      - "8081:3000"
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Vulhub - Simple vulnerable web app
+  vulhub:
+    image: nginx:alpine
+    container_name: dragonshard-vulhub-test
+    ports:
+      - "8082:80"
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Metasploitable (if available)
+  metasploitable:
+    image: tleemcjr/metasploitable2:latest
+    container_name: dragonshard-metasploitable-test
+    ports:
+      - "8083:22"
+      - "8084:21"
+      - "8085:23"
+      - "8086:25"
+      - "8087:53"
+      - "8088:80"
+      - "8089:110"
+      - "8090:139"
+      - "8091:443"
+      - "8092:993"
+      - "8093:995"
+    networks:
+      - test-network
+    restart: unless-stopped
+
+networks:
+  test-network:
+    driver: bridge 
