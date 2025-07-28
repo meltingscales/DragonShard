@@ -11,6 +11,7 @@ MVP Milestones
 - ✅ Added multiple scan types (quick, comprehensive, udp)
 - ✅ Added common service scanning functionality
 - ✅ Added utility functions for extracting open ports
+- ✅ Added Docker-based integration tests
 
 **Features implemented:**
 - TCP and UDP port scanning
@@ -19,6 +20,7 @@ MVP Milestones
 - Common service scanning on well-known ports
 - Comprehensive test coverage with mocking
 - Utility functions for data processing
+- Docker integration tests with vulnerable containers
 
 ## 🚧 Phase 2 - API Inference
 - Implement crawler.py with HTTP service crawling
@@ -44,6 +46,14 @@ MVP Milestones
 - Implement state_graph.py for building graph of hosts/services
 - Add tests for executor components
 
+## 🚧 CI/CD Infrastructure
+- Set up Travis CI for automated testing
+- Configure Codecov.io for code coverage reporting
+- Add GitHub Actions as alternative CI/CD
+- Set up automated Docker image building
+- Add security scanning with Bandit/Safety
+- Configure automated dependency updates
+
 ## 🚧 Additional Infrastructure Needs
 - Add proper error handling throughout
 - Add logging system
@@ -51,8 +61,3 @@ MVP Milestones
 - Add CLI interface
 - Add documentation
 - Add more comprehensive test coverage
-
-## Unsorted
-
-- CICD unit test running
-- CICD code coverage

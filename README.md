@@ -62,3 +62,52 @@ docker-compose -f docker-compose.test.yml down
 - Network access to pull container images
 
 **Note:** Docker tests are optional and will be skipped if Docker is not available.
+
+## CI/CD
+
+The project includes comprehensive CI/CD setup with multiple providers:
+
+### Travis CI
+- **Multi-Python testing** (3.10, 3.11, 3.12)
+- **Docker support** for integration tests
+- **Caching** for faster builds
+- **Coverage reporting** to Codecov
+- **Matrix testing** (unit + Docker tests)
+
+### GitHub Actions
+- **Alternative CI/CD** pipeline
+- **Multi-Python testing** with matrix strategy
+- **Linting** with Ruff
+- **Security scanning** with Bandit and Safety
+- **Docker image building** and testing
+
+### Codecov
+- **Code coverage reporting** with 80% target
+- **GitHub integration** with status checks
+- **PR comments** with coverage details
+- **Multiple report formats** (HTML, XML, JSON)
+
+### Security Scanning
+- **Bandit** for Python security analysis
+- **Safety** for dependency vulnerability checking
+- **Automated scanning** in CI/CD pipeline
+
+### Setup
+```bash
+# Run CI/CD setup script
+python scripts/setup_ci.py
+
+# Run local CI checks
+ruff check dragonshard/
+bandit -r dragonshard/
+pytest --cov=dragonshard --cov-report=term-missing
+```
+
+### Status Badges
+Add these to your README when connected to CI/CD services:
+
+```markdown
+[![Travis CI](https://travis-ci.com/yourusername/dragonshard.svg?branch=main)](https://travis-ci.com/yourusername/dragonshard)
+[![Codecov](https://codecov.io/gh/yourusername/dragonshard/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/dragonshard)
+[![GitHub Actions](https://github.com/yourusername/dragonshard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/yourusername/dragonshard/actions)
+```

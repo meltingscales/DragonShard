@@ -1,0 +1,42 @@
+# Bandit configuration for DragonShard
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude directories and files
+exclude_dirs:
+  - dragonshard/tests
+  - scripts
+  - .venv
+  - __pycache__
+
+# Exclude specific test files
+exclude:
+  - dragonshard/tests/*
+
+# Severity levels to include
+# - LOW: 1
+# - MEDIUM: 2  
+# - HIGH: 3
+severity: 1
+
+# Confidence levels to include
+# - LOW: 1
+# - MEDIUM: 2
+# - HIGH: 3
+confidence: 1
+
+# Number of processes to use
+processes: 4
+
+# Output format
+output_format: json
+
+# Output file
+output_file: bandit-report.json
+
+# Skip specific tests
+skips:
+  - B101  # assert_used
+  - B601  # paramiko_calls
+  - B602  # subprocess_popen_with_shell_equals_true
+  - B603  # subprocess_without_shell_equals_true
+  - B604  # any_other_function_with_shell_equals_true 

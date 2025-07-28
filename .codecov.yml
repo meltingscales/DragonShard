@@ -1,0 +1,58 @@
+# Codecov configuration for DragonShard
+# https://docs.codecov.io/docs/codecov-yaml
+
+coverage:
+  precision: 2
+  round: down
+  range: "80...100"
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+# Ignore files that shouldn't be included in coverage
+ignore:
+  - "dragonshard/tests/"
+  - "scripts/"
+  - "*.pyc"
+  - "__pycache__/"
+  - ".venv/"
+  - "setup.py"
+  - "*.egg-info/"
+
+# Coverage reports
+reports:
+  - html
+  - xml
+  - json
+
+# Comment on pull requests
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+
+# GitHub integration
+github_checks:
+  annotations: true
+
+# Status checks
+status:
+  project:
+    default:
+      target: 80%
+      threshold: 5%
+  patch:
+    default:
+      target: 80%
+      threshold: 5%
+
+# Notifications
+notifications:
+  slack:
+    url: ""  # Add your Slack webhook URL here if desired 
