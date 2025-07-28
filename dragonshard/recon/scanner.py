@@ -6,11 +6,11 @@ import nmap
 def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
     """
     Run a network scan on the target.
-    
+
     Args:
         target: IP address or hostname to scan
         scan_type: Type of scan - "quick", "comprehensive", or "udp"
-    
+
     Returns:
         Dictionary with scan results including TCP and UDP ports
     """
@@ -65,10 +65,10 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
 def get_open_ports(results: Dict[str, Any]) -> Dict[str, Dict[str, list]]:
     """
     Extract only open ports from scan results.
-    
+
     Args:
         results: Results from run_scan()
-    
+
     Returns:
         Dictionary with open TCP and UDP ports for each host
     """
@@ -106,10 +106,10 @@ def get_open_ports(results: Dict[str, Any]) -> Dict[str, Dict[str, list]]:
 def scan_common_services(target: str) -> Dict[str, Any]:
     """
     Scan for common services on well-known ports.
-    
+
     Args:
         target: IP address or hostname to scan
-    
+
     Returns:
         Dictionary with common service information
     """
