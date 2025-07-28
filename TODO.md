@@ -1,30 +1,58 @@
 # ✅ TODO
 
 MVP Milestones
-Phase 1 - Recon 
- Implement scanner.py with Nmap support
 
- Output structured JSON of open ports and services
+## ✅ Phase 1 - Recon (COMPLETED)
+- ✅ Implement scanner.py with Nmap support
+- ✅ Output structured JSON of open ports and services
+- ✅ Added UDP scanning capabilities
+- ✅ Added service detection and version information
+- ✅ Added comprehensive unit tests with mocking
+- ✅ Added multiple scan types (quick, comprehensive, udp)
+- ✅ Added common service scanning functionality
+- ✅ Added utility functions for extracting open ports
 
-Phase 2 - API Inference
- Crawl discovered HTTP services
+**Features implemented:**
+- TCP and UDP port scanning
+- Service detection with version information
+- Multiple scan types (quick, comprehensive, udp)
+- Common service scanning on well-known ports
+- Comprehensive test coverage with mocking
+- Utility functions for data processing
 
- Extract endpoints and infer data schemas
+## 🚧 Phase 2 - API Inference
+- Implement crawler.py with HTTP service crawling
+- Implement schema_infer.py to extract endpoints and infer data schemas
+- Implement auth_detector.py to identify common authentication patterns
+- Add tests for API inference components
 
- Identify common auth patterns
+## 🚧 Phase 3 - Fuzzing
+- Implement fuzzer.py with basic payload testing (XSS, SQLi)
+- Implement mutators.py for payload mutation strategies
+- Build comprehensive payload library in payloads.json
+- Add anomaly detection and crash logging
+- Add tests for fuzzing components
 
-Phase 3 - Fuzzing
- Use basic payloads on inputs (XSS, SQLi)
+## 🚧 Phase 4 - Planner
+- Implement chain_planner.py with LLM integration for attack planning
+- Create effective prompts in prompts/ directory for different attack scenarios
+- Add tests for planner components
 
- Log anomalies and crashes
+## 🚧 Phase 5 - Executor
+- Implement executor.py for attack execution engine
+- Implement session_manager.py for managing attack sessions
+- Implement state_graph.py for building graph of hosts/services
+- Add tests for executor components
 
-Phase 4 - Planner
- Feed recon/fuzz data to LLM
+## 🚧 Additional Infrastructure Needs
+- Add proper error handling throughout
+- Add logging system
+- Add configuration management
+- Add CLI interface
+- Add documentation
+- Add more comprehensive test coverage
 
- Output plan of attack steps
+## Unsorted
 
-Phase 5 - Executor
- Build graph of hosts/services
-
- Simulate or execute attack plan
-
+- CICD unit test running
+- CICD code coverage
