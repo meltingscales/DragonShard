@@ -1,0 +1,13 @@
+[project]
+name = "dragonshard"
+version = "0.1.0"
+description = "Autonomous vulnerability chaining and attack platform."
+authors = [{name = "Henry Post", email = "henryfbp@gmail.com"}]
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-select = ["I", "E", "F", "W"]
+ignore = ["E501"]
+exclude = ["data/"]
