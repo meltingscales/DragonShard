@@ -36,6 +36,12 @@ jobs:
         pip install -r requirements.lock.txt
         pip install pytest-cov codecov
 
+    - name: Install system dependencies (for Docker tests)
+      if: matrix.test-type == 'docker'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nmap
+
     - name: Run unit tests
       if: matrix.test-type == 'unit'
       run: |

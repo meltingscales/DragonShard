@@ -1,5 +1,6 @@
+from typing import Any, Dict
+
 import nmap
-from typing import Dict, Any, Optional
 
 
 def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
@@ -14,7 +15,7 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
         Dictionary with scan results including TCP and UDP ports
     """
     nm = nmap.PortScanner()
-    
+
     # Define scan arguments based on scan type
     if scan_type == "quick":
         arguments = '-T4 -F'  # Fast scan of common ports
@@ -22,10 +23,10 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
         arguments = '-T4 -sU -F'  # UDP scan of common ports
     else:  # comprehensive
         arguments = '-T4 -sS -sU -p- --version-intensity 5'  # Full TCP/UDP scan with service detection
-    
+
     nm.scan(hosts=target, arguments=arguments)
     results = {}
-    
+
     for host in nm.all_hosts():
         host_data = nm[host]
         results[host] = {
@@ -33,7 +34,7 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
             "tcp": {},
             "udp": {}
         }
-        
+
         # Process TCP ports
         if "tcp" in host_data:
             for port in host_data.all_tcp():
@@ -45,7 +46,7 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
                     "product": port_data.get("product", ""),
                     "extrainfo": port_data.get("extrainfo", "")
                 }
-        
+
         # Process UDP ports
         if "udp" in host_data:
             for port in host_data.all_udp():
@@ -57,7 +58,7 @@ def run_scan(target: str, scan_type: str = "comprehensive") -> Dict[str, Any]:
                     "product": port_data.get("product", ""),
                     "extrainfo": port_data.get("extrainfo", "")
                 }
-    
+
     return results
 
 
@@ -72,13 +73,13 @@ def get_open_ports(results: Dict[str, Any]) -> Dict[str, Dict[str, list]]:
         Dictionary with open TCP and UDP ports for each host
     """
     open_ports = {}
-    
+
     for host, host_data in results.items():
         open_ports[host] = {
             "tcp": [],
             "udp": []
         }
-        
+
         # Get open TCP ports
         for port, port_data in host_data.get("tcp", {}).items():
             if port_data["state"] == "open":
@@ -88,7 +89,7 @@ def get_open_ports(results: Dict[str, Any]) -> Dict[str, Dict[str, list]]:
                     "version": port_data["version"],
                     "product": port_data["product"]
                 })
-        
+
         # Get open UDP ports
         for port, port_data in host_data.get("udp", {}).items():
             if port_data["state"] == "open":
@@ -98,7 +99,7 @@ def get_open_ports(results: Dict[str, Any]) -> Dict[str, Dict[str, list]]:
                     "version": port_data["version"],
                     "product": port_data["product"]
                 })
-    
+
     return open_ports
 
 
@@ -114,17 +115,17 @@ def scan_common_services(target: str) -> Dict[str, Any]:
     """
     nm = nmap.PortScanner()
     common_ports = "21,22,23,25,53,80,110,143,443,993,995,3306,5432,6379,8080,8443"
-    
+
     nm.scan(hosts=target, ports=common_ports, arguments='-T4 -sS -sV')
     results = {}
-    
+
     for host in nm.all_hosts():
         host_data = nm[host]
         results[host] = {
             "status": host_data.state(),
             "services": {}
         }
-        
+
         # Process TCP ports
         if "tcp" in host_data:
             for port in host_data.all_tcp():
@@ -137,5 +138,5 @@ def scan_common_services(target: str) -> Dict[str, Any]:
                         "product": port_data.get("product", ""),
                         "extrainfo": port_data.get("extrainfo", "")
                     }
-    
+
     return results
