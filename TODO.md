@@ -303,3 +303,5 @@ The next major milestone is implementing the planner module. This will include:
 # Extra ideas
 
 - Can we make a separate visualization that shows the full tree of mutations?
+- Fix vite and frontend
+- Make frontend and api used for the entire project, not just viz
