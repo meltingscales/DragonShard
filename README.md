@@ -176,6 +176,32 @@ make test-executor
 - Network access for HTTP requests
 - Vulnerable test containers for realistic testing (optional)
 
+### Executor Stress Test
+```bash
+make test-executor-stress
+```
+- **Complex multi-step vulnerabilities** with 2, 3, and 4-step attack chains
+- **CVE-based scenarios** including Log4Shell, BlueKeep, PrintNightmare, Zerologon, ProxyLogon, and vCenter
+- **Concurrent execution** of multiple complex attack chains
+- **State graph integration** with vulnerability correlation
+- **Session management** with authentication persistence
+- **Comprehensive export** of execution results, state graphs, and session data
+
+**Features:**
+- **2-step vulnerabilities**: Log4Shell (CVE-2021-44228), BlueKeep (CVE-2019-0708)
+- **3-step vulnerabilities**: PrintNightmare (CVE-2021-34527), Zerologon (CVE-2020-1472)
+- **4-step vulnerabilities**: ProxyLogon (CVE-2021-26855), vCenter (CVE-2021-21972)
+- **Real-time monitoring** of complex attack chain execution
+- **Vulnerability correlation** across multiple attack steps
+- **Authentication state management** for multi-step scenarios
+- **Network topology mapping** with service and vulnerability tracking
+- **JSON export** for comprehensive analysis and reporting
+
+**Requirements:**
+- Python 3.10+ with all dependencies installed
+- Docker and Docker Compose for stress test container
+- Network access for HTTP requests and container communication
+
 ## Development Automation
 
 ### Quick Commands

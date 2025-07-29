@@ -116,5 +116,27 @@ services:
       interval: 5s
       start_period: 10s
 
+  # Stress Test Application (Complex Multi-Step Vulnerabilities)
+  vuln-stress-test:
+    build:
+      context: ./test-env
+      dockerfile: Dockerfile.vuln-stress-test
+    ports:
+      - "8085:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=testuser
+      - DB_PASS=testpass
+      - DB_NAME=testdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      timeout: 15s
+      retries: 5
+      interval: 10s
+      start_period: 15s
+
 volumes:
   mysql_data: 

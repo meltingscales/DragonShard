@@ -188,4 +188,5 @@ vulnerability_report.json
 executor_results.json
 session_data.json
 state_graph.json
-execution_results.json 
+execution_results.json
+stress_test_*.json 

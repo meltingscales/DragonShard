@@ -25,6 +25,7 @@ help:
 	@echo "  test-web-fuzzing-viz   - Run web fuzzing visualization with mutation tree"
 	@echo "  test-planner           - Run chain planner integration test"
 	@echo "  test-executor          - Run executor integration test"
+	@echo "  test-executor-stress   - Run executor stress test with complex vulnerabilities"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
 	@echo ""
@@ -114,6 +115,10 @@ test-executor:
 	@echo "⚡ Running executor integration test..."
 	@PYTHONPATH=. uv run python scripts/test_executor_integration.py
 
+test-executor-stress:
+	@echo "🧪 Running executor stress test..."
+	@PYTHONPATH=. uv run python scripts/test_executor_stress_integration.py
+
 test-benchmark:
 	@echo "📊 Running genetic algorithm benchmarks..."
 	@uv run python scripts/run_benchmarks.py
@@ -166,6 +171,7 @@ clean:
 	@find . -type f -name "session_data.json" -delete 2>/dev/null || true
 	@find . -type f -name "state_graph.json" -delete 2>/dev/null || true
 	@find . -type f -name "execution_results.json" -delete 2>/dev/null || true
+	@find . -type f -name "stress_test_*.json" -delete 2>/dev/null || true
 	@echo "✅ Cleanup completed!"
 
 # Convenience targets
