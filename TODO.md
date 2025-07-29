@@ -130,3 +130,8 @@ The next major milestone is implementing the fuzzing module. This will include:
 4. **Mutation strategies** for payload variation
 5. **Integration with crawler** for automatic endpoint discovery
 6. **Comprehensive testing** and documentation
+
+
+# Extra ideas
+
+- dynamic fuzz payload generator (AI? genetic algorithms? both?)
