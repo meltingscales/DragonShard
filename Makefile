@@ -69,7 +69,7 @@ all-checks: lint format-check security
 # Testing targets
 test:
 	@echo "🧪 Running unit tests..."
-	@pytest dragonshard/tests/ -v
+	@uv run pytest dragonshard/tests/ -v
 
 test-crawlers:
 	@echo "🕷️  Running crawler tests..."

@@ -150,7 +150,7 @@ class GeneticMutator:
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.max_generations = max_generations
-        self.response_analyzer = response_analyzer
+        self.response_analyzer = response_analyzer or ResponseAnalyzer()
         self.target_url = target_url
         
         # Initialize secure PRNG for fuzzing operations
@@ -168,9 +168,9 @@ class GeneticMutator:
         self.max_mutation_rate = 0.3
         
         # Search strategy tracking
-        self.search_paths: Set[str] = set()
+        self.search_paths: Dict[str, List[GeneticPayload]] = {}
         self.dead_end_paths: Set[str] = set()
-        self.successful_patterns: Dict[str, float] = {}
+        self.successful_patterns: Dict[str, List[str]] = {}
         self.baseline_responses: Dict[str, ResponseAnalysis] = {}
         self.mutation_success_rates: Dict[str, float] = {}
         
@@ -848,7 +848,8 @@ class GeneticMutator:
         path_key = f"{payload.payload_type.value}_{payload.search_path_depth}"
 
         if path_key not in self.search_paths:
-            self.search_paths.add(path_key)
+            self.search_paths[path_key] = []
+        self.search_paths[path_key].append(payload)
 
         # Check for dead end (no differential indicators)
         if not differential.differential_indicators:
@@ -859,8 +860,8 @@ class GeneticMutator:
         # Track successful patterns
         if differential.reward_score > 0.7:
             if payload.payload_type.value not in self.successful_patterns:
-                self.successful_patterns[payload.payload_type.value] = 0.0
-            self.successful_patterns[payload.payload_type.value] += 1
+                self.successful_patterns[payload.payload_type.value] = []
+            self.successful_patterns[payload.payload_type.value].append(payload.payload)
 
     def _update_mutation_success_rates(
         self, payload: GeneticPayload, differential: ResponseDifferential

@@ -352,7 +352,7 @@ class TestGeneticMutator(unittest.TestCase):
     def test_get_best_payloads(self):
         """Test getting best payloads."""
         # Create some test payloads with different fitness values
-        self.mutator.best_payloads = [
+        self.mutator.population = [
             GeneticPayload("payload1", PayloadType.XSS, fitness=0.1),
             GeneticPayload("payload2", PayloadType.XSS, fitness=0.5),
             GeneticPayload("payload3", PayloadType.XSS, fitness=0.9),
@@ -369,7 +369,7 @@ class TestGeneticMutator(unittest.TestCase):
         """Test evolution data export."""
         # Create test data
         self.mutator.generation = 10
-        self.mutator.best_payloads = [
+        self.mutator.population = [
             GeneticPayload(
                 "test_payload", PayloadType.XSS, fitness=0.8, generation=5, mutation_count=2
             )
