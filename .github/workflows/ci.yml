@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-        test-type: ["unit", "docker"]
 
     steps:
     - uses: actions/checkout@v4
@@ -40,30 +39,70 @@ jobs:
       run: |
         playwright install chromium
 
-    - name: Install system dependencies (for Docker tests)
-      if: matrix.test-type == 'docker'
+    - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y nmap
+        sudo apt-get install -y nmap python3-tk
 
-    - name: Run unit tests
-      if: matrix.test-type == 'unit'
+    - name: Start test environment
       run: |
-        pytest --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml
-        ruff check dragonshard/
+        # Start vulnerable containers for integration tests
+        docker-compose -f docker-compose.test.yml up -d
+        # Wait for containers to be ready
+        sleep 30
+        # Check if containers are running
+        docker-compose -f docker-compose.test.yml ps
 
-    - name: Run Docker tests
-      if: matrix.test-type == 'docker' && matrix.python-version == '3.12'
+    - name: Verify containers are ready
       run: |
-        # Check if Docker is available
+        # Wait for containers to be fully ready
+        echo "Waiting for containers to be ready..."
+        for i in {1..10}; do
+          if curl -f http://localhost:8082 > /dev/null 2>&1; then
+            echo "✓ Container on port 8082 is ready"
+            break
+          fi
+          echo "Waiting for container on port 8082... (attempt $i/10)"
+          sleep 10
+        done
+        
+        # Check other containers
+        for port in 8080 3000 8081 8083 8084; do
+          if curl -f http://localhost:$port > /dev/null 2>&1; then
+            echo "✓ Container on port $port is ready"
+          else
+            echo "⚠ Container on port $port not ready (may be optional)"
+          fi
+        done
+
+    - name: Run unit tests (no containers required)
+      run: |
+        pytest dragonshard/tests/test_crawlers.py dragonshard/tests/test_fuzzing.py dragonshard/tests/test_genetic_mutator.py dragonshard/tests/test_response_analyzer.py dragonshard/tests/test_scanner.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
+
+    - name: Run integration tests (with containers)
+      run: |
+        # Run integration tests that require containers
+        pytest dragonshard/tests/test_genetic_fuzzer_integration.py dragonshard/tests/test_genetic_fuzzer.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
+
+    - name: Run visualization tests (with containers)
+      run: |
+        # Run visualization tests that check container availability
+        pytest dragonshard/tests/test_genetic_visualization.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
+
+    - name: Run Docker scanner tests
+      run: |
+        # Check if Docker is available and run scanner tests
         if command -v docker &> /dev/null; then
-          python -m pytest dragonshard/tests/test_docker_scanner.py::TestDockerScanner::test_scan_localhost -v
+          pytest dragonshard/tests/test_docker_scanner.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
         else
-          echo "Docker not available, skipping Docker tests"
+          echo "Docker not available, skipping Docker scanner tests"
         fi
 
+    - name: Run linting
+      run: |
+        ruff check dragonshard/
+
     - name: Upload coverage to Codecov
-      if: matrix.test-type == 'unit'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
@@ -77,6 +116,12 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: test-results.xml
+
+    - name: Clean up test environment
+      if: always()
+      run: |
+        docker-compose -f docker-compose.test.yml down -v
+        docker system prune -f
 
   security:
     runs-on: ubuntu-latest

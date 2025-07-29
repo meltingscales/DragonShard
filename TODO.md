@@ -251,4 +251,4 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
-TBD
+- Can we make a separate visualization that shows the full tree of mutations?
