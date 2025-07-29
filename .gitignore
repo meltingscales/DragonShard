@@ -175,4 +175,11 @@ cython_debug/
 *.temp
 
 # Benchmark results
-benchmark_results_*.json 
+benchmark_results_*.json
+
+# Planner generated files
+attack_chains_export.json
+attack_strategies_export.json
+vulnerability_report.json
+*_export.json
+*_report.json 

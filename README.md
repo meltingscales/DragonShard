@@ -117,6 +117,35 @@ make test-web-fuzzing-viz
 - Vulnerable test containers running (optional)
 - Network access for web requests
 
+## Planning Features
+
+DragonShard includes intelligent attack planning capabilities that integrate reconnaissance and fuzzing results:
+
+### Chain Planner Integration Test
+```bash
+make test-planner
+```
+- **Intelligent attack chain generation** based on discovered vulnerabilities
+- **Vulnerability prioritization** with risk scoring and business impact assessment
+- **Predefined attack strategies** for different vulnerability types
+- **LLM integration framework** for advanced attack planning
+- **Comprehensive vulnerability analysis** and attack opportunity identification
+- **Export capabilities** for attack chains, strategies, and vulnerability reports
+
+**Features:**
+- **Multi-vulnerability analysis** with risk-based prioritization
+- **Attack chain generation** for SQL injection, XSS, RCE, and authentication bypass
+- **Business impact assessment** with technical and financial risk analysis
+- **Time-to-exploit estimation** for vulnerability remediation planning
+- **Attack strategy templates** for common penetration testing scenarios
+- **Integration with existing modules** (crawler, fuzzer, genetic mutator)
+- **JSON export** for attack chains, strategies, and vulnerability reports
+
+**Requirements:**
+- Python 3.10+ with all dependencies installed
+- Network access for LLM integration (optional)
+- Vulnerable test containers for realistic testing (optional)
+
 ## Development Automation
 
 ### Quick Commands
