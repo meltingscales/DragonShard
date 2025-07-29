@@ -2,6 +2,14 @@
 
 DragonShard is an autonomous offensive security tool designed to discover vulnerabilities, infer API structure, fuzz endpoints, and plan multi-stage exploit chains.
 
+
+## Status Badges
+Add these to your README when connected to CI/CD services:
+
+[![Travis CI](https://travis-ci.com/meltingscales/dragonshard.svg?branch=main)](https://travis-ci.com/meltingscales/dragonshard)
+[![Codecov](https://codecov.io/gh/meltingscales/dragonshard/branch/main/graph/badge.svg)](https://codecov.io/gh/meltingscales/dragonshard)
+[![GitHub Actions](https://github.com/meltingscales/dragonshard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/meltingscales/dragonshard/actions)
+
 ## 📋 Project Status
 
 See [TODO.md](TODO.md) for current development status and roadmap.
@@ -158,13 +166,4 @@ python scripts/setup_ci.py
 ruff check dragonshard/
 bandit -r dragonshard/
 pytest --cov=dragonshard --cov-report=term-missing
-```
-
-### Status Badges
-Add these to your README when connected to CI/CD services:
-
-```markdown
-[![Travis CI](https://travis-ci.com/yourusername/dragonshard.svg?branch=main)](https://travis-ci.com/yourusername/dragonshard)
-[![Codecov](https://codecov.io/gh/yourusername/dragonshard/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/dragonshard)
-[![GitHub Actions](https://github.com/yourusername/dragonshard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/yourusername/dragonshard/actions)
 ```
