@@ -98,25 +98,7 @@ make ci            # All checks + tests
 make clean         # Clean up cache files
 ```
 
-### Python Script
-Use the custom linting script for more control:
 
-```bash
-# Basic linting
-python scripts/lint.py
-
-# Auto-fix issues
-python scripts/lint.py --fix
-
-# Format code
-python scripts/lint.py --format
-
-# Run all checks
-python scripts/lint.py --all
-
-# Security checks only
-python scripts/lint.py --security
-```
 
 ### VS Code Integration
 Tasks are available in VS Code (Ctrl+Shift+P → "Tasks: Run Task"):
@@ -131,19 +113,15 @@ Tasks are available in VS Code (Ctrl+Shift+P → "Tasks: Run Task"):
 
 The project includes comprehensive CI/CD setup with multiple providers:
 
-### Travis CI
-- **Multi-Python testing** (3.10, 3.11, 3.12)
-- **Docker support** for integration tests
-- **Caching** for faster builds
-- **Coverage reporting** to Codecov
-- **Matrix testing** (unit + Docker tests)
-
 ### GitHub Actions
-- **Alternative CI/CD** pipeline
-- **Multi-Python testing** with matrix strategy
+- **Primary CI/CD** pipeline
+- **Multi-Python testing** with matrix strategy (3.10, 3.11, 3.12)
+- **Docker support** for integration tests
 - **Linting** with Ruff
 - **Security scanning** with Bandit and Safety
 - **Docker image building** and testing
+- **Coverage reporting** to Codecov
+- **Caching** for faster builds
 
 ### Codecov
 - **Code coverage reporting** with 80% target
@@ -158,11 +136,10 @@ The project includes comprehensive CI/CD setup with multiple providers:
 
 ### Setup
 ```bash
-# Run CI/CD setup script
-python scripts/setup_ci.py
+# Set up development environment
+make setup
 
 # Run local CI checks
-ruff check dragonshard/
-bandit -r dragonshard/
-pytest --cov=dragonshard --cov-report=term-missing
+make all-checks
+make test
 ```
