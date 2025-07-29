@@ -2,31 +2,35 @@
 
 # Default target
 help:
-	@echo "🐉 DragonShard Development Commands"
-	@echo "=================================="
+	@echo "🐉 DragonShard - Offensive Security Tool"
+	@echo "========================================"
 	@echo ""
-	@echo "Linting & Formatting:"
-	@echo "  lint          - Run ruff linting checks"
-	@echo "  lint-fix      - Run ruff linting with auto-fix"
-	@echo "  format        - Format code with ruff"
+	@echo "Available targets:"
+	@echo ""
+	@echo "📋 Code Quality:"
+	@echo "  lint          - Run linting checks"
+	@echo "  lint-fix      - Run linting with auto-fix"
+	@echo "  format        - Format code"
 	@echo "  format-check  - Check code formatting"
-	@echo "  security      - Run security checks (bandit, safety)"
-	@echo "  all-checks    - Run all checks (lint, format, security)"
+	@echo "  security      - Run security checks (Bandit + Safety)"
+	@echo "  all-checks    - Run all quality checks"
 	@echo ""
-	@echo "Testing:"
-	@echo "  test          - Run unit tests with pytest"
-	@echo "  test-crawlers - Run crawler-specific tests"
-	@echo "  test-fuzzer   - Run fuzzer unit tests"
+	@echo "🧪 Testing:"
+	@echo "  test                    - Run all unit tests"
+	@echo "  test-crawlers          - Run crawler tests"
+	@echo "  test-fuzzer            - Run fuzzer unit tests"
 	@echo "  test-fuzzer-integration - Run fuzzer integration tests"
-	@echo "  test-fuzzer-manual - Run manual fuzzer test with containers"
-	@echo "  test-docker   - Run Docker integration tests"
+	@echo "  test-fuzzer-manual     - Run manual fuzzer test"
+	@echo "  test-visualization     - Run genetic algorithm visualization"
+	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
+	@echo "  test-docker            - Run Docker integration tests"
 	@echo ""
-	@echo "Test Environment:"
-	@echo "  test-env-start - Start vulnerable test containers"
-	@echo "  test-env-stop  - Stop vulnerable test containers"
-	@echo "  test-env-clean - Clean up test environment"
+	@echo "🐳 Test Environment:"
+	@echo "  test-env-start         - Start vulnerable test containers"
+	@echo "  test-env-stop          - Stop test containers"
+	@echo "  test-env-clean         - Clean up test environment"
 	@echo ""
-	@echo "Development:"
+	@echo "🔧 Development:"
 	@echo "  setup         - Set up development environment (install deps + Playwright)"
 	@echo "  clean         - Clean up cache and temporary files"
 	@echo ""
@@ -83,6 +87,14 @@ test-fuzzer-manual:
 	@echo "🧬 Running manual fuzzer test..."
 	@python dragonshard/tests/test_genetic_fuzzer.py
 
+test-visualization:
+	@echo "🎨 Running genetic algorithm visualization..."
+	@uv run python test_visualization.py
+
+test-benchmark:
+	@echo "📊 Running genetic algorithm benchmarks..."
+	@uv run python scripts/run_benchmarks.py
+
 test-docker:
 	@echo "🐳 Running Docker integration tests..."
 	@python scripts/run_docker_tests.py
@@ -105,9 +117,11 @@ test-env-clean:
 # Development targets
 setup:
 	@echo "🔧 Setting up development environment..."
-	@pip install -r requirements.lock.txt
+	@uv pip install -r requirements.lock.txt
 	@echo "🎭 Installing Playwright browsers..."
-	@playwright install chromium
+	@uv run playwright install chromium
+	@echo "🎨 Installing tkinter for visualization..."
+	@sudo apt update && sudo apt install -y python3-tk
 	@echo "✅ Setup completed!"
 
 clean:
@@ -119,6 +133,7 @@ clean:
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f -name "benchmark_results_*.json" -delete 2>/dev/null || true
 	@echo "✅ Cleanup completed!"
 
 # Convenience targets

@@ -172,4 +172,7 @@ cython_debug/
 # Project specific
 *.log
 *.tmp
-*.temp 
+*.temp
+
+# Benchmark results
+benchmark_results_*.json 

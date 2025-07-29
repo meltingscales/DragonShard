@@ -1,5 +1,11 @@
-# Stub for __init__.py
+"""
+DragonShard Visualization Module
 
+This module provides comprehensive visualization tools for attack analysis and monitoring.
+"""
 
-def placeholder():
-    pass
+from .genetic_viz import GeneticAlgorithmVisualizer
+
+__all__ = [
+    "GeneticAlgorithmVisualizer",
+]

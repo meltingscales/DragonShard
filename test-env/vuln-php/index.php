@@ -93,6 +93,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             break;
+            
+        case 'complex':
+            // VULNERABILITY 8: Complex Multi-Vector Attack
+            $payload = $_POST['payload'] ?? '';
+            $type = $_POST['type'] ?? '';
+            
+            if ($payload && $type) {
+                switch($type) {
+                    case 'sql_advanced':
+                        // Advanced SQL Injection with UNION
+                        $query = "SELECT * FROM users WHERE id = $payload"; // VULNERABLE!
+                        try {
+                            $stmt = $pdo->query($query);
+                            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            $complex_output = "SQL Results: " . json_encode($results);
+                        } catch(PDOException $e) {
+                            $complex_output = "SQL Error: " . $e->getMessage(); // VULNERABLE
+                        }
+                        break;
+                        
+                    case 'xss_advanced':
+                        // Advanced XSS with event handlers
+                        $complex_output = "Found: $payload"; // VULNERABLE: XSS reflection
+                        break;
+                        
+                    case 'command_advanced':
+                        // Advanced Command Injection with multiple commands
+                        $output = shell_exec("echo '$payload' | xargs -I {} sh -c '{}'"); // VULNERABLE!
+                        $complex_output = "Command Output: " . htmlspecialchars($output);
+                        break;
+                        
+                    case 'lfi_advanced':
+                        // Advanced LFI with protocol wrappers
+                        $content = file_get_contents($payload); // VULNERABLE: No validation
+                        $complex_output = "File Content: " . htmlspecialchars($content);
+                        break;
+                        
+                    case 'xxe_advanced':
+                        // Advanced XXE with external entity
+                        if (strpos($payload, '<?xml') !== false) {
+                            $xml = simplexml_load_string($payload); // VULNERABLE: XXE
+                            $complex_output = "XML Parsed: " . print_r($xml, true);
+                        } else {
+                            $complex_output = "Invalid XML payload";
+                        }
+                        break;
+                        
+                    case 'ssrf_advanced':
+                        // Advanced SSRF with internal services
+                        $url = $payload;
+                        $response = file_get_contents($url); // VULNERABLE: SSRF
+                        $complex_output = "SSRF Response: " . htmlspecialchars($response);
+                        break;
+                        
+                    default:
+                        $complex_output = "Unknown attack type: $type";
+                }
+            }
+            break;
     }
 }
 
