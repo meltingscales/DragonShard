@@ -182,4 +182,10 @@ attack_chains_export.json
 attack_strategies_export.json
 vulnerability_report.json
 *_export.json
-*_report.json 
+*_report.json
+
+# Executor generated files
+executor_results.json
+session_data.json
+state_graph.json
+execution_results.json 

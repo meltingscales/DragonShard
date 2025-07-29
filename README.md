@@ -146,6 +146,36 @@ make test-planner
 - Network access for LLM integration (optional)
 - Vulnerable test containers for realistic testing (optional)
 
+## Execution Features
+
+DragonShard includes comprehensive attack execution capabilities that take planned attack chains and execute them against real targets:
+
+### Executor Integration Test
+```bash
+make test-executor
+```
+- **Intelligent attack chain execution** with real-time progress tracking
+- **Session management** with authentication and state persistence
+- **Network state graph** with host/service/vulnerability tracking
+- **Concurrent execution** of multiple attack chains
+- **Comprehensive error handling** and retry mechanisms
+- **Export capabilities** for execution results and session data
+
+**Features:**
+- **Multi-chain execution** with threading support
+- **Session persistence** with cookie and header management
+- **Network topology mapping** with vulnerability correlation
+- **Real-time monitoring** of execution progress and status
+- **Authentication support** for form, basic, and token-based auth
+- **State graph visualization** of discovered hosts and services
+- **Integration with existing modules** (planner, fuzzer, crawler)
+- **JSON export** for execution results, session data, and state graphs
+
+**Requirements:**
+- Python 3.10+ with all dependencies installed
+- Network access for HTTP requests
+- Vulnerable test containers for realistic testing (optional)
+
 ## Development Automation
 
 ### Quick Commands
