@@ -14,24 +14,24 @@ from dragonshard.recon.scanner import get_open_ports, run_scan, scan_common_serv
 
 # Set up logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 
 def requires_nmap(func):
     """Decorator to check if nmap is available before running a test."""
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
-            subprocess.run(['nmap', '--version'],
-                         capture_output=True, check=True, timeout=5)
+            subprocess.run(["nmap", "--version"], capture_output=True, check=True, timeout=5)
             logger.info("nmap is available")
         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
             logger.warning("nmap not available, skipping test")
             self.skipTest("nmap not available")
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -49,12 +49,8 @@ class TestDockerScanner(unittest.TestCase):
         logger.info("Cleaning up Docker containers")
         for container_name in self.docker_containers:
             try:
-                subprocess.run([
-                    'docker', 'stop', container_name
-                ], capture_output=True, timeout=10)
-                subprocess.run([
-                    'docker', 'rm', container_name
-                ], capture_output=True, timeout=10)
+                subprocess.run(["docker", "stop", container_name], capture_output=True, timeout=10)
+                subprocess.run(["docker", "rm", container_name], capture_output=True, timeout=10)
                 logger.info(f"Cleaned up container: {container_name}")
             except Exception as e:
                 logger.warning(f"Failed to clean up container {container_name}: {e}")
@@ -76,27 +72,35 @@ class TestDockerScanner(unittest.TestCase):
         while time.time() - start_time < max_wait:
             try:
                 # Check if container is running
-                result = subprocess.run([
-                    'docker', 'inspect', '-f', '{{.State.Status}}', container_name
-                ], capture_output=True, text=True, check=True)
+                result = subprocess.run(
+                    ["docker", "inspect", "-f", "{{.State.Status}}", container_name],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
 
                 status = result.stdout.strip()
-                if status == 'running':
+                if status == "running":
                     # Check if container is healthy (if health check is configured)
                     try:
-                        health_result = subprocess.run([
-                            'docker', 'inspect', '-f', '{{.State.Health.Status}}', container_name
-                        ], capture_output=True, text=True, check=True)
+                        health_result = subprocess.run(
+                            ["docker", "inspect", "-f", "{{.State.Health.Status}}", container_name],
+                            capture_output=True,
+                            text=True,
+                            check=True,
+                        )
 
                         health_status = health_result.stdout.strip()
-                        if health_status == 'healthy' or health_status == '<nil>':
+                        if health_status == "healthy" or health_status == "<nil>":
                             logger.info(f"Container {container_name} is ready!")
                             return True
-                        elif health_status == 'unhealthy':
+                        elif health_status == "unhealthy":
                             logger.error(f"Container {container_name} is unhealthy")
                             return False
                         else:
-                            logger.debug(f"Container {container_name} starting up... ({health_status})")
+                            logger.debug(
+                                f"Container {container_name} starting up... ({health_status})"
+                            )
                     except subprocess.CalledProcessError:
                         # No health check configured, assume ready if running
                         logger.info(f"Container {container_name} is ready (no health check)")
@@ -124,9 +128,18 @@ class TestDockerScanner(unittest.TestCase):
         """
         try:
             # Get container IP
-            ip_result = subprocess.run([
-                'docker', 'inspect', '-f', '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}', container_name
-            ], capture_output=True, text=True, check=True)
+            ip_result = subprocess.run(
+                [
+                    "docker",
+                    "inspect",
+                    "-f",
+                    "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+                    container_name,
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             container_ip = ip_result.stdout.strip()
             if not container_ip:
@@ -136,22 +149,36 @@ class TestDockerScanner(unittest.TestCase):
             # Try to connect to the container (basic health check)
             try:
                 # Use curl to check if container is responding
-                curl_result = subprocess.run([
-                    'curl', '-f', '-s', '-o', '/dev/null', '-w', '%{http_code}',
-                    f'http://{container_ip}:80'
-                ], capture_output=True, text=True, timeout=10)
+                curl_result = subprocess.run(
+                    [
+                        "curl",
+                        "-f",
+                        "-s",
+                        "-o",
+                        "/dev/null",
+                        "-w",
+                        "%{http_code}",
+                        f"http://{container_ip}:80",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
                 if curl_result.returncode == 0:
                     logger.info(f"Container {container_name} is responding on port 80")
                     return True
                 else:
-                    logger.warning(f"Container {container_name} not responding on port 80 (HTTP {curl_result.stdout})")
+                    logger.warning(
+                        f"Container {container_name} not responding on port 80 (HTTP {curl_result.stdout})"
+                    )
                     return False
 
             except (subprocess.TimeoutExpired, FileNotFoundError):
                 # curl not available, try basic port check
                 try:
                     import socket
+
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     sock.settimeout(5)
                     result = sock.connect_ex((container_ip, 80))
@@ -177,18 +204,27 @@ class TestDockerScanner(unittest.TestCase):
 
         try:
             # Pull DVWA image if not available
-            subprocess.run([
-                'docker', 'pull', 'vulnerables/web-dvwa:latest'
-            ], capture_output=True, check=True)
+            subprocess.run(
+                ["docker", "pull", "vulnerables/web-dvwa:latest"], capture_output=True, check=True
+            )
 
             # Start DVWA container
             container_name = f"dvwa-test-{int(time.time())}"
-            result = subprocess.run([
-                'docker', 'run', '-d',
-                '--name', container_name,
-                '-p', '8080:80',
-                'vulnerables/web-dvwa:latest'
-            ], capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "-d",
+                    "--name",
+                    container_name,
+                    "-p",
+                    "8080:80",
+                    "vulnerables/web-dvwa:latest",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             container_id = result.stdout.strip()
             self.docker_containers.append(container_name)
@@ -202,12 +238,21 @@ class TestDockerScanner(unittest.TestCase):
                 logger.warning(f"Container {container_name} started but health check failed")
 
             # Get container IP
-            ip_result = subprocess.run([
-                'docker', 'inspect', '-f', '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}', container_name
-            ], capture_output=True, text=True, check=True)
+            ip_result = subprocess.run(
+                [
+                    "docker",
+                    "inspect",
+                    "-f",
+                    "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+                    container_name,
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             container_ip = ip_result.stdout.strip()
-            self.test_targets['dvwa'] = container_ip
+            self.test_targets["dvwa"] = container_ip
 
             logger.info(f"DVWA container started: {container_name} at {container_ip}")
             return container_ip
@@ -223,12 +268,12 @@ class TestDockerScanner(unittest.TestCase):
         try:
             # Start a simple vulnerable web app
             container_name = f"vulhub-test-{int(time.time())}"
-            result = subprocess.run([
-                'docker', 'run', '-d',
-                '--name', container_name,
-                '-p', '8081:80',
-                'nginx:alpine'
-            ], capture_output=True, text=True, check=True)
+            result = subprocess.run(
+                ["docker", "run", "-d", "--name", container_name, "-p", "8081:80", "nginx:alpine"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             container_id = result.stdout.strip()
             self.docker_containers.append(container_name)
@@ -242,12 +287,21 @@ class TestDockerScanner(unittest.TestCase):
                 logger.warning(f"Container {container_name} started but health check failed")
 
             # Get container IP
-            ip_result = subprocess.run([
-                'docker', 'inspect', '-f', '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}', container_name
-            ], capture_output=True, text=True, check=True)
+            ip_result = subprocess.run(
+                [
+                    "docker",
+                    "inspect",
+                    "-f",
+                    "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+                    container_name,
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
             container_ip = ip_result.stdout.strip()
-            self.test_targets['vulhub'] = container_ip
+            self.test_targets["vulhub"] = container_ip
 
             logger.info(f"Vulhub container started: {container_name} at {container_ip}")
             return container_ip
@@ -279,9 +333,11 @@ class TestDockerScanner(unittest.TestCase):
             self.assertGreater(len(tcp_ports), 0, "Should find at least one open port")
 
             # Look for web server ports
-            web_ports = [port for port, data in tcp_ports.items()
-                        if data["state"] == "open" and
-                        data["service"] in ["http", "www", "www-http"]]
+            web_ports = [
+                port
+                for port, data in tcp_ports.items()
+                if data["state"] == "open" and data["service"] in ["http", "www", "www-http"]
+            ]
 
             self.assertGreater(len(web_ports), 0, "Should find web server ports")
             logger.info(f"Found web server ports: {web_ports}")
@@ -330,9 +386,11 @@ class TestDockerScanner(unittest.TestCase):
             self.assertGreater(len(tcp_ports), 0, "Should find at least one open port")
 
             # Look for nginx/web server
-            web_ports = [port for port, data in tcp_ports.items()
-                        if data["state"] == "open" and
-                        data["service"] in ["http", "www", "www-http"]]
+            web_ports = [
+                port
+                for port, data in tcp_ports.items()
+                if data["state"] == "open" and data["service"] in ["http", "www", "www-http"]
+            ]
 
             self.assertGreater(len(web_ports), 0, "Should find web server ports")
             logger.info(f"Found web server ports: {web_ports}")
@@ -340,7 +398,9 @@ class TestDockerScanner(unittest.TestCase):
             # Test service detection
             for port, port_data in tcp_ports.items():
                 if port_data["state"] == "open":
-                    logger.info(f"Open port {port}: {port_data['service']} - {port_data['product']}")
+                    logger.info(
+                        f"Open port {port}: {port_data['service']} - {port_data['product']}"
+                    )
 
             logger.info("Vulhub container scan test completed successfully")
 
@@ -411,14 +471,13 @@ class TestDockerScanner(unittest.TestCase):
 def check_docker_available():
     """Check if Docker is available and running."""
     try:
-        result = subprocess.run(['docker', 'version'],
-                              capture_output=True, timeout=10)
+        result = subprocess.run(["docker", "version"], capture_output=True, timeout=10)
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Skip tests if Docker is not available
     if not check_docker_available():
         print("Docker not available. Skipping Docker-based tests.")

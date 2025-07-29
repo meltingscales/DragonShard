@@ -6,8 +6,7 @@ from dragonshard.recon.scanner import get_open_ports, run_scan, scan_common_serv
 
 # Set up logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -26,15 +25,15 @@ class TestScanner(unittest.TestCase):
                         "name": "ssh",
                         "version": "OpenSSH 8.2p1",
                         "product": "OpenSSH",
-                        "extrainfo": "Ubuntu 4ubuntu0.2"
+                        "extrainfo": "Ubuntu 4ubuntu0.2",
                     },
                     80: {
                         "state": "open",
                         "name": "http",
                         "version": "nginx 1.18.0",
                         "product": "nginx",
-                        "extrainfo": ""
-                    }
+                        "extrainfo": "",
+                    },
                 },
                 "udp": {
                     53: {
@@ -42,14 +41,14 @@ class TestScanner(unittest.TestCase):
                         "name": "domain",
                         "version": "BIND 9.16.1",
                         "product": "BIND",
-                        "extrainfo": ""
+                        "extrainfo": "",
                     }
-                }
+                },
             }
         }
         logger.debug(f"Mock data set up: {self.mock_nmap_data}")
 
-    @patch('dragonshard.recon.scanner.nmap.PortScanner')
+    @patch("dragonshard.recon.scanner.nmap.PortScanner")
     def test_run_scan_comprehensive(self, mock_scanner_class):
         """Test comprehensive scan functionality."""
         logger.info("Starting test_run_scan_comprehensive")
@@ -70,15 +69,15 @@ class TestScanner(unittest.TestCase):
                 "name": "ssh",
                 "version": "OpenSSH 8.2p1",
                 "product": "OpenSSH",
-                "extrainfo": "Ubuntu 4ubuntu0.2"
+                "extrainfo": "Ubuntu 4ubuntu0.2",
             },
             80: {
                 "state": "open",
                 "name": "http",
                 "version": "nginx 1.18.0",
                 "product": "nginx",
-                "extrainfo": ""
-            }
+                "extrainfo": "",
+            },
         }
 
         udp_data = {
@@ -87,15 +86,12 @@ class TestScanner(unittest.TestCase):
                 "name": "domain",
                 "version": "BIND 9.16.1",
                 "product": "BIND",
-                "extrainfo": ""
+                "extrainfo": "",
             }
         }
 
         # Set up the mock to return the correct data structure
-        mock_host.__getitem__.side_effect = lambda x: {
-            "tcp": tcp_data,
-            "udp": udp_data
-        }[x]
+        mock_host.__getitem__.side_effect = lambda x: {"tcp": tcp_data, "udp": udp_data}[x]
 
         # Make the mock support 'in' operator for tcp and udp
         mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
@@ -111,8 +107,7 @@ class TestScanner(unittest.TestCase):
 
         # Verify the scan was called with correct arguments
         mock_scanner.scan.assert_called_once_with(
-            hosts=self.test_target,
-            arguments='-T4 -sS -sU -p- --version-intensity 5'
+            hosts=self.test_target, arguments="-T4 -sS -sU -p- --version-intensity 5"
         )
 
         # Verify the result structure
@@ -134,7 +129,7 @@ class TestScanner(unittest.TestCase):
 
         logger.info("test_run_scan_comprehensive completed successfully")
 
-    @patch('dragonshard.recon.scanner.nmap.PortScanner')
+    @patch("dragonshard.recon.scanner.nmap.PortScanner")
     def test_run_scan_quick(self, mock_scanner_class):
         """Test quick scan functionality."""
         logger.info("Starting test_run_scan_quick")
@@ -154,15 +149,15 @@ class TestScanner(unittest.TestCase):
                 "name": "ssh",
                 "version": "OpenSSH 8.2p1",
                 "product": "OpenSSH",
-                "extrainfo": "Ubuntu 4ubuntu0.2"
+                "extrainfo": "Ubuntu 4ubuntu0.2",
             },
             80: {
                 "state": "open",
                 "name": "http",
                 "version": "nginx 1.18.0",
                 "product": "nginx",
-                "extrainfo": ""
-            }
+                "extrainfo": "",
+            },
         }
 
         udp_data = {
@@ -171,14 +166,11 @@ class TestScanner(unittest.TestCase):
                 "name": "domain",
                 "version": "BIND 9.16.1",
                 "product": "BIND",
-                "extrainfo": ""
+                "extrainfo": "",
             }
         }
 
-        mock_host.__getitem__.side_effect = lambda x: {
-            "tcp": tcp_data,
-            "udp": udp_data
-        }[x]
+        mock_host.__getitem__.side_effect = lambda x: {"tcp": tcp_data, "udp": udp_data}[x]
 
         # Make the mock support 'in' operator for tcp and udp
         mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
@@ -193,14 +185,11 @@ class TestScanner(unittest.TestCase):
         logger.debug(f"Quick scan result: {result}")
 
         # Verify quick scan arguments
-        mock_scanner.scan.assert_called_once_with(
-            hosts=self.test_target,
-            arguments='-T4 -F'
-        )
+        mock_scanner.scan.assert_called_once_with(hosts=self.test_target, arguments="-T4 -F")
 
         logger.info("test_run_scan_quick completed successfully")
 
-    @patch('dragonshard.recon.scanner.nmap.PortScanner')
+    @patch("dragonshard.recon.scanner.nmap.PortScanner")
     def test_run_scan_udp(self, mock_scanner_class):
         """Test UDP scan functionality."""
         logger.info("Starting test_run_scan_udp")
@@ -220,15 +209,15 @@ class TestScanner(unittest.TestCase):
                 "name": "ssh",
                 "version": "OpenSSH 8.2p1",
                 "product": "OpenSSH",
-                "extrainfo": "Ubuntu 4ubuntu0.2"
+                "extrainfo": "Ubuntu 4ubuntu0.2",
             },
             80: {
                 "state": "open",
                 "name": "http",
                 "version": "nginx 1.18.0",
                 "product": "nginx",
-                "extrainfo": ""
-            }
+                "extrainfo": "",
+            },
         }
 
         udp_data = {
@@ -237,14 +226,11 @@ class TestScanner(unittest.TestCase):
                 "name": "domain",
                 "version": "BIND 9.16.1",
                 "product": "BIND",
-                "extrainfo": ""
+                "extrainfo": "",
             }
         }
 
-        mock_host.__getitem__.side_effect = lambda x: {
-            "tcp": tcp_data,
-            "udp": udp_data
-        }[x]
+        mock_host.__getitem__.side_effect = lambda x: {"tcp": tcp_data, "udp": udp_data}[x]
 
         # Make the mock support 'in' operator for tcp and udp
         mock_host.__contains__.side_effect = lambda x: x in ["tcp", "udp"]
@@ -259,10 +245,7 @@ class TestScanner(unittest.TestCase):
         logger.debug(f"UDP scan result: {result}")
 
         # Verify UDP scan arguments
-        mock_scanner.scan.assert_called_once_with(
-            hosts=self.test_target,
-            arguments='-T4 -sU -F'
-        )
+        mock_scanner.scan.assert_called_once_with(hosts=self.test_target, arguments="-T4 -sU -F")
 
         logger.info("test_run_scan_udp completed successfully")
 
@@ -274,14 +257,29 @@ class TestScanner(unittest.TestCase):
             "127.0.0.1": {
                 "status": "up",
                 "tcp": {
-                    22: {"state": "open", "service": "ssh", "version": "OpenSSH", "product": "OpenSSH"},
+                    22: {
+                        "state": "open",
+                        "service": "ssh",
+                        "version": "OpenSSH",
+                        "product": "OpenSSH",
+                    },
                     23: {"state": "closed", "service": "telnet", "version": "", "product": ""},
-                    80: {"state": "open", "service": "http", "version": "nginx", "product": "nginx"}
+                    80: {
+                        "state": "open",
+                        "service": "http",
+                        "version": "nginx",
+                        "product": "nginx",
+                    },
                 },
                 "udp": {
-                    53: {"state": "open", "service": "domain", "version": "BIND", "product": "BIND"},
-                    67: {"state": "closed", "service": "dhcps", "version": "", "product": ""}
-                }
+                    53: {
+                        "state": "open",
+                        "service": "domain",
+                        "version": "BIND",
+                        "product": "BIND",
+                    },
+                    67: {"state": "closed", "service": "dhcps", "version": "", "product": ""},
+                },
             }
         }
 
@@ -314,7 +312,7 @@ class TestScanner(unittest.TestCase):
 
         logger.info("test_get_open_ports completed successfully")
 
-    @patch('dragonshard.recon.scanner.nmap.PortScanner')
+    @patch("dragonshard.recon.scanner.nmap.PortScanner")
     def test_scan_common_services(self, mock_scanner_class):
         """Test scanning common services."""
         logger.info("Starting test_scan_common_services")
@@ -334,20 +332,18 @@ class TestScanner(unittest.TestCase):
                 "name": "ssh",
                 "version": "OpenSSH 8.2p1",
                 "product": "OpenSSH",
-                "extrainfo": "Ubuntu 4ubuntu0.2"
+                "extrainfo": "Ubuntu 4ubuntu0.2",
             },
             80: {
                 "state": "open",
                 "name": "http",
                 "version": "nginx 1.18.0",
                 "product": "nginx",
-                "extrainfo": ""
-            }
+                "extrainfo": "",
+            },
         }
 
-        mock_host.__getitem__.side_effect = lambda x: {
-            "tcp": tcp_data
-        }[x]
+        mock_host.__getitem__.side_effect = lambda x: {"tcp": tcp_data}[x]
 
         # Make the mock support 'in' operator for tcp
         mock_host.__contains__.side_effect = lambda x: x in ["tcp"]
@@ -364,7 +360,7 @@ class TestScanner(unittest.TestCase):
         mock_scanner.scan.assert_called_once_with(
             hosts=self.test_target,
             ports="21,22,23,25,53,80,110,143,443,993,995,3306,5432,6379,8080,8443",
-            arguments='-T4 -sS -sV'
+            arguments="-T4 -sS -sV",
         )
 
         # Check result structure
@@ -398,12 +394,8 @@ class TestScanner(unittest.TestCase):
         scan_results = {
             "127.0.0.1": {
                 "status": "up",
-                "tcp": {
-                    22: {"state": "closed", "service": "ssh", "version": "", "product": ""}
-                },
-                "udp": {
-                    53: {"state": "closed", "service": "domain", "version": "", "product": ""}
-                }
+                "tcp": {22: {"state": "closed", "service": "ssh", "version": "", "product": ""}},
+                "udp": {53: {"state": "closed", "service": "domain", "version": "", "product": ""}},
             }
         }
 
@@ -418,5 +410,5 @@ class TestScanner(unittest.TestCase):
         logger.info("test_get_open_ports_no_open_ports completed successfully")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
