@@ -128,7 +128,7 @@ class ResponseAnalyzer:
         """Analyze a single HTTP response."""
 
         # Calculate content hash for comparison
-        content_hash = hashlib.md5(content.encode()).hexdigest()
+        content_hash = hashlib.sha256(content.encode()).hexdigest()
 
         # Detect vulnerability indicators
         vulnerability_indicators = self._detect_vulnerabilities(content)

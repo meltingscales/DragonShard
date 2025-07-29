@@ -134,4 +134,4 @@ The next major milestone is implementing the fuzzing module. This will include:
 
 # Extra ideas
 
-- dynamic fuzz payload generator (AI? genetic algorithms? both?)
+TBD

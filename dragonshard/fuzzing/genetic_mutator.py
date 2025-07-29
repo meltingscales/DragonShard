@@ -6,12 +6,12 @@ Uses genetic algorithms with domain-specific language awareness to intelligently
 
 import json
 import logging
-import random
 import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
+from .prng import SecurePRNG, get_prng
 from .response_analyzer import ResponseAnalysis, ResponseAnalyzer, ResponseDifferential
 
 logger = logging.getLogger(__name__)
@@ -152,6 +152,9 @@ class GeneticMutator:
         self.max_generations = max_generations
         self.generation = 0
 
+        # Initialize secure PRNG for fuzzing operations
+        self.prng = get_prng()
+
         # Response analysis integration
         self.response_analyzer = response_analyzer or ResponseAnalyzer()
         self.target_url = target_url
@@ -228,7 +231,7 @@ class GeneticMutator:
         # Fill remaining population with random mutations
         while len(self.population) < self.population_size:
             if self.population:
-                parent = random.choice(self.population)
+                parent = self.prng.choice(self.population)
                 child = self._mutate_payload(parent)
                 self.population.append(child)
             else:
@@ -277,17 +280,17 @@ class GeneticMutator:
 
             # Generate rest of population through crossover and mutation
             while len(new_population) < self.population_size:
-                if random.random() < self.crossover_rate:
+                if self.prng.random_float() < self.crossover_rate:
                     # Crossover
                     parent1 = self._select_parent()
                     parent2 = self._select_parent()
                     child = self._crossover(parent1, parent2)
+                    new_population.append(child)
                 else:
                     # Mutation
                     parent = self._select_parent()
                     child = self._mutate_payload(parent)
-
-                new_population.append(child)
+                    new_population.append(child)
 
             self.population = new_population
 
@@ -297,7 +300,7 @@ class GeneticMutator:
     def _select_parent(self) -> GeneticPayload:
         """Select a parent using tournament selection."""
         tournament_size = 3
-        tournament = random.sample(self.population, tournament_size)
+        tournament = self.prng.sample(self.population, tournament_size)
         return max(tournament, key=lambda x: x.fitness)
 
     def _crossover(self, parent1: GeneticPayload, parent2: GeneticPayload) -> GeneticPayload:
@@ -332,9 +335,9 @@ class GeneticMutator:
         ]
 
         # Combine components
-        new_tags = p1_tags if random.random() < 0.5 else p2_tags
-        new_events = p1_events if random.random() < 0.5 else p2_events
-        new_functions = p1_functions if random.random() < 0.5 else p2_functions
+        new_tags = p1_tags if self.prng.random_float() < 0.5 else p2_tags
+        new_events = p1_events if self.prng.random_float() < 0.5 else p2_events
+        new_functions = p1_functions if self.prng.random_float() < 0.5 else p2_functions
 
         # Construct new payload
         if new_tags and new_events:
@@ -370,9 +373,9 @@ class GeneticMutator:
         p2_comments = [t for t in parent2.tokens if t in ["--", "#", "/*"]]
 
         # Combine components
-        new_keywords = p1_keywords if random.random() < 0.5 else p2_keywords
-        new_operators = p1_operators if random.random() < 0.5 else p2_operators
-        new_comments = p1_comments if random.random() < 0.5 else p2_comments
+        new_keywords = p1_keywords if self.prng.random_float() < 0.5 else p2_keywords
+        new_operators = p1_operators if self.prng.random_float() < 0.5 else p2_operators
+        new_comments = p1_comments if self.prng.random_float() < 0.5 else p2_comments
 
         # Construct new payload
         if new_keywords:
@@ -392,16 +395,18 @@ class GeneticMutator:
         """General crossover for other payload types."""
         # Simple string crossover
         if len(parent1.payload) > 3 and len(parent2.payload) > 3:
-            crossover_point = random.randint(1, min(len(parent1.payload), len(parent2.payload)) - 1)
+            crossover_point = self.prng.randint(
+                1, min(len(parent1.payload), len(parent2.payload)) - 1
+            )
             new_payload = parent1.payload[:crossover_point] + parent2.payload[crossover_point:]
         else:
-            new_payload = parent1.payload if random.random() < 0.5 else parent2.payload
+            new_payload = parent1.payload if self.prng.random_float() < 0.5 else parent2.payload
 
         return GeneticPayload(new_payload, parent1.payload_type, generation=self.generation)
 
     def _mutate_payload(self, payload: GeneticPayload) -> GeneticPayload:
         """Mutate a payload using domain-specific operators."""
-        if random.random() > self.mutation_rate:
+        if self.prng.random_float() > self.mutation_rate:
             return payload
 
         # Use domain-specific mutation based on payload type
@@ -438,9 +443,9 @@ class GeneticMutator:
 
         mutations = [
             # Tag mutations
-            lambda p: p.replace("<script>", random.choice(patterns["tags"])),
-            lambda p: p.replace("alert", random.choice(patterns["functions"])),
-            lambda p: p.replace("onload", random.choice(patterns["events"])),
+            lambda p: p.replace("<script>", self.prng.choice(patterns["tags"])),
+            lambda p: p.replace("alert", self.prng.choice(patterns["functions"])),
+            lambda p: p.replace("onload", self.prng.choice(patterns["events"])),
             # Add encoding
             lambda p: p.replace("<", "&lt;").replace(">", "&gt;"),
             lambda p: p.replace("javascript:", "javascript&#58;"),
@@ -450,7 +455,7 @@ class GeneticMutator:
             lambda p: f"javascript:{p}" if not p.startswith("javascript:") else p,
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         # Ensure payload actually changed
@@ -467,21 +472,21 @@ class GeneticMutator:
 
         mutations = [
             # Keyword mutations
-            lambda p: p.replace("OR", random.choice(patterns["keywords"])),
-            lambda p: p.replace("=", random.choice(patterns["operators"])),
-            lambda p: p.replace("--", random.choice(patterns["comments"])),
+            lambda p: p.replace("OR", self.prng.choice(patterns["keywords"])),
+            lambda p: p.replace("=", self.prng.choice(patterns["operators"])),
+            lambda p: p.replace("--", self.prng.choice(patterns["comments"])),
             # Add quotes
             lambda p: f"'{p}" if not p.startswith("'") else p,
             lambda p: f"{p}'" if not p.endswith("'") else p,
             # Add functions
-            lambda p: f"UNION SELECT {random.choice(patterns['functions'])}(1)",
+            lambda p: f"UNION SELECT {self.prng.choice(patterns['functions'])}(1)",
             # Add encoding
             lambda p: p.replace("'", "&#39;"),
             # Add spaces
             lambda p: p.replace("OR", " OR ").replace("AND", " AND "),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         # Ensure payload actually changed
@@ -498,9 +503,9 @@ class GeneticMutator:
 
         mutations = [
             # Separator mutations
-            lambda p: p.replace(";", random.choice(patterns["separators"])),
+            lambda p: p.replace(";", self.prng.choice(patterns["separators"])),
             # Command mutations
-            lambda p: p.replace("ls", random.choice(patterns["commands"])),
+            lambda p: p.replace("ls", self.prng.choice(patterns["commands"])),
             # Add operators
             lambda p: f"{p} | grep root",
             lambda p: f"{p} > /tmp/output",
@@ -510,7 +515,7 @@ class GeneticMutator:
             lambda p: f"`{p}`" if not p.startswith("`") else p,
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         # Ensure payload actually changed
@@ -527,9 +532,9 @@ class GeneticMutator:
 
         mutations = [
             # Sequence mutations
-            lambda p: p.replace("../", random.choice(patterns["sequences"])),
+            lambda p: p.replace("../", self.prng.choice(patterns["sequences"])),
             # Target mutations
-            lambda p: p.replace("/etc/passwd", random.choice(patterns["targets"])),
+            lambda p: p.replace("/etc/passwd", self.prng.choice(patterns["targets"])),
             # Encoding mutations
             lambda p: p.replace("/", "%2F").replace("\\", "%5C"),
             # Add more traversal
@@ -540,7 +545,7 @@ class GeneticMutator:
             lambda p: p.replace("%2F", "%252F"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         # Ensure payload actually changed
@@ -567,7 +572,7 @@ class GeneticMutator:
             lambda p: p.replace("%2F", "%252F"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -589,7 +594,7 @@ class GeneticMutator:
             lambda p: p.replace("attacker.com", "evil.com"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -609,7 +614,7 @@ class GeneticMutator:
             lambda p: p.replace("<!DOCTYPE foo", "<!DOCTYPE data"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -630,7 +635,7 @@ class GeneticMutator:
             lambda p: f"{p}/api",
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -650,7 +655,7 @@ class GeneticMutator:
             lambda p: p.replace("7*7", "request.environment"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -673,7 +678,7 @@ class GeneticMutator:
             lambda p: p.replace("'", '"'),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         return GeneticPayload(new_payload, payload.payload_type, generation=self.generation)
@@ -693,10 +698,10 @@ class GeneticMutator:
             # Reverse case
             lambda p: p.swapcase(),
             # Add random characters
-            lambda p: p + random.choice("abcdefghijklmnopqrstuvwxyz"),
+            lambda p: p + self.prng.choice("abcdefghijklmnopqrstuvwxyz"),
         ]
 
-        mutation = random.choice(mutations)
+        mutation = self.prng.choice(mutations)
         new_payload = mutation(payload.payload)
 
         # Ensure payload actually changed
@@ -931,7 +936,7 @@ class GeneticMutator:
             weights = [1.0 / len(mutation_types)] * len(mutation_types)
 
         # Select mutation type
-        selected_type = random.choices(mutation_types, weights=weights)[0]
+        selected_type = self.prng.choices(mutation_types, weights=weights)[0]
 
         # Map to actual mutation function
         if payload.payload_type == PayloadType.XSS:
@@ -955,7 +960,7 @@ class GeneticMutator:
         else:
             mutations = [self._mutate_general]
 
-        return random.choice(mutations)
+        return self.prng.choice(mutations)
 
     def breadth_first_exploration(
         self, base_payloads: List[str], payload_type: PayloadType, max_depth: int = 3

@@ -5,10 +5,11 @@ Provides payload mutation strategies for enhanced fuzzing.
 """
 
 import logging
-import random
 import re
 import string
 from typing import Any, Dict, List, Optional
+
+from .prng import get_prng
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,9 @@ class PayloadMutator:
 
     def __init__(self):
         """Initialize the payload mutator."""
+        # Initialize secure PRNG for fuzzing operations
+        self.prng = get_prng()
+
         self.encoding_methods = [
             self._url_encode,
             self._double_url_encode,
@@ -68,21 +72,21 @@ class PayloadMutator:
         mutations = [payload]
 
         # Add random spaces
-        if random.random() < 0.3:
+        if self.prng.random_float() < 0.3:
             mutations.append(payload.replace("=", " = "))
             mutations.append(payload.replace("'", " ' "))
 
         # Add random quotes
-        if random.random() < 0.3:
+        if self.prng.random_float() < 0.3:
             mutations.append(f'"{payload}"')
             mutations.append(f"'{payload}'")
 
         # Add random encoding
-        if random.random() < 0.5:
+        if self.prng.random_float() < 0.5:
             mutations.extend(self._encoding_mutations(payload))
 
         # Add random case variations
-        if random.random() < 0.3:
+        if self.prng.random_float() < 0.3:
             mutations.extend(self._case_mutations(payload))
 
         return mutations
@@ -312,15 +316,17 @@ class PayloadMutator:
 
         # Generate random combinations
         for _ in range(min(max_combinations, len(payloads) * 2)):
-            if random.random() < 0.5:
+            if self.prng.random_float() < 0.5:
                 # Concatenate payloads
-                combo = "".join(random.sample(payloads, random.randint(2, min(3, len(payloads)))))
+                combo = "".join(
+                    self.prng.sample(payloads, self.prng.randint(2, min(3, len(payloads))))
+                )
                 combinations.append(combo)
             else:
                 # Join with separators
                 separators = [" ", ";", "|", "&", "&&", "||"]
-                combo = random.choice(separators).join(
-                    random.sample(payloads, random.randint(2, min(3, len(payloads))))
+                combo = self.prng.choice(separators).join(
+                    self.prng.sample(payloads, self.prng.randint(2, min(3, len(payloads))))
                 )
                 combinations.append(combo)
 
