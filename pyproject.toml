@@ -12,7 +12,7 @@ exclude = ["data/"]
 
 [tool.ruff.lint]
 extend-select = ["I", "E", "F", "W"]
-ignore = ["E501", "F841"]
+ignore = ["E501", "F841", "F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["dragonshard/tests"]

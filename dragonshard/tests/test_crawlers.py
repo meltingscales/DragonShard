@@ -246,27 +246,27 @@ class TestUnifiedCrawler(unittest.TestCase):
         mock_crawler_instance = MagicMock()
         mock_crawler_instance.crawl.return_value = {"http://example.com/"}
         mock_fast_crawler_class.return_value = mock_crawler_instance
-        
+
         crawler = UnifiedCrawler(use_js=False, max_depth=1, max_pages=5)
         urls = crawler.crawl("http://example.com/")
-        
+
         self.assertEqual(urls, {"http://example.com/"})
         # Verify the crawler was instantiated with correct parameters
         mock_fast_crawler_class.assert_called_once()
         call_args = mock_fast_crawler_class.call_args
         self.assertEqual(call_args[1]['max_depth'], 1)
         self.assertEqual(call_args[1]['max_pages'], 5)
-    
+
     @patch("dragonshard.api_inference.unified_crawler.JSCrawler")
     def test_unified_crawler_js(self, mock_js_crawler_class):
         """Test unified crawler with JavaScript mode."""
         mock_crawler_instance = MagicMock()
         mock_crawler_instance.crawl.return_value = {"http://example.com/"}
         mock_js_crawler_class.return_value.__enter__.return_value = mock_crawler_instance
-        
+
         crawler = UnifiedCrawler(use_js=True, max_depth=1, max_pages=5)
         urls = crawler.crawl("http://example.com/")
-        
+
         self.assertEqual(urls, {"http://example.com/"})
         # Verify the crawler was instantiated with correct parameters
         mock_js_crawler_class.assert_called_once()
