@@ -22,6 +22,7 @@ help:
 	@echo "  test-fuzzer-integration - Run fuzzer integration tests"
 	@echo "  test-fuzzer-manual     - Run manual fuzzer test"
 	@echo "  test-visualization     - Run genetic algorithm visualization"
+	@echo "  test-web-fuzzing-viz   - Run web fuzzing visualization with mutation tree"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
 	@echo ""
@@ -92,7 +93,15 @@ test-visualization:
 	@if [ -z "$$DISPLAY" ] && [ -n "$$CI" ]; then \
 		echo "⚠️  Skipping visualization test - no GUI available in CI environment"; \
 	else \
-		uv run python test_visualization.py; \
+		uv run python scripts/test_visualization.py; \
+	fi
+
+test-web-fuzzing-viz:
+	@echo "🌐 Running web fuzzing visualization..."
+	@if [ -z "$$DISPLAY" ] && [ -n "$$CI" ]; then \
+		echo "⚠️  Skipping web fuzzing visualization - no GUI available in CI environment"; \
+	else \
+		uv run python scripts/test_web_fuzzing_viz.py; \
 	fi
 
 test-benchmark:

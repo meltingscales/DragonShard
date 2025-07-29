@@ -35,7 +35,7 @@ make test-env-start
 make test-visualization
 
 # Or run directly
-python test_visualization.py
+python scripts/test_visualization.py
 ```
 
 ## 🎯 Usage

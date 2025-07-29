@@ -79,6 +79,44 @@ make test-env-clean
 
 **Note:** Docker tests are optional and will be skipped if Docker is not available.
 
+## Visualization Features
+
+DragonShard includes advanced visualization tools for understanding genetic algorithm evolution and mutation trees:
+
+### Genetic Algorithm Visualization
+```bash
+make test-visualization
+```
+- **Real-time evolution tracking** with fitness charts
+- **Mutation history visualization** showing different mutation types
+- **Population dynamics** and convergence analysis
+- **Interactive GUI** with Tkinter and matplotlib
+
+### Web Fuzzing Visualization
+```bash
+make test-web-fuzzing-viz
+```
+- **Real-time web fuzzing** against vulnerable targets
+- **Mutation tree visualization** showing payload evolution
+- **Vulnerability discovery tracking** with confidence scores
+- **HTTP response analysis** and anomaly detection
+- **Multi-payload type support** (SQL Injection, XSS, Command Injection, etc.)
+- **Export capabilities** for results and mutation tree data
+
+**Features:**
+- **Target URL configuration** for testing specific websites
+- **HTTP method selection** (GET, POST, PUT, DELETE)
+- **Payload type selection** with domain-specific mutations
+- **Real-time vulnerability scoring** based on response analysis
+- **Mutation tree tracking** showing parent-child relationships
+- **Progress tracking** with generation-by-generation evolution
+- **Results export** in JSON format for further analysis
+
+**Requirements:**
+- Tkinter GUI support (not available in CI environments)
+- Vulnerable test containers running (optional)
+- Network access for web requests
+
 ## Development Automation
 
 ### Quick Commands
@@ -103,6 +141,8 @@ make test-crawlers # Run crawler tests
 make test-fuzzer   # Run fuzzer unit tests
 make test-fuzzer-integration # Run fuzzer integration tests
 make test-fuzzer-manual # Run manual fuzzer test with containers
+make test-visualization # Run genetic algorithm visualization
+make test-web-fuzzing-viz # Run web fuzzing visualization with mutation tree
 make test-docker   # Run Docker tests
 
 # Test Environment
