@@ -9,8 +9,8 @@ from .mutation_tree import MutationTreeVisualizer, MutationNode
 from .genetic_tree_integration import GeneticTreeIntegration
 
 __all__ = [
-    'GeneticAlgorithmVisualizer',
-    'MutationTreeVisualizer', 
-    'MutationNode',
-    'GeneticTreeIntegration'
+    "GeneticAlgorithmVisualizer",
+    "MutationTreeVisualizer",
+    "MutationNode",
+    "GeneticTreeIntegration",
 ]
