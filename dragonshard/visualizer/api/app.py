@@ -41,7 +41,7 @@ def create_app() -> FastAPI:
     )
     
     # Import routers after app creation to avoid circular imports
-    from .endpoints import attacks, vulnerabilities, network, fuzzing, sessions, export
+    from .endpoints import attacks, vulnerabilities, network, fuzzing, sessions, export, genetic_algorithm
     
     # Include routers
     app.include_router(attacks.router, prefix="/api/v1/attacks", tags=["attacks"])
@@ -50,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(fuzzing.router, prefix="/api/v1/fuzzing", tags=["fuzzing"])
     app.include_router(sessions.router, prefix="/api/v1/sessions", tags=["sessions"])
     app.include_router(export.router, prefix="/api/v1/export", tags=["export"])
+    app.include_router(genetic_algorithm.router, prefix="/api/v1/genetic", tags=["genetic_algorithm"])
     
     # Serve static files
     static_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "public")

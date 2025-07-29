@@ -198,5 +198,7 @@ export interface SessionSummary {
 export interface WebSocketMessage {
   type: string;
   data?: Record<string, any>;
+  stream?: string;
+  sessionId?: string;
   timestamp: string;
 } 

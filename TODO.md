@@ -305,3 +305,5 @@ The next major milestone is implementing the planner module. This will include:
 - Can we make a separate visualization that shows the full tree of mutations?
 - Fix vite and frontend
 - Make frontend and api used for the entire project, not just viz
+- let's add uvicorn[standard] to our pip packages.
+- let's use a database backend instead of an in-memory store.

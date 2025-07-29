@@ -6,6 +6,8 @@ import VulnerabilityMap from './VulnerabilityMap';
 import NetworkGraph from './NetworkGraph';
 import FuzzingProgress from './FuzzingProgress';
 import SessionManager from './SessionManager';
+import GeneticAlgorithmViz from './GeneticAlgorithmViz';
+import WebFuzzingViz from './WebFuzzingViz';
 
 const Dashboard: React.FC = () => {
   const [attackSummary, setAttackSummary] = useState<AttackSummary | null>(null);
@@ -201,6 +203,15 @@ const Dashboard: React.FC = () => {
           <VulnerabilityMap />
           <NetworkGraph />
           <FuzzingProgress />
+        </div>
+
+        {/* Advanced Visualization Components */}
+        <div className="mt-6">
+          <GeneticAlgorithmViz />
+        </div>
+        
+        <div className="mt-6">
+          <WebFuzzingViz />
         </div>
 
         <div className="mt-6">

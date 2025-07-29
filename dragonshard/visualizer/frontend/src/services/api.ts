@@ -67,6 +67,36 @@ export class ApiService {
     return this.request<FuzzingProgress[]>(`/fuzzing/progress/${sessionId}`);
   }
 
+  // Genetic Algorithm endpoints
+  static async startGeneticAlgorithm(params: any): Promise<any> {
+    return this.request<any>('/genetic/start', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  static async stopGeneticAlgorithm(): Promise<any> {
+    return this.request<any>('/genetic/stop', {
+      method: 'POST',
+    });
+  }
+
+  static async getGeneticStats(): Promise<any> {
+    return this.request<any>('/genetic/stats');
+  }
+
+  static async getGeneticSessions(): Promise<any[]> {
+    return this.request<any[]>('/genetic/sessions');
+  }
+
+  static async getGenerationData(): Promise<any[]> {
+    return this.request<any[]>('/genetic/generations');
+  }
+
+  static async getMutationTree(): Promise<any> {
+    return this.request<any>('/genetic/mutation-tree');
+  }
+
   // Session endpoints
   static async getSessions(): Promise<Session[]> {
     return this.request<Session[]>('/sessions/');
@@ -145,11 +175,18 @@ export class WebSocketService {
   }
 
   subscribe(stream: string) {
-    this.send({ type: 'subscribe', stream });
+    this.send({ 
+      type: 'subscribe', 
+      stream,
+      timestamp: new Date().toISOString()
+    });
   }
 
   ping() {
-    this.send({ type: 'ping' });
+    this.send({ 
+      type: 'ping',
+      timestamp: new Date().toISOString()
+    });
   }
 }
 
