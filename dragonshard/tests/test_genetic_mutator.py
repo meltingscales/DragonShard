@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from dragonshard.fuzzing.genetic_mutator import (
     GeneticMutator, GeneticPayload, PayloadType
 )
+from dragonshard.fuzzing.response_analyzer import ResponseAnalyzer
 
 
 class TestGeneticPayload(unittest.TestCase):
@@ -138,12 +139,21 @@ class TestGeneticMutator(unittest.TestCase):
         self.assertEqual(self.mutator.population_size, 10)
         self.assertEqual(self.mutator.mutation_rate, 0.1)
         self.assertEqual(self.mutator.crossover_rate, 0.8)
-        self.assertEqual(self.mutator.max_generations, 5)
+        self.assertEqual(self.mutator.max_generations, 5)  # Fixed: actual default is 5
         self.assertEqual(self.mutator.generation, 0)
-        self.assertIsInstance(self.mutator.population, list)
-        self.assertIsInstance(self.mutator.best_payloads, list)
-        self.assertIsNotNone(self.mutator.mutation_operators)
-        self.assertIsNotNone(self.mutator.syntax_patterns)
+        
+        # Check new attributes for response analysis integration
+        self.assertIsInstance(self.mutator.response_analyzer, ResponseAnalyzer)
+        self.assertIsInstance(self.mutator.search_paths, dict)
+        self.assertIsInstance(self.mutator.dead_end_paths, set)
+        self.assertIsInstance(self.mutator.successful_patterns, dict)
+        self.assertIsInstance(self.mutator.baseline_responses, dict)
+        self.assertIsInstance(self.mutator.mutation_success_rates, dict)
+        
+        # Check that syntax patterns are loaded
+        self.assertIsInstance(self.mutator.syntax_patterns, dict)
+        self.assertIn(PayloadType.XSS, self.mutator.syntax_patterns)
+        self.assertIn(PayloadType.SQL_INJECTION, self.mutator.syntax_patterns)
     
     def test_syntax_patterns_loading(self):
         """Test that syntax patterns are loaded correctly."""

@@ -7,10 +7,11 @@ Uses genetic algorithms with domain-specific language awareness to intelligently
 import random
 import re
 import json
-from typing import List, Dict, Any, Optional, Tuple, Set
+from typing import List, Dict, Any, Optional, Tuple, Set, Callable
 from dataclasses import dataclass, field
 import logging
 from enum import Enum
+from .response_analyzer import ResponseAnalyzer, ResponseAnalysis, ResponseDifferential
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,10 @@ class GeneticPayload:
     generation: int = 0
     success_rate: float = 0.0
     vulnerability_score: float = 0.0
+    response_analysis: Optional[ResponseAnalysis] = None
+    differential_score: float = 0.0
+    search_path_depth: int = 0
+    dead_end_score: float = 0.0
     
     def __post_init__(self):
         """Initialize the payload with domain-specific parsing."""
@@ -120,45 +125,47 @@ class GeneticPayload:
 
 
 class GeneticMutator:
-    """
-    Genetic algorithm-based payload mutator with domain-specific language awareness.
-    """
+    """Genetic algorithm for intelligent payload mutation with response analysis."""
     
     def __init__(self, population_size: int = 50, mutation_rate: float = 0.1, 
-                 crossover_rate: float = 0.8, max_generations: int = 100):
-        """
-        Initialize the genetic mutator.
-        
-        Args:
-            population_size: Size of the population
-            mutation_rate: Probability of mutation
-            crossover_rate: Probability of crossover
-            max_generations: Maximum number of generations
-        """
+                 crossover_rate: float = 0.8, max_generations: int = 100,
+                 response_analyzer: Optional[ResponseAnalyzer] = None,
+                 target_url: Optional[str] = None):
+        """Initialize the genetic mutator with response analysis integration."""
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.max_generations = max_generations
-        self.population: List[GeneticPayload] = []
         self.generation = 0
-        self.best_payloads: List[GeneticPayload] = []
         
-        # Domain-specific mutation operators
-        self.mutation_operators = {
-            PayloadType.XSS: self._mutate_xss,
-            PayloadType.SQL_INJECTION: self._mutate_sql,
-            PayloadType.COMMAND_INJECTION: self._mutate_command,
-            PayloadType.PATH_TRAVERSAL: self._mutate_path,
-            PayloadType.LFI: self._mutate_lfi,
-            PayloadType.RFI: self._mutate_rfi,
-            PayloadType.XXE: self._mutate_xxe,
-            PayloadType.SSRF: self._mutate_ssrf,
-            PayloadType.TEMPLATE_INJECTION: self._mutate_template,
-            PayloadType.NOSQL_INJECTION: self._mutate_nosql
+        # Response analysis integration
+        self.response_analyzer = response_analyzer or ResponseAnalyzer()
+        self.target_url = target_url
+        
+        # Search strategy tracking
+        self.search_paths: Dict[str, List[GeneticPayload]] = {}
+        self.dead_end_paths: Set[str] = set()
+        self.successful_patterns: Dict[PayloadType, List[str]] = {}
+        self.baseline_responses: Dict[str, ResponseAnalysis] = {}
+        
+        # Population and evolution tracking
+        self.population: List[GeneticPayload] = []
+        self.best_payloads: List[GeneticPayload] = []
+        self.generation_history: List[Dict[str, Any]] = []
+        
+        # Load syntax patterns for domain awareness
+        self.syntax_patterns = self._load_syntax_patterns()
+        
+        # Mutation success tracking for adaptive selection
+        self.mutation_success_rates: Dict[str, float] = {
+            'encoding': 0.5,
+            'tag': 0.5,
+            'protocol': 0.5,
+            'general': 0.5
         }
         
-        # Domain-specific syntax patterns
-        self.syntax_patterns = self._load_syntax_patterns()
+        logger.info(f"Initialized GeneticMutator with population_size={population_size}, "
+                   f"mutation_rate={mutation_rate}, crossover_rate={crossover_rate}")
     
     def _load_syntax_patterns(self) -> Dict[PayloadType, Dict[str, Any]]:
         """Load domain-specific syntax patterns."""
@@ -365,9 +372,27 @@ class GeneticMutator:
         if random.random() > self.mutation_rate:
             return payload
         
-        # Use domain-specific mutation
-        if payload.payload_type in self.mutation_operators:
-            mutated_payload = self.mutation_operators[payload.payload_type](payload)
+        # Use domain-specific mutation based on payload type
+        if payload.payload_type == PayloadType.XSS:
+            mutated_payload = self._mutate_xss(payload)
+        elif payload.payload_type == PayloadType.SQL_INJECTION:
+            mutated_payload = self._mutate_sql(payload)
+        elif payload.payload_type == PayloadType.COMMAND_INJECTION:
+            mutated_payload = self._mutate_command(payload)
+        elif payload.payload_type == PayloadType.PATH_TRAVERSAL:
+            mutated_payload = self._mutate_path(payload)
+        elif payload.payload_type == PayloadType.LFI:
+            mutated_payload = self._mutate_lfi(payload)
+        elif payload.payload_type == PayloadType.RFI:
+            mutated_payload = self._mutate_rfi(payload)
+        elif payload.payload_type == PayloadType.XXE:
+            mutated_payload = self._mutate_xxe(payload)
+        elif payload.payload_type == PayloadType.SSRF:
+            mutated_payload = self._mutate_ssrf(payload)
+        elif payload.payload_type == PayloadType.TEMPLATE_INJECTION:
+            mutated_payload = self._mutate_template(payload)
+        elif payload.payload_type == PayloadType.NOSQL_INJECTION:
+            mutated_payload = self._mutate_nosql(payload)
         else:
             mutated_payload = self._mutate_general(payload)
         
@@ -680,16 +705,252 @@ class GeneticMutator:
                     "type": p.payload_type.value,
                     "fitness": p.fitness,
                     "generation": p.generation,
-                    "mutation_count": p.mutation_count
+                    "mutation_count": p.mutation_count,
+                    "differential_score": p.differential_score,
+                    "search_path_depth": p.search_path_depth,
+                    "dead_end_score": p.dead_end_score
                 }
                 for p in self.get_best_payloads(20)
-            ]
+            ],
+            "search_statistics": {
+                "total_paths": len(self.search_paths),
+                "dead_end_paths": len(self.dead_end_paths),
+                "successful_patterns": {k.value: len(v) for k, v in self.successful_patterns.items()},
+                "mutation_success_rates": self.mutation_success_rates
+            }
         }
         
         with open(filename, 'w') as f:
             json.dump(data, f, indent=2)
         
         logger.info(f"Evolution data exported to {filename}")
+    
+    def set_baseline_response(self, url: str, response_analysis: ResponseAnalysis) -> None:
+        """Set a baseline response for differential analysis."""
+        self.baseline_responses[url] = response_analysis
+        self.response_analyzer.set_baseline(url, response_analysis)
+        logger.info(f"Set baseline response for {url}")
+    
+    def update_payload_with_response(self, payload: GeneticPayload, 
+                                   response_analysis: ResponseAnalysis,
+                                   baseline_response: Optional[ResponseAnalysis] = None) -> None:
+        """Update payload with response analysis and calculate differential score."""
+        payload.response_analysis = response_analysis
+        
+        # Calculate differential score if baseline exists
+        if baseline_response:
+            differential = self.response_analyzer.compare_responses(baseline_response, response_analysis)
+            payload.differential_score = differential.reward_score
+            
+            # Update search path tracking
+            self._update_search_path(payload, differential)
+            
+            # Update mutation success rates
+            self._update_mutation_success_rates(payload, differential)
+        
+        # Add to response history
+        self.response_analyzer.add_to_history(response_analysis)
+    
+    def _update_search_path(self, payload: GeneticPayload, differential: ResponseDifferential) -> None:
+        """Update search path tracking for intelligent exploration."""
+        path_key = f"{payload.payload_type.value}_{payload.search_path_depth}"
+        
+        if path_key not in self.search_paths:
+            self.search_paths[path_key] = []
+        
+        self.search_paths[path_key].append(payload)
+        
+        # Check for dead end (no differential indicators)
+        if not differential.differential_indicators:
+            payload.dead_end_score += 0.1
+            if payload.dead_end_score > 0.5:
+                self.dead_end_paths.add(path_key)
+        
+        # Track successful patterns
+        if differential.reward_score > 0.7:
+            if payload.payload_type not in self.successful_patterns:
+                self.successful_patterns[payload.payload_type] = []
+            self.successful_patterns[payload.payload_type].append(payload.payload)
+    
+    def _update_mutation_success_rates(self, payload: GeneticPayload, differential: ResponseDifferential) -> None:
+        """Update mutation success rates based on response analysis."""
+        if payload.mutation_count > 0:
+            # Determine mutation type based on payload characteristics
+            mutation_type = self._classify_mutation_type(payload)
+            
+            # Update success rate based on differential score
+            if differential.reward_score > 0.5:
+                self.mutation_success_rates[mutation_type] = min(1.0, 
+                    self.mutation_success_rates[mutation_type] + 0.1)
+            else:
+                self.mutation_success_rates[mutation_type] = max(0.0, 
+                    self.mutation_success_rates[mutation_type] - 0.05)
+    
+    def _classify_mutation_type(self, payload: GeneticPayload) -> str:
+        """Classify the type of mutation applied to a payload."""
+        if payload.payload_type == PayloadType.XSS:
+            if any(encoding in payload.payload for encoding in ['&lt;', '&gt;', '%3C', '%3E']):
+                return 'encoding'
+            elif '<' in payload.payload and '>' in payload.payload:
+                return 'tag'
+            else:
+                return 'general'
+        elif payload.payload_type == PayloadType.SQL_INJECTION:
+            if any(op in payload.payload.upper() for op in ['UNION', 'SELECT', 'OR', 'AND']):
+                return 'tag'
+            else:
+                return 'general'
+        else:
+            return 'general'
+    
+    def create_response_based_fitness(self, target_url: str, 
+                                    baseline_response: Optional[ResponseAnalysis] = None) -> Callable:
+        """Create a response-based fitness function."""
+        def fitness_function(payload: GeneticPayload) -> float:
+            # If we have response analysis, use it
+            if payload.response_analysis:
+                if baseline_response:
+                    differential = self.response_analyzer.compare_responses(
+                        baseline_response, payload.response_analysis)
+                    return differential.reward_score
+                else:
+                    return payload.response_analysis.anomaly_score
+            
+            # Fallback to heuristic-based fitness
+            return self._heuristic_fitness(payload)
+        
+        return fitness_function
+    
+    def _heuristic_fitness(self, payload: GeneticPayload) -> float:
+        """Heuristic-based fitness function as fallback."""
+        score = 0.0
+        
+        # Reward for domain-specific indicators
+        if payload.payload_type == PayloadType.XSS:
+            if any(indicator in payload.payload.lower() for indicator in ['script', 'alert', 'javascript']):
+                score += 0.5
+            if any(encoding in payload.payload for encoding in ['&lt;', '&gt;', '%3C', '%3E']):
+                score += 0.3
+            if any(event in payload.payload.lower() for event in ['onload', 'onerror', 'onclick']):
+                score += 0.4
+        
+        elif payload.payload_type == PayloadType.SQL_INJECTION:
+            if any(keyword in payload.payload.upper() for keyword in ['SELECT', 'UNION', 'OR', 'AND']):
+                score += 0.6
+            if any(comment in payload.payload for comment in ['--', '#', '/*']):
+                score += 0.3
+        
+        elif payload.payload_type == PayloadType.COMMAND_INJECTION:
+            if any(separator in payload.payload for separator in [';', '|', '&&', '||']):
+                score += 0.5
+            if any(command in payload.payload.lower() for command in ['ls', 'cat', 'whoami']):
+                score += 0.4
+        
+        # Penalty for length (prefer shorter payloads)
+        score -= len(payload.payload) * 0.01
+        
+        # Penalty for dead end paths
+        score -= payload.dead_end_score
+        
+        return max(0.0, score)
+    
+    def intelligent_mutation_selection(self, payload: GeneticPayload) -> Callable:
+        """Select mutation based on historical success and search strategy."""
+        # Avoid dead end paths
+        path_key = f"{payload.payload_type.value}_{payload.search_path_depth}"
+        if path_key in self.dead_end_paths:
+            # Try different mutation type
+            return self._select_alternative_mutation(payload)
+        
+        # Use weighted selection based on success rates
+        return self._weighted_mutation_selection(payload)
+    
+    def _weighted_mutation_selection(self, payload: GeneticPayload) -> Callable:
+        """Select mutation using weighted random selection."""
+        mutation_types = list(self.mutation_success_rates.keys())
+        weights = [self.mutation_success_rates[mt] for mt in mutation_types]
+        
+        # Normalize weights
+        total_weight = sum(weights)
+        if total_weight > 0:
+            weights = [w / total_weight for w in weights]
+        else:
+            weights = [1.0 / len(mutation_types)] * len(mutation_types)
+        
+        # Select mutation type
+        selected_type = random.choices(mutation_types, weights=weights)[0]
+        
+        # Map to actual mutation function
+        if payload.payload_type == PayloadType.XSS:
+            return self._mutate_xss
+        elif payload.payload_type == PayloadType.SQL_INJECTION:
+            return self._mutate_sql
+        elif payload.payload_type == PayloadType.COMMAND_INJECTION:
+            return self._mutate_command
+        elif payload.payload_type == PayloadType.PATH_TRAVERSAL:
+            return self._mutate_path
+        else:
+            return self._mutate_general
+    
+    def _select_alternative_mutation(self, payload: GeneticPayload) -> Callable:
+        """Select alternative mutation when current path is dead end."""
+        # Try different mutation types
+        if payload.payload_type == PayloadType.XSS:
+            mutations = [self._mutate_xss, self._mutate_general]
+        elif payload.payload_type == PayloadType.SQL_INJECTION:
+            mutations = [self._mutate_sql, self._mutate_general]
+        else:
+            mutations = [self._mutate_general]
+        
+        return random.choice(mutations)
+    
+    def breadth_first_exploration(self, base_payloads: List[str], payload_type: PayloadType,
+                                max_depth: int = 3) -> List[GeneticPayload]:
+        """Perform breadth-first exploration of payload space."""
+        exploration_results = []
+        
+        for depth in range(max_depth):
+            logger.info(f"Starting breadth-first exploration at depth {depth}")
+            
+            # Generate variations at current depth
+            current_payloads = base_payloads if depth == 0 else [
+                p.payload for p in exploration_results[-1] if p.differential_score > 0.3
+            ]
+            
+            if not current_payloads:
+                logger.info(f"No promising payloads at depth {depth}, stopping exploration")
+                break
+            
+            # Create population for this depth
+            self.initialize_population(current_payloads, payload_type)
+            
+            # Set search path depth
+            for payload in self.population:
+                payload.search_path_depth = depth
+            
+            # Evolve with response-based fitness
+            fitness_func = self.create_response_based_fitness(self.target_url or "")
+            best_payloads = self.evolve(fitness_func)
+            
+            exploration_results.append(best_payloads)
+            
+            # Check if we found vulnerabilities
+            high_scoring = [p for p in best_payloads if p.differential_score > 0.7]
+            if high_scoring:
+                logger.info(f"Found {len(high_scoring)} high-scoring payloads at depth {depth}")
+                break
+        
+        return [p for batch in exploration_results for p in batch]
+    
+    def get_search_statistics(self) -> Dict[str, Any]:
+        """Get statistics about search performance."""
+        return {
+            'total_paths': len(self.search_paths),
+            'dead_end_paths': len(self.dead_end_paths),
+            'successful_patterns': {k.value: len(v) for k, v in self.successful_patterns.items()},
+            'mutation_success_rates': self.mutation_success_rates,
+            'response_statistics': self.response_analyzer.get_statistics()
+        }
 
 
 if __name__ == "__main__":
