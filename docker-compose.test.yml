@@ -1,124 +1,120 @@
 version: '3.8'
 
 services:
-  # DVWA - Damn Vulnerable Web Application
+  # MySQL database (shared)
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./test-env/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # DVWA (most commonly used)
   dvwa:
-    image: vulnerables/web-dvwa:latest
+    image: vulnerables/web-dvwa
     ports:
       - "8080:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=dvwa
-      - MYSQL_USER=dvwa
-      - MYSQL_PASSWORD=p@ssw0rd
-    volumes:
-      - dvwa_data:/var/www/html
-    networks:
-      - test_network
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
+      - MYSQL_DATABASE=testdb
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "curl", "-f", "http://localhost/index.php"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
 
-  # OWASP Juice Shop - Modern vulnerable web app
-  juice-shop:
-    image: bkimminich/juice-shop:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=unsafe
-    networks:
-      - test_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # WebGoat - OWASP Web Application Security Lessons
-  webgoat:
-    image: webgoat/webgoat:latest
-    ports:
-      - "8081:8080"
-    environment:
-      - WEBGOAT_PORT=8080
-    networks:
-      - test_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # VulnHub - Simple vulnerable PHP app
+  # Vulnerable PHP app (fastest to start)
   vuln-php:
     build:
       context: ./test-env
       dockerfile: Dockerfile.vuln-php
     ports:
       - "8082:80"
-    networks:
-      - test_network
+    depends_on:
+      mysql:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
+      test: ["CMD", "curl", "-f", "http://localhost/index.php"]
       timeout: 10s
-      retries: 3
+      retries: 5
+      interval: 5s
+      start_period: 10s
 
-  # Node.js vulnerable app
+  # OWASP Juice Shop
+  juice-shop:
+    image: bkimminich/juice-shop
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # WebGoat
+  webgoat:
+    image: webgoat/webgoat:latest
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/WebGoat"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # Vulnerable Node.js app
   vuln-node:
     build:
       context: ./test-env
       dockerfile: Dockerfile.vuln-node
     ports:
       - "8083:3000"
-    networks:
-      - test_network
+    depends_on:
+      mysql:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      interval: 5s
+      start_period: 10s
 
-  # Python vulnerable app
+  # Vulnerable Python app
   vuln-python:
     build:
       context: ./test-env
       dockerfile: Dockerfile.vuln-python
     ports:
       - "8084:5000"
-    networks:
-      - test_network
+    depends_on:
+      mysql:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000"]
-      interval: 30s
       timeout: 10s
-      retries: 3
-
-  # Database for vulnerable apps
-  mysql:
-    image: mysql:5.7
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=testdb
-      - MYSQL_USER=testuser
-      - MYSQL_PASSWORD=testpass
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./test-env/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - test_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      retries: 5
+      interval: 5s
+      start_period: 10s
 
 volumes:
-  dvwa_data:
-  mysql_data:
-
-networks:
-  test_network:
-    driver: bridge 
+  mysql_data: 
