@@ -49,7 +49,7 @@ jobs:
     - name: Run unit tests
       if: matrix.test-type == 'unit'
       run: |
-        pytest --cov=dragonshard --cov-report=xml --cov-report=term-missing
+        pytest --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml
         ruff check dragonshard/
 
     - name: Run Docker tests
@@ -76,8 +76,7 @@ jobs:
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-
-
+        files: test-results.xml
 
   security:
     runs-on: ubuntu-latest
