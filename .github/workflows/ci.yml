@@ -36,6 +36,10 @@ jobs:
         pip install -r requirements.lock.txt
         pip install pytest-cov codecov
 
+    - name: Install Playwright browsers
+      run: |
+        playwright install chromium
+
     - name: Install system dependencies (for Docker tests)
       if: matrix.test-type == 'docker'
       run: |

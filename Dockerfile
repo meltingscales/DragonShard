@@ -12,6 +12,8 @@ ENV PYTHONPATH=/app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     nmap \
+    wget \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
@@ -22,6 +24,9 @@ COPY requirements.lock.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.lock.txt
+
+# Install Playwright browsers
+RUN playwright install chromium --with-deps
 
 # Copy application code
 COPY dragonshard/ ./dragonshard/

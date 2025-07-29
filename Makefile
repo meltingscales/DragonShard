@@ -15,9 +15,11 @@ help:
 	@echo ""
 	@echo "Testing:"
 	@echo "  test          - Run unit tests with pytest"
+	@echo "  test-crawlers - Run crawler-specific tests"
 	@echo "  test-docker   - Run Docker integration tests"
 	@echo ""
 	@echo "Development:"
+	@echo "  setup         - Set up development environment (install deps + Playwright)"
 	@echo "  clean         - Clean up cache and temporary files"
 	@echo ""
 
@@ -57,11 +59,22 @@ test:
 	@echo "🧪 Running unit tests..."
 	@pytest dragonshard/tests/ -v
 
+test-crawlers:
+	@echo "🕷️  Running crawler tests..."
+	@python dragonshard/api_inference/test_crawlers.py
+
 test-docker:
 	@echo "🐳 Running Docker integration tests..."
 	@python scripts/run_docker_tests.py
 
 # Development targets
+setup:
+	@echo "🔧 Setting up development environment..."
+	@pip install -r requirements.lock.txt
+	@echo "🎭 Installing Playwright browsers..."
+	@playwright install chromium
+	@echo "✅ Setup completed!"
+
 clean:
 	@echo "🧹 Cleaning up..."
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
