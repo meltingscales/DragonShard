@@ -152,31 +152,31 @@ class GeneticMutator:
         self.max_generations = max_generations
         self.response_analyzer = response_analyzer or ResponseAnalyzer()
         self.target_url = target_url
-        
+
         # Initialize secure PRNG for fuzzing operations
         self.prng = get_prng()
-        
+
         # Population and evolution tracking
         self.population: List[GeneticPayload] = []
         self.generation = 0
-        
+
         # Adaptive parameters
         self.adaptive_mutation = True
         self.diversity_threshold = 0.3
         self.convergence_threshold = 0.1
         self.min_mutation_rate = 0.05
         self.max_mutation_rate = 0.3
-        
+
         # Search strategy tracking
         self.search_paths: Dict[str, List[GeneticPayload]] = {}
         self.dead_end_paths: Set[str] = set()
         self.successful_patterns: Dict[str, List[str]] = {}
         self.baseline_responses: Dict[str, ResponseAnalysis] = {}
         self.mutation_success_rates: Dict[str, float] = {}
-        
+
         # Load syntax patterns for domain-specific awareness
         self.syntax_patterns = self._load_syntax_patterns()
-        
+
         logger.info(
             f"Initialized GeneticMutator with population_size={population_size}, "
             f"mutation_rate={mutation_rate}, crossover_rate={crossover_rate}"
@@ -239,7 +239,7 @@ class GeneticMutator:
     def evolve(self, fitness_function) -> List[GeneticPayload]:
         """Evolve the population for one generation."""
         self.generation += 1
-        
+
         # Calculate fitness for all individuals
         for payload in self.population:
             payload.fitness = fitness_function(payload)
@@ -293,53 +293,55 @@ class GeneticMutator:
         """Rank-based selection using linear ranking."""
         # Sort population by fitness
         sorted_population = sorted(self.population, key=lambda x: x.fitness, reverse=True)
-        
+
         # Calculate rank probabilities (linear ranking)
         n = len(sorted_population)
         max_rank = n - 1
         min_rank = 0
-        
+
         # Linear ranking parameters
         selection_pressure = 1.5  # Higher = more selective
         rank_probabilities = []
-        
+
         for i, individual in enumerate(sorted_population):
             rank = i
-            probability = (2 - selection_pressure) / n + 2 * rank * (selection_pressure - 1) / (n * (n - 1))
+            probability = (2 - selection_pressure) / n + 2 * rank * (selection_pressure - 1) / (
+                n * (n - 1)
+            )
             rank_probabilities.append((individual, probability))
-        
+
         # Select based on rank probabilities
         total_prob = sum(prob for _, prob in rank_probabilities)
         r = self.prng.random_float() * total_prob
         cumulative_prob = 0
-        
+
         for individual, prob in rank_probabilities:
             cumulative_prob += prob
             if cumulative_prob >= r:
                 return individual
-        
+
         return sorted_population[0]  # Fallback
 
     def _fitness_proportionate_selection(self) -> GeneticPayload:
         """Fitness-proportionate selection (roulette wheel)."""
         # Calculate fitness sum
         total_fitness = sum(p.fitness for p in self.population)
-        
+
         if total_fitness == 0:
             return self.prng.choice(self.population)
-        
+
         # Calculate selection probabilities
         probabilities = [p.fitness / total_fitness for p in self.population]
-        
+
         # Roulette wheel selection
         r = self.prng.random_float()
         cumulative_prob = 0
-        
+
         for i, prob in enumerate(probabilities):
             cumulative_prob += prob
             if cumulative_prob >= r:
                 return self.population[i]
-        
+
         return self.population[0]  # Fallback
 
     def _elitism_selection(self, elite_size: int = 2) -> List[GeneticPayload]:
@@ -1062,20 +1064,20 @@ class GeneticMutator:
         """Calculate population diversity based on payload similarity."""
         if len(self.population) < 2:
             return 1.0
-        
+
         similarities = []
         for i in range(len(self.population)):
             for j in range(i + 1, len(self.population)):
                 payload1 = self.population[i].payload
                 payload2 = self.population[j].payload
-                
+
                 # Calculate similarity using edit distance
                 similarity = self._calculate_similarity(payload1, payload2)
                 similarities.append(similarity)
-        
+
         if not similarities:
             return 1.0
-        
+
         avg_similarity = sum(similarities) / len(similarities)
         diversity = 1.0 - avg_similarity
         return max(0.0, min(1.0, diversity))
@@ -1085,30 +1087,30 @@ class GeneticMutator:
         # Simple similarity based on common characters
         set1 = set(payload1)
         set2 = set(payload2)
-        
+
         if not set1 and not set2:
             return 1.0
-        
+
         intersection = len(set1.intersection(set2))
         union = len(set1.union(set2))
-        
+
         return intersection / union if union > 0 else 0.0
 
     def _calculate_fitness_convergence(self) -> float:
         """Calculate fitness convergence in the population."""
         if len(self.population) < 2:
             return 0.0
-        
+
         fitnesses = [p.fitness for p in self.population]
         mean_fitness = sum(fitnesses) / len(fitnesses)
-        
+
         # Calculate coefficient of variation
         variance = sum((f - mean_fitness) ** 2 for f in fitnesses) / len(fitnesses)
-        std_dev = variance ** 0.5
-        
+        std_dev = variance**0.5
+
         if mean_fitness == 0:
             return 1.0
-        
+
         cv = std_dev / mean_fitness
         return min(1.0, cv)
 
@@ -1116,47 +1118,49 @@ class GeneticMutator:
         """Adapt mutation rate based on population diversity and convergence."""
         if not self.adaptive_mutation:
             return self.mutation_rate
-        
+
         diversity = self._calculate_population_diversity()
         convergence = self._calculate_fitness_convergence()
-        
+
         # High diversity + low convergence = lower mutation rate
         # Low diversity + high convergence = higher mutation rate
         diversity_factor = 1.0 - diversity
         convergence_factor = convergence
-        
+
         # Combine factors
         adaptation_factor = (diversity_factor + convergence_factor) / 2
-        
+
         # Calculate new mutation rate
-        new_rate = self.min_mutation_rate + (self.max_mutation_rate - self.min_mutation_rate) * adaptation_factor
-        
+        new_rate = (
+            self.min_mutation_rate
+            + (self.max_mutation_rate - self.min_mutation_rate) * adaptation_factor
+        )
+
         # Log adaptation for debugging
-        logger.debug(f"Adaptive mutation: diversity={diversity:.3f}, convergence={convergence:.3f}, "
-                    f"rate={new_rate:.3f}")
-        
+        logger.debug(
+            f"Adaptive mutation: diversity={diversity:.3f}, convergence={convergence:.3f}, "
+            f"rate={new_rate:.3f}"
+        )
+
         return new_rate
 
     def create_multi_objective_fitness(
-        self, 
-        target_url: str, 
-        objectives: List[str] = None,
-        weights: List[float] = None
+        self, target_url: str, objectives: List[str] = None, weights: List[float] = None
     ) -> Callable:
         """Create a multi-objective fitness function."""
         if objectives is None:
             objectives = ["vulnerability_detection", "response_differential", "payload_complexity"]
-        
+
         if weights is None:
             weights = [0.4, 0.4, 0.2]  # Equal weighting
-        
+
         # Normalize weights
         total_weight = sum(weights)
         weights = [w / total_weight for w in weights]
-        
+
         def multi_objective_fitness(payload: GeneticPayload) -> float:
             scores = []
-            
+
             for objective in objectives:
                 if objective == "vulnerability_detection":
                     score = self._calculate_vulnerability_score(payload)
@@ -1170,136 +1174,156 @@ class GeneticMutator:
                     score = self._calculate_evasion_score(payload)
                 else:
                     score = 0.0
-                
+
                 scores.append(score)
-            
+
             # Weighted sum
             fitness = sum(score * weight for score, weight in zip(scores, weights))
             return min(1.0, max(0.0, fitness))
-        
+
         return multi_objective_fitness
 
     def _calculate_vulnerability_score(self, payload: GeneticPayload) -> float:
         """Calculate vulnerability detection score."""
         score = 0.0
-        
+
         # Check for vulnerability indicators in payload
         if payload.payload_type == PayloadType.SQL_INJECTION:
             sql_indicators = ["'", "OR", "AND", "UNION", "SELECT", "--", "#", "/*"]
-            score += sum(0.1 for indicator in sql_indicators if indicator in payload.payload.upper())
-        
+            score += sum(
+                0.1 for indicator in sql_indicators if indicator in payload.payload.upper()
+            )
+
         elif payload.payload_type == PayloadType.XSS:
             xss_indicators = ["<script>", "javascript:", "alert(", "onload=", "onerror="]
-            score += sum(0.15 for indicator in xss_indicators if indicator.lower() in payload.payload.lower())
-        
+            score += sum(
+                0.15 for indicator in xss_indicators if indicator.lower() in payload.payload.lower()
+            )
+
         elif payload.payload_type == PayloadType.COMMAND_INJECTION:
             cmd_indicators = [";", "&&", "|", "`", "$(", "ls", "cat", "whoami"]
             score += sum(0.1 for indicator in cmd_indicators if indicator in payload.payload)
-        
+
         return min(1.0, score)
 
     def _calculate_differential_score(self, payload: GeneticPayload, target_url: str) -> float:
         """Calculate response differential score."""
         if not self.response_analyzer:
             return 0.0
-        
+
         try:
             # Make request and analyze response
             import requests
+
             response = requests.get(f"{target_url}?input={payload.payload}", timeout=5)
-            
+
             # Create response analysis
             analysis = self.response_analyzer.analyze_response(
                 response.status_code,
                 response.text,
                 response.headers,
-                response.elapsed.total_seconds()
+                response.elapsed.total_seconds(),
             )
-            
+
             # Compare with baseline if available
             if target_url in self.baseline_responses:
                 differential = self.response_analyzer.compare_responses(
                     self.baseline_responses[target_url], analysis
                 )
                 return differential.reward_score
-            
+
             return analysis.anomaly_score
-            
+
         except Exception:
             return 0.0
 
     def _calculate_complexity_score(self, payload: GeneticPayload) -> float:
         """Calculate payload complexity score."""
         score = 0.0
-        
+
         # Length complexity
         score += min(0.3, len(payload.payload) / 100.0)
-        
+
         # Character diversity
         unique_chars = len(set(payload.payload))
         score += min(0.2, unique_chars / 50.0)
-        
+
         # Special character usage
         special_chars = sum(1 for c in payload.payload if c in "'\"<>()[]{}|&;")
         score += min(0.3, special_chars / 10.0)
-        
+
         # Encoding complexity
         if "%" in payload.payload:
             score += 0.2
-        
+
         return min(1.0, score)
 
     def _calculate_exploitation_score(self, payload: GeneticPayload) -> float:
         """Calculate exploitation potential score."""
         score = 0.0
-        
+
         # Check for high-impact payloads
         high_impact_patterns = [
-            "DROP TABLE", "DELETE FROM", "INSERT INTO", "UPDATE SET",
-            "document.cookie", "localStorage", "sessionStorage",
-            "eval(", "exec(", "system("
+            "DROP TABLE",
+            "DELETE FROM",
+            "INSERT INTO",
+            "UPDATE SET",
+            "document.cookie",
+            "localStorage",
+            "sessionStorage",
+            "eval(",
+            "exec(",
+            "system(",
         ]
-        
+
         for pattern in high_impact_patterns:
             if pattern.lower() in payload.payload.lower():
                 score += 0.3
-        
+
         # Check for data exfiltration potential
         exfiltration_patterns = [
-            "UNION SELECT", "OUTFILE", "DUMPFILE", "INTO OUTFILE",
-            "fetch(", "XMLHttpRequest", "navigator.userAgent"
+            "UNION SELECT",
+            "OUTFILE",
+            "DUMPFILE",
+            "INTO OUTFILE",
+            "fetch(",
+            "XMLHttpRequest",
+            "navigator.userAgent",
         ]
-        
+
         for pattern in exfiltration_patterns:
             if pattern.lower() in payload.payload.lower():
                 score += 0.2
-        
+
         return min(1.0, score)
 
     def _calculate_evasion_score(self, payload: GeneticPayload) -> float:
         """Calculate evasion potential score."""
         score = 0.0
-        
+
         # Encoding evasion
         if "%" in payload.payload or "&#" in payload.payload:
             score += 0.3
-        
+
         # Case variation evasion
-        if payload.payload != payload.payload.lower() and payload.payload != payload.payload.upper():
+        if (
+            payload.payload != payload.payload.lower()
+            and payload.payload != payload.payload.upper()
+        ):
             score += 0.2
-        
+
         # Whitespace evasion
         if " " in payload.payload or "\t" in payload.payload or "\n" in payload.payload:
             score += 0.2
-        
+
         # Comment evasion
         if "--" in payload.payload or "/*" in payload.payload or "#" in payload.payload:
             score += 0.2
-        
+
         # Null byte evasion
         if "\\x00" in payload.payload or "%00" in payload.payload:
             score += 0.1
-        
+
         return min(1.0, score)
 
 
