@@ -1,16 +1,10 @@
 """
-DragonShard Visualization Package
+DragonShard Web-Based Visualization System
 
-Provides real-time visualization tools for the genetic algorithm fuzzer.
+Provides real-time visualization of attack progress, network topology,
+genetic algorithm evolution, and vulnerability correlation through
+a modern web interface built with FastAPI and React.
 """
 
-from .genetic_viz import GeneticAlgorithmVisualizer
-from .mutation_tree import MutationTreeVisualizer, MutationNode
-from .genetic_tree_integration import GeneticTreeIntegration
-
-__all__ = [
-    "GeneticAlgorithmVisualizer",
-    "MutationTreeVisualizer",
-    "MutationNode",
-    "GeneticTreeIntegration",
-]
+__version__ = "1.0.0"
+__author__ = "DragonShard Team"

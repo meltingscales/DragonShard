@@ -26,6 +26,10 @@ help:
 	@echo "  test-planner           - Run chain planner integration test"
 	@echo "  test-executor          - Run executor integration test"
 	@echo "  test-executor-stress   - Run executor stress test with complex vulnerabilities"
+	@echo "  test-visualization-api - Run visualization API test"
+	@echo "  start-visualization    - Start visualization API server"
+	@echo "  start-visualization-frontend - Start React development server"
+	@echo "  build-visualization    - Build React frontend for production"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
 	@echo ""
@@ -118,6 +122,22 @@ test-executor:
 test-executor-stress:
 	@echo "🧪 Running executor stress test..."
 	@PYTHONPATH=. uv run python scripts/test_executor_stress_integration.py
+
+test-visualization-api:
+	@echo "🌐 Running visualization API test..."
+	@PYTHONPATH=. uv run python scripts/test_visualization_api.py
+
+start-visualization:
+	@echo "🚀 Starting DragonShard Visualization API..."
+	@PYTHONPATH=. uv run uvicorn dragonshard.visualizer.api.app:app --host 0.0.0.0 --port 8000 --reload
+
+start-visualization-frontend:
+	@echo "🌐 Starting DragonShard Visualization Frontend..."
+	@cd dragonshard/visualizer/frontend && npm run start
+
+build-visualization:
+	@echo "🔨 Building DragonShard Visualization Frontend..."
+	@cd dragonshard/visualizer/frontend && npm run build
 
 test-benchmark:
 	@echo "📊 Running genetic algorithm benchmarks..."
