@@ -76,6 +76,12 @@ class MutationTreeVisualizer:
         self.show_vulnerabilities = True
         self.show_generations = True
         
+        # Performance optimizations
+        self.max_nodes_display = 200  # Limit nodes for performance
+        self.update_throttle = 0.2  # seconds between updates
+        self.last_update_time = 0
+        self.pending_updates = False
+        
         # UI components
         self.setup_ui()
         self.setup_tree_view()
@@ -137,10 +143,16 @@ class MutationTreeVisualizer:
         )
         gen_check.grid(row=0, column=5, padx=(0, 10))
         
+        # Performance controls
+        ttk.Label(control_frame, text="Max Nodes:").grid(row=0, column=6, sticky=tk.W, padx=(0, 5))
+        self.max_nodes_var = tk.StringVar(value=str(self.max_nodes_display))
+        max_nodes_entry = ttk.Entry(control_frame, textvariable=self.max_nodes_var, width=8)
+        max_nodes_entry.grid(row=0, column=7, padx=(0, 10))
+        
         # Action buttons
-        ttk.Button(control_frame, text="Clear Tree", command=self.clear_tree).grid(row=0, column=6, padx=(0, 5))
-        ttk.Button(control_frame, text="Export Tree", command=self.export_tree).grid(row=0, column=7, padx=(0, 5))
-        ttk.Button(control_frame, text="Find Path", command=self.find_best_path).grid(row=0, column=8, padx=(0, 5))
+        ttk.Button(control_frame, text="Clear Tree", command=self.clear_tree).grid(row=0, column=8, padx=(0, 5))
+        ttk.Button(control_frame, text="Export Tree", command=self.export_tree).grid(row=0, column=9, padx=(0, 5))
+        ttk.Button(control_frame, text="Find Path", command=self.find_best_path).grid(row=0, column=10, padx=(0, 5))
         
         # Split pane for tree view and visualization
         paned_window = ttk.PanedWindow(main_frame, orient=tk.HORIZONTAL)
@@ -238,13 +250,27 @@ class MutationTreeVisualizer:
             if parent_id in self.nodes:
                 self.nodes[parent_id].children.append(node.id)
         
-        # Update tree view
-        self.update_tree_view()
-        
-        # Update visualization
-        self.update_visualization()
+        # Throttled updates for performance
+        current_time = time.time()
+        if current_time - self.last_update_time > self.update_throttle:
+            self.update_tree_view()
+            self.update_visualization()
+            self.last_update_time = current_time
+            self.pending_updates = False
+        else:
+            # Schedule update if not already pending
+            if not self.pending_updates:
+                self.root.after(int(self.update_throttle * 1000), self._perform_pending_updates)
+                self.pending_updates = True
         
         return node.id
+        
+    def _perform_pending_updates(self):
+        """Perform pending updates after throttling."""
+        self.update_tree_view()
+        self.update_visualization()
+        self.last_update_time = time.time()
+        self.pending_updates = False
         
     def update_tree_view(self):
         """Update the tree view with current nodes."""
@@ -293,12 +319,21 @@ class MutationTreeVisualizer:
             self.canvas.draw()
             return
         
+        # Limit nodes for performance
+        max_nodes = int(self.max_nodes_var.get())
+        if len(self.nodes) > max_nodes:
+            # Show only the most recent nodes
+            sorted_nodes = sorted(self.nodes.values(), key=lambda n: n.generation, reverse=True)
+            display_nodes = sorted_nodes[:max_nodes]
+        else:
+            display_nodes = list(self.nodes.values())
+        
         # Create NetworkX graph
         G = nx.DiGraph()
         
         # Add nodes
-        for node_id, node in self.nodes.items():
-            G.add_node(node_id, 
+        for node in display_nodes:
+            G.add_node(node.id, 
                       payload=node.payload.payload,
                       fitness=node.fitness_score,
                       generation=node.generation,
@@ -306,10 +341,10 @@ class MutationTreeVisualizer:
                       successful=node.successful,
                       mutation_type=node.mutation_type)
         
-        # Add edges
-        for node_id, node in self.nodes.items():
+        # Add edges (only for displayed nodes)
+        for node in display_nodes:
             if node.parent_id and node.parent_id in self.nodes:
-                G.add_edge(node.parent_id, node_id)
+                G.add_edge(node.parent_id, node.id)
         
         # Clear plot
         self.ax.clear()
@@ -318,7 +353,7 @@ class MutationTreeVisualizer:
         layout_type = self.layout_var.get()
         try:
             if layout_type == "spring":
-                pos = nx.spring_layout(G, k=1, iterations=50)
+                pos = nx.spring_layout(G, k=1, iterations=30)  # Reduced iterations for speed
             elif layout_type == "circular":
                 pos = nx.circular_layout(G)
             elif layout_type == "hierarchical":
@@ -327,7 +362,7 @@ class MutationTreeVisualizer:
                 pos = nx.kamada_kawai_layout(G)
         except ImportError:
             # Fallback to spring layout if scipy is not available
-            pos = nx.spring_layout(G, k=1, iterations=50)
+            pos = nx.spring_layout(G, k=1, iterations=30)
         except Exception as e:
             # Fallback to circular layout for any other errors
             pos = nx.circular_layout(G)
@@ -367,7 +402,7 @@ class MutationTreeVisualizer:
             labels = {node: f"{G.nodes[node]['fitness']:.2f}" for node in G.nodes()}
             nx.draw_networkx_labels(G, pos, labels, font_size=6, font_color='black')
         
-        self.ax.set_title(f"Mutation Tree (Generation {self.current_generation})")
+        self.ax.set_title(f"Mutation Tree (Generation {self.current_generation}) - {len(display_nodes)}/{len(self.nodes)} nodes")
         self.canvas.draw()
         
         # Update statistics
