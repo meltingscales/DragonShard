@@ -69,7 +69,7 @@ all-checks: lint format-check security
 # Testing targets
 test:
 	@echo "🧪 Running unit tests..."
-	@uv run pytest dragonshard/tests/ -v
+	@uv run pytest dragonshard/tests/ -v -k "not test_genetic_visualization"
 
 test-crawlers:
 	@echo "🕷️  Running crawler tests..."
@@ -89,7 +89,11 @@ test-fuzzer-manual:
 
 test-visualization:
 	@echo "🎨 Running genetic algorithm visualization..."
-	@uv run python test_visualization.py
+	@if [ -z "$$DISPLAY" ] && [ -n "$$CI" ]; then \
+		echo "⚠️  Skipping visualization test - no GUI available in CI environment"; \
+	else \
+		uv run python test_visualization.py; \
+	fi
 
 test-benchmark:
 	@echo "📊 Running genetic algorithm benchmarks..."

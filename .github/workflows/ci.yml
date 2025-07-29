@@ -12,6 +12,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
+    env:
+      CI: true
+      GITHUB_ACTIONS: true
 
     steps:
     - uses: actions/checkout@v4
@@ -108,17 +111,12 @@ jobs:
 
     - name: Run unit tests (no containers required)
       run: |
-        pytest dragonshard/tests/test_crawlers.py dragonshard/tests/test_fuzzing.py dragonshard/tests/test_genetic_mutator.py dragonshard/tests/test_response_analyzer.py dragonshard/tests/test_scanner.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
+        pytest dragonshard/tests/test_crawlers.py dragonshard/tests/test_fuzzing.py dragonshard/tests/test_genetic_mutator.py dragonshard/tests/test_response_analyzer.py dragonshard/tests/test_scanner.py dragonshard/tests/test_visualization.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
 
     - name: Run integration tests (with containers)
       run: |
         # Run integration tests that require containers
         pytest dragonshard/tests/test_genetic_fuzzer_integration.py dragonshard/tests/test_genetic_fuzzer.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
-
-    - name: Run visualization tests (with containers)
-      run: |
-        # Run visualization tests that check container availability
-        pytest dragonshard/tests/test_genetic_visualization.py --cov=dragonshard --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml -v
 
     - name: Run Docker scanner tests
       run: |
