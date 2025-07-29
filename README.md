@@ -6,7 +6,6 @@ DragonShard is an autonomous offensive security tool designed to discover vulner
 ## Status Badges
 Add these to your README when connected to CI/CD services:
 
-[![Travis CI](https://travis-ci.com/meltingscales/dragonshard.svg?branch=main)](https://travis-ci.com/meltingscales/dragonshard)
 [![Codecov](https://codecov.io/gh/meltingscales/dragonshard/branch/main/graph/badge.svg)](https://codecov.io/gh/meltingscales/dragonshard)
 [![GitHub Actions](https://github.com/meltingscales/dragonshard/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/meltingscales/dragonshard/actions)
 
