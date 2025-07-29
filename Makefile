@@ -67,7 +67,7 @@ all-checks: lint format-check security
 	@echo "✅ All checks completed!"
 
 # Testing targets
-test:
+test: test-env-start
 	@echo "🧪 Running unit tests..."
 	@uv run pytest dragonshard/tests/ -v -k "not test_genetic_visualization"
 
