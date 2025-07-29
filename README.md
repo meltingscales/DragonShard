@@ -48,20 +48,29 @@ pytest --cov=dragonshard  # With coverage
 The project includes Docker-based integration tests that scan actual vulnerable containers:
 
 ```bash
-# Run Docker integration tests
-python scripts/run_docker_tests.py
+# Start test environment
+make test-env-start
 
-# Or manually with Docker Compose
-docker-compose -f docker-compose.test.yml up -d
-pytest dragonshard/tests/test_docker_scanner.py -v -s
-docker-compose -f docker-compose.test.yml down
+# Run Docker integration tests
+make test-docker
+
+# Run fuzzer tests with containers
+make test-fuzzer-manual
+
+# Stop test environment
+make test-env-stop
+
+# Clean up test environment
+make test-env-clean
 ```
 
 **Test Containers:**
 - **DVWA** (Damn Vulnerable Web Application) - Port 8080
-- **OWASP Juice Shop** - Port 8081  
-- **Vulhub** (Simple vulnerable web app) - Port 8082
-- **Metasploitable** - Multiple ports (8083-8093)
+- **OWASP Juice Shop** - Port 3000
+- **WebGoat** - Port 8081
+- **Vulnerable PHP App** - Port 8082
+- **Vulnerable Node.js App** - Port 8083
+- **Vulnerable Python App** - Port 8084
 
 **Requirements:**
 - Docker and Docker Compose installed
@@ -90,7 +99,16 @@ make all-checks    # Run all checks
 
 # Testing
 make test          # Run unit tests
+make test-crawlers # Run crawler tests
+make test-fuzzer   # Run fuzzer unit tests
+make test-fuzzer-integration # Run fuzzer integration tests
+make test-fuzzer-manual # Run manual fuzzer test with containers
 make test-docker   # Run Docker tests
+
+# Test Environment
+make test-env-start # Start vulnerable test containers
+make test-env-stop  # Stop vulnerable test containers
+make test-env-clean # Clean up test environment
 
 # Development workflows
 make dev           # Lint-fix + format + test
