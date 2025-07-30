@@ -36,15 +36,15 @@ const AttacksPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'running':
-        return 'bg-green-500';
+        return 'bg-dragon-success';
       case 'completed':
-        return 'bg-blue-500';
+        return 'bg-dragon-info';
       case 'failed':
-        return 'bg-red-500';
+        return 'bg-dragon-danger';
       case 'pending':
-        return 'bg-yellow-500';
+        return 'bg-dragon-warning';
       default:
-        return 'bg-gray-500';
+        return 'bg-dragon-text-muted';
     }
   };
 
@@ -243,7 +243,7 @@ const AttacksPage: React.FC = () => {
                   </div>
                   
                   {/* Progress bar */}
-                  <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+                  <div className="w-full bg-dragon-dark rounded-full h-2 mb-4">
                     <div 
                       className="bg-dragon-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(attack.completed_steps / attack.total_steps) * 100}%` }}

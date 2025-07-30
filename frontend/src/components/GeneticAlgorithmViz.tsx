@@ -339,7 +339,7 @@ const GeneticAlgorithmViz: React.FC<GeneticAlgorithmVizProps> = ({ sessionId }) 
       {/* Controls */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Target URL</label>
+          <label className="block text-sm font-medium text-dragon-text-muted mb-1">Target URL</label>
           <input
             type="text"
             value={targetUrl}
@@ -350,7 +350,7 @@ const GeneticAlgorithmViz: React.FC<GeneticAlgorithmVizProps> = ({ sessionId }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Payload Type</label>
+          <label className="block text-sm font-medium text-dragon-text-muted mb-1">Payload Type</label>
           <select
             value={payloadType}
             onChange={(e) => setPayloadType(e.target.value)}
@@ -379,7 +379,7 @@ const GeneticAlgorithmViz: React.FC<GeneticAlgorithmVizProps> = ({ sessionId }) 
         <div className="flex items-end">
           <button
             onClick={exportResults}
-            className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded font-medium"
+            className="w-full px-4 py-2 bg-dragon-card hover:bg-dragon-border text-white rounded font-medium"
             disabled={generationData.length === 0}
           >
             Export Results
@@ -391,10 +391,10 @@ const GeneticAlgorithmViz: React.FC<GeneticAlgorithmVizProps> = ({ sessionId }) 
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-400">Status: {status}</span>
-            <span className="text-sm text-gray-400">Generation: {currentGeneration}</span>
-            <span className="text-sm text-gray-400">Best Fitness: {bestFitness.toFixed(2)}</span>
-            <span className="text-sm text-gray-400">Avg Fitness: {averageFitness.toFixed(2)}</span>
+            <span className="text-sm text-dragon-text-muted">Status: {status}</span>
+            <span className="text-sm text-dragon-text-muted">Generation: {currentGeneration}</span>
+            <span className="text-sm text-dragon-text-muted">Best Fitness: {bestFitness.toFixed(2)}</span>
+            <span className="text-sm text-dragon-text-muted">Avg Fitness: {averageFitness.toFixed(2)}</span>
           </div>
           <div className={`w-3 h-3 rounded-full ${isRunning ? 'bg-green-400' : 'bg-red-400'}`}></div>
         </div>

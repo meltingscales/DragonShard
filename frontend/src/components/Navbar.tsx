@@ -51,9 +51,9 @@ const Navbar: React.FC = () => {
           
           {/* Status and Mobile Menu */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-dark px-3 py-1 rounded">
+            <div className="flex items-center gap-2 bg-dragon-card px-3 py-1 rounded">
               <div className="status-dot success"></div>
-              <span className="text-sm text-gray-300 hidden sm:inline">API Connected</span>
+              <span className="text-sm text-dragon-text-muted hidden sm:inline">API Connected</span>
             </div>
             
             {/* API Documentation Link */}
@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-300 hover:text-white hover:bg-dark rounded cursor-pointer"
+              className="md:hidden p-2 text-dragon-text-muted hover:text-white hover:bg-dragon-card rounded cursor-pointer"
             >
               {mobileMenuOpen ? (
                 <X size={24} />

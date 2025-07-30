@@ -115,46 +115,46 @@ const ReverseShellManager: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'listening': return 'text-yellow-400';
-      case 'connected': return 'text-green-400';
-      case 'disconnected': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'listening': return 'text-dragon-warning';
+      case 'connected': return 'text-dragon-success';
+      case 'disconnected': return 'text-dragon-danger';
+      default: return 'text-dragon-text-muted';
     }
   };
 
   const getPortStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'text-green-400';
-      case 'allocated': return 'text-yellow-400';
-      case 'in_use': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'available': return 'text-dragon-success';
+      case 'allocated': return 'text-dragon-warning';
+      case 'in_use': return 'text-dragon-danger';
+      default: return 'text-dragon-text-muted';
     }
   };
 
   return (
     <div className="container mx-auto p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-lg mb-6 border border-gray-700">
-        <h1 className="text-red-400 text-4xl font-bold mb-2">🐉 DragonShard - Reverse Shell Manager</h1>
-        <p className="text-gray-300 text-lg">Manage reverse shell connections and monitor active sessions</p>
+      <div className="bg-gradient-to-r from-dragon-card to-dragon-dark p-6 rounded-lg mb-6 border border-dragon-border">
+        <h1 className="text-dragon-primary text-4xl font-bold mb-2">🐉 DragonShard - Reverse Shell Manager</h1>
+        <p className="text-dragon-text-muted text-lg">Manage reverse shell connections and monitor active sessions</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           {/* Create Listener */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-cyan-400 text-xl font-semibold mb-4 border-b border-gray-600 pb-2">
+          <div className="bg-dragon-card rounded-lg p-6 border border-dragon-border">
+            <h3 className="text-dragon-primary text-xl font-semibold mb-4 border-b border-dragon-border pb-2">
               Create Listener
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-300 mb-2">Port:</label>
+                <label className="block text-dragon-text-muted mb-2">Port:</label>
                 <input
                   type="number"
                   value={newPort}
                   onChange={(e) => setNewPort(Number(e.target.value))}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+                  className="w-full bg-dragon-card border border-dragon-border rounded px-3 py-2 text-white"
                   min="1024"
                   max="65535"
                 />
@@ -162,7 +162,7 @@ const ReverseShellManager: React.FC = () => {
               <button
                 onClick={createListener}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-2 px-4 rounded hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50"
+                className="w-full bg-dragon-primary hover:bg-dragon-secondary text-white py-2 px-4 rounded transition-all duration-200 disabled:opacity-50"
               >
                 {isLoading ? 'Creating...' : 'Create Listener'}
               </button>
@@ -170,14 +170,14 @@ const ReverseShellManager: React.FC = () => {
           </div>
 
           {/* Port Allocation */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-cyan-400 text-xl font-semibold mb-4 border-b border-gray-600 pb-2">
+          <div className="bg-dragon-card rounded-lg p-6 border border-dragon-border">
+            <h3 className="text-dragon-primary text-xl font-semibold mb-4 border-b border-dragon-border pb-2">
               Port Allocation
             </h3>
             <div className="space-y-2">
               {allocatedPorts.slice(0, 10).map((port) => (
                 <div key={port.port} className="flex justify-between items-center">
-                  <span className="text-gray-300">Port {port.port}</span>
+                  <span className="text-dragon-text-muted">Port {port.port}</span>
                   <span className={getPortStatusColor(port.status)}>
                     {port.status}
                   </span>
@@ -187,8 +187,8 @@ const ReverseShellManager: React.FC = () => {
           </div>
 
           {/* Active Connections */}
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-cyan-400 text-xl font-semibold mb-4 border-b border-gray-600 pb-2">
+          <div className="bg-dragon-card rounded-lg p-6 border border-dragon-border">
+            <h3 className="text-dragon-primary text-xl font-semibold mb-4 border-b border-dragon-border pb-2">
               Active Connections
             </h3>
             <div className="space-y-3">
@@ -197,8 +197,8 @@ const ReverseShellManager: React.FC = () => {
                   key={connection.id}
                   className={`p-3 rounded border cursor-pointer transition-all ${
                     selectedConnection === connection.id
-                      ? 'border-cyan-400 bg-gray-700'
-                      : 'border-gray-600 hover:border-gray-500'
+                      ? 'border-dragon-primary bg-dragon-dark'
+                      : 'border-dragon-border hover:border-dragon-primary'
                   }`}
                   onClick={() => setSelectedConnection(connection.id)}
                 >
@@ -208,7 +208,7 @@ const ReverseShellManager: React.FC = () => {
                       {connection.status}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-dragon-text-muted">
                     {connection.host} • {new Date(connection.lastActivity).toLocaleTimeString()}
                   </div>
                   <button
@@ -216,7 +216,7 @@ const ReverseShellManager: React.FC = () => {
                       e.stopPropagation();
                       closeConnection(connection.id);
                     }}
-                    className="mt-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                    className="mt-2 bg-dragon-danger hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
                   >
                     Close
                   </button>
@@ -228,8 +228,8 @@ const ReverseShellManager: React.FC = () => {
 
         {/* Main Panel */}
         <div className="lg:col-span-2">
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-cyan-400 text-xl font-semibold mb-4 border-b border-gray-600 pb-2">
+          <div className="bg-dragon-card rounded-lg p-6 border border-dragon-border">
+            <h3 className="text-dragon-primary text-xl font-semibold mb-4 border-b border-dragon-border pb-2">
               Console Output
             </h3>
             
@@ -252,7 +252,7 @@ const ReverseShellManager: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Enter command..."
-                    className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+                    className="flex-1 bg-dragon-card border border-dragon-border rounded px-3 py-2 text-white"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         sendCommand(e.currentTarget.value);
@@ -268,14 +268,14 @@ const ReverseShellManager: React.FC = () => {
                         input.value = '';
                       }
                     }}
-                    className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded"
+                    className="bg-dragon-primary hover:bg-dragon-secondary text-white px-4 py-2 rounded"
                   >
                     Send
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="text-center text-gray-400 py-8">
+              <div className="text-center text-dragon-text-muted py-8">
                 Select a connection to view console output
               </div>
             )}
@@ -285,7 +285,7 @@ const ReverseShellManager: React.FC = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow-lg">
+        <div className="fixed bottom-4 right-4 bg-dragon-danger text-white px-4 py-2 rounded shadow-lg">
           {error}
         </div>
       )}
