@@ -5,6 +5,8 @@ Tests scanning actual vulnerable containers like DVWA.
 """
 
 import logging
+import subprocess
+import time
 import unittest
 
 from dragonshard.core.test_utils import (

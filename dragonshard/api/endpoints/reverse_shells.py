@@ -11,9 +11,11 @@ import json
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from typing import Optional as OptionalType
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from dragonshard.executor.reverse_shell import ReverseShellHandler, ShellStatus
 
@@ -28,11 +30,6 @@ router = APIRouter(prefix="/reverse-shells", tags=["reverse-shells"])
 
 
 # Pydantic models for reverse shell API
-from typing import Optional as OptionalType
-
-from pydantic import BaseModel, Field
-
-
 class ReverseShellConnection(BaseModel):
     connection_id: str
     port: int
@@ -422,5 +419,5 @@ async def reverse_shell_websocket(websocket: WebSocket, connection_id: str):
     finally:
         try:
             await websocket.close()
-        except:
+        except Exception:
             pass

@@ -11,7 +11,13 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
-from ..models import *
+from ..models import (
+    FuzzingProgress,
+    FuzzingSession,
+    FuzzingStatus,
+    GeneticAlgorithmStats,
+    WebSocketMessage,
+)
 from ..websocket_manager import websocket_manager
 
 logger = logging.getLogger(__name__)

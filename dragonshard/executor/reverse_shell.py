@@ -218,7 +218,7 @@ class ReverseShellHandler:
         finally:
             try:
                 client_socket.close()
-            except:
+            except Exception:
                 pass
 
     def _read_from_shell(
@@ -366,7 +366,7 @@ class ReverseShellHandler:
             if hasattr(connection, "client_socket"):
                 try:
                     connection.client_socket.close()
-                except:
+                except Exception:
                     pass
 
             # Release port
