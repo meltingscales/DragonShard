@@ -51,16 +51,21 @@ const TargetsPage: React.FC = () => {
   const scanTarget = async (targetId: string) => {
     try {
       setError(null);
-      await ApiService.scanTarget(targetId);
-      // Update scan results
-      const updatedResults = scanResults.map(result => 
-        result.host.id === targetId 
-          ? { ...result, scan_status: 'running' as const, progress: 0 }
-          : result
-      );
-      setScanResults(updatedResults);
+      setLoading(true);
+      
+      // Start the scan
+      const scanResult = await ApiService.scanTarget(targetId);
+      
+      // Reload targets to get updated data
+      await loadTargets();
+      
+      // Show success message
+      console.log(`Scan completed for target ${targetId}. Found ${scanResult.services_found} services.`);
+      
     } catch (err) {
       setError('Failed to start scan');
+    } finally {
+      setLoading(false);
     }
   };
 

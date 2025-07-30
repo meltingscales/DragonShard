@@ -10,20 +10,53 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..models import Host, NetworkTopology, Service, ServiceType, Vulnerability
 from ..websocket_manager import websocket_manager
+from ...core.scanner_service import ScannerService
+from ...data.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Mock data storage
-hosts: List[Host] = []
+# Initialize database and scanner service
+db_manager = DatabaseManager()
+scanner_service = ScannerService(db_manager)
 
 
 @router.get("/topology", response_model=NetworkTopology)
 async def get_network_topology():
     """Get network topology"""
     try:
-        total_services = sum(len(host.services) for host in hosts)
-        total_vulnerabilities = sum(len(host.vulnerabilities) for host in hosts)
+        with db_manager.get_session() as session:
+            from ...data.models import Host as DBHost, Service as DBService, Vulnerability as DBVulnerability
+            
+            # Get all hosts from database
+            db_hosts = session.query(DBHost).all()
+            
+            # Convert to API models
+            hosts = []
+            total_services = 0
+            total_vulnerabilities = 0
+            
+            for db_host in db_hosts:
+                # Get services for this host
+                services = session.query(DBService).filter(DBService.host_id == db_host.host_id).all()
+                total_services += len(services)
+                
+                # Get vulnerabilities for this host
+                vulnerabilities = session.query(DBVulnerability).join(DBService).filter(DBService.host_id == db_host.host_id).all()
+                total_vulnerabilities += len(vulnerabilities)
+                
+                # Convert to API model
+                host = Host(
+                    id=db_host.host_id,
+                    ip_address=db_host.ip_address,
+                    hostname=db_host.hostname,
+                    os_info=db_host.os_info,
+                    discovered_at=datetime.fromtimestamp(db_host.discovered_at),
+                    last_seen=datetime.fromtimestamp(db_host.last_seen),
+                    services=[],  # Will be populated separately
+                    vulnerabilities=[]  # Will be populated separately
+                )
+                hosts.append(host)
 
         return NetworkTopology(
             hosts=hosts,
@@ -40,6 +73,35 @@ async def get_network_topology():
 async def get_hosts():
     """Get all hosts"""
     try:
+        with db_manager.get_session() as session:
+            from ...data.models import Host as DBHost, Service as DBService, Vulnerability as DBVulnerability
+            
+            # Get all hosts from database
+            db_hosts = session.query(DBHost).all()
+            
+            # Convert to API models
+            hosts = []
+            
+            for db_host in db_hosts:
+                # Get services for this host
+                services = session.query(DBService).filter(DBService.host_id == db_host.host_id).all()
+                
+                # Get vulnerabilities for this host
+                vulnerabilities = session.query(DBVulnerability).join(DBService).filter(DBService.host_id == db_host.host_id).all()
+                
+                # Convert to API model
+                host = Host(
+                    id=db_host.host_id,
+                    ip_address=db_host.ip_address,
+                    hostname=db_host.hostname,
+                    os_info=db_host.os_info,
+                    discovered_at=datetime.fromtimestamp(db_host.discovered_at),
+                    last_seen=datetime.fromtimestamp(db_host.last_seen),
+                    services=[],  # Will be populated separately
+                    vulnerabilities=[]  # Will be populated separately
+                )
+                hosts.append(host)
+
         return hosts
     except Exception as e:
         logger.error(f"Error getting hosts: {e}")
@@ -62,9 +124,19 @@ async def get_host(host_id: str):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+from pydantic import BaseModel
+from datetime import datetime
+import uuid
+
+# Add this model for the simple target creation request
+class CreateTargetRequest(BaseModel):
+    ip_address: str
+    hostname: Optional[str] = None
+    description: Optional[str] = None
+
 @router.post("/hosts", response_model=Host)
 async def create_host(host: Host):
-    """Create a new host"""
+    """Create a new host with full Host object"""
     try:
         hosts.append(host)
 
@@ -75,6 +147,58 @@ async def create_host(host: Host):
         return host
     except Exception as e:
         logger.error(f"Error creating host: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/hosts/simple", response_model=Host)
+async def create_simple_host(request: CreateTargetRequest):
+    """Create a new host from simple form data"""
+    try:
+        import uuid
+        import time
+        
+        # Generate a unique ID
+        host_id = f"host_{uuid.uuid4().hex[:8]}"
+        
+        # Create host in database
+        with db_manager.get_session() as session:
+            from ...data.models import Host as DBHost, HostStatus
+            
+            db_host = DBHost(
+                host_id=host_id,
+                hostname=request.hostname or request.ip_address,
+                ip_address=request.ip_address,
+                status=HostStatus.DISCOVERED,
+                discovered_at=time.time(),
+                last_seen=time.time(),
+                os_info=None,  # Will be discovered during scan
+                mac_address=None,
+                hostnames="[]",
+                notes=request.description or ""
+            )
+            
+            session.add(db_host)
+            session.commit()
+            
+            # Convert to API model for response
+            new_host = Host(
+                id=host_id,
+                ip_address=request.ip_address,
+                hostname=request.hostname,
+                os_info=None,
+                discovered_at=datetime.fromtimestamp(db_host.discovered_at),
+                last_seen=datetime.fromtimestamp(db_host.last_seen),
+                services=[],
+                vulnerabilities=[]
+            )
+
+        # Broadcast to WebSocket clients
+        await websocket_manager.broadcast({"type": "host_discovered", "data": new_host.dict()})
+
+        logger.info(f"Created simple host: {host_id}")
+        return new_host
+    except Exception as e:
+        logger.error(f"Error creating simple host: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -100,30 +224,28 @@ async def delete_host(host_id: str):
 async def scan_host(host_id: str):
     """Start a scan on a host"""
     try:
-        # Find the host
-        host = None
-        for h in hosts:
-            if h.id == host_id:
-                host = h
-                break
+        # Use the scanner service to perform real scanning
+        scan_result = scanner_service.scan_host(host_id, "comprehensive")
         
-        if not host:
-            raise HTTPException(status_code=404, detail="Host not found")
-        
-        # Mock scan operation - in real implementation, this would trigger actual scanning
-        logger.info(f"Starting scan on host: {host_id}")
-        
-        # Broadcast scan start to WebSocket clients
+        # Broadcast scan completion to WebSocket clients
         await websocket_manager.broadcast({
-            "type": "scan_started", 
-            "data": {"host_id": host_id, "status": "running"}
+            "type": "scan_completed", 
+            "data": {
+                "host_id": host_id, 
+                "status": "completed",
+                "services_found": scan_result["services_found"]
+            }
         })
         
-        return {"message": "Scan started successfully", "host_id": host_id}
-    except HTTPException:
-        raise
+        return {
+            "message": "Scan completed successfully", 
+            "host_id": host_id,
+            "services_found": scan_result["services_found"]
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error starting scan on host {host_id}: {e}")
+        logger.error(f"Error scanning host {host_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -131,22 +253,18 @@ async def scan_host(host_id: str):
 async def get_scan_status(host_id: str):
     """Get scan status for a host"""
     try:
-        # Find the host
-        host = None
-        for h in hosts:
-            if h.id == host_id:
-                host = h
-                break
+        status = scanner_service.get_scan_status(host_id)
         
-        if not host:
-            raise HTTPException(status_code=404, detail="Host not found")
+        if "error" in status:
+            raise HTTPException(status_code=404, detail=status["error"])
         
-        # Mock scan status - in real implementation, this would check actual scan status
         return {
             "host_id": host_id,
-            "status": "completed",  # Mock status
-            "progress": 100,
-            "last_scan": datetime.now().isoformat()
+            "status": status["status"],
+            "services_count": status["services_count"],
+            "vulnerabilities_count": status["vulnerabilities_count"],
+            "last_scan": datetime.fromtimestamp(status["last_scan"]).isoformat(),
+            "discovered_at": datetime.fromtimestamp(status["discovered_at"]).isoformat()
         }
     except HTTPException:
         raise
@@ -159,24 +277,19 @@ async def get_scan_status(host_id: str):
 async def get_scan_results(host_id: str):
     """Get scan results for a host"""
     try:
-        # Find the host
-        host = None
-        for h in hosts:
-            if h.id == host_id:
-                host = h
-                break
+        results = scanner_service.get_scan_results(host_id)
         
-        if not host:
-            raise HTTPException(status_code=404, detail="Host not found")
+        if "error" in results:
+            raise HTTPException(status_code=404, detail=results["error"])
         
-        # Return the host's vulnerabilities as scan results
         return {
             "host_id": host_id,
-            "scan_completed": True,
-            "vulnerabilities_found": len(host.vulnerabilities),
-            "services_discovered": len(host.services),
-            "vulnerabilities": host.vulnerabilities,
-            "services": host.services
+            "scan_completed": results["scan_completed"],
+            "services_found": results["services_found"],
+            "vulnerabilities_found": results["vulnerabilities_found"],
+            "services": results["services"],
+            "vulnerabilities": results["vulnerabilities"],
+            "host_info": results["host_info"]
         }
     except HTTPException:
         raise
@@ -185,73 +298,14 @@ async def get_scan_results(host_id: str):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-# Mock data for testing
-def create_mock_network():
-    """Create mock network data for testing"""
-    global hosts
+# Initialize database tables if needed
+def init_database():
+    """Initialize database tables if they don't exist"""
+    try:
+        db_manager.create_tables()
+        logger.info("Database tables initialized")
+    except Exception as e:
+        logger.error(f"Error initializing database: {e}")
 
-    # Create mock vulnerabilities
-    log4shell_vuln = Vulnerability(
-        id="vuln_001",
-        name="Log4Shell",
-        description="Remote code execution via JNDI injection",
-        level="critical",
-        cve_id="CVE-2021-44228",
-        target="http://localhost:8085",
-        service="http",
-        port=8085,
-        discovered_at=datetime.now(),
-    )
-
-    bluekeep_vuln = Vulnerability(
-        id="vuln_002",
-        name="BlueKeep",
-        description="Remote code execution in RDP service",
-        level="critical",
-        cve_id="CVE-2019-0708",
-        target="192.168.1.100",
-        service="rdp",
-        port=3389,
-        discovered_at=datetime.now(),
-    )
-
-    # Create mock services
-    http_service = Service(
-        id="service_001",
-        name="HTTP Server",
-        type=ServiceType.HTTPS,
-        port=8085,
-        version="1.0.0",
-        banner="nginx/1.18.0",
-        discovered_at=datetime.now(),
-        vulnerabilities=[log4shell_vuln],
-    )
-
-    rdp_service = Service(
-        id="service_002",
-        name="RDP Service",
-        type=ServiceType.RDP,
-        port=3389,
-        version="10.0.19041.1",
-        banner="Microsoft Terminal Services",
-        discovered_at=datetime.now(),
-        vulnerabilities=[bluekeep_vuln],
-    )
-
-    # Create mock host
-    mock_host = Host(
-        id="host_001",
-        ip_address="192.168.1.100",
-        hostname="test-server.local",
-        os_info="Windows Server 2019",
-        discovered_at=datetime.now(),
-        last_seen=datetime.now(),
-        services=[http_service, rdp_service],
-        vulnerabilities=[log4shell_vuln, bluekeep_vuln],
-    )
-
-    hosts = [mock_host]
-
-
-# Initialize mock data
-create_mock_network()
+# Initialize database
+init_database()

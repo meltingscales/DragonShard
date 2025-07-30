@@ -126,7 +126,7 @@ export class ApiService {
 
   // Target management endpoints
   static async addTarget(targetData: any): Promise<Host> {
-    return this.request<Host>('/network/hosts', {
+    return this.request<Host>('/network/hosts/simple', {
       method: 'POST',
       body: JSON.stringify(targetData),
     });
