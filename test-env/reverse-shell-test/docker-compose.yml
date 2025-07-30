@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Vulnerable application for testing reverse shells
+  vulnerable-app:
+    build: .
+    container_name: dragonshard-vulnerable-app
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - dragonshard-test
+
+  # DragonShard API with reverse shell support
+  dragonshard-api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: dragonshard-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ../../dragonshard:/app/dragonshard
+      - ./logs:/app/logs
+    networks:
+      - dragonshard-test
+    depends_on:
+      - vulnerable-app
+    command: >
+      sh -c "
+        echo 'Starting DragonShard API with reverse shell support...' &&
+        cd /app &&
+        python -m uvicorn dragonshard.visualizer.api.app:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Test client for reverse shell testing
+  test-client:
+    image: python:3.9-slim
+    container_name: dragonshard-test-client
+    working_dir: /app
+    volumes:
+      - ./test_scripts:/app/test_scripts
+      - ./logs:/app/logs
+    networks:
+      - dragonshard-test
+    depends_on:
+      - vulnerable-app
+      - dragonshard-api
+    command: >
+      sh -c "
+        echo 'Installing test dependencies...' &&
+        pip install requests pytest &&
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running reverse shell tests...' &&
+        python /app/test_scripts/test_reverse_shell_integration.py
+      "
+
+networks:
+  dragonshard-test:
+    driver: bridge
+
+volumes:
+  logs: 

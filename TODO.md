@@ -302,7 +302,10 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
+- feature: Make sure that DragonShard can spider a website, find a command injection vulnerability, exploit it to get a reverse shell, and hold on to that connection. Use one of our existing dockerfiles to test this.
 - Can we make a separate visualization that shows the full tree of mutations?
 - Make frontend and api used for the entire project, not just viz
 - let's use a database backend instead of an in-memory store.
 - I don't want to just simulate fuzzing. Make the fuzzing web UI and API actually fuzz.
+- let's add a swagger API definition using a python library. one that gets automatically generated based on our code.
+- for some of the tests, you don't actually test live targets, but use mock data. It's kind of useless to do this, since I want actual targets to be attacked. I'd like you to fix this by adding live tests that use our existing, intentionally-vulnerable docker containers and try to attack them.

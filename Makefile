@@ -25,6 +25,8 @@ help:
 	@echo "  test-planner           - Run chain planner integration test"
 	@echo "  test-executor          - Run executor integration test"
 	@echo "  test-executor-stress   - Run executor stress test with complex vulnerabilities"
+	@echo "  test-reverse-shell     - Run reverse shell handler tests"
+	@echo "  test-reverse-shell-demo - Run reverse shell demo script"
 	@echo "  test-visualization-api - Run visualization API test"
 	@echo "  start-visualization-api - Start visualization API server"
 	@echo "  start-frontend        - Start React development server"
@@ -107,6 +109,14 @@ test-executor:
 test-executor-stress:
 	@echo "🧪 Running executor stress test..."
 	@PYTHONPATH=. uv run python scripts/test_executor_stress_integration.py
+
+test-reverse-shell:
+	@echo "🐚 Running reverse shell handler tests..."
+	@PYTHONPATH=. uv run pytest dragonshard/tests/test_reverse_shell.py -v
+
+test-reverse-shell-demo:
+	@echo "🐚 Running reverse shell demo script..."
+	@PYTHONPATH=. uv run python dragonshard/scripts/test_reverse_shell_demo.py
 
 test-visualization-api:
 	@echo "🌐 Running visualization API test..."

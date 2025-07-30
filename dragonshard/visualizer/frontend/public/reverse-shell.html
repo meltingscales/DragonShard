@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DragonShard - Reverse Shell Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #ccc;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .main-panel {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(81, 207, 102, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+        }
+
+        .connection-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .connection-item {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .connection-item:hover {
+            border-color: #4ecdc4;
+            transform: translateX(5px);
+        }
+
+        .connection-item.active {
+            border-color: #4ecdc4;
+            background: #2d2d2d;
+        }
+
+        .connection-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-listening { background: #ffd93d; }
+        .status-connected { background: #51cf66; }
+        .status-disconnected { background: #ff6b6b; }
+        .status-error { background: #ff6b6b; }
+        .status-closed { background: #868e96; }
+
+        .connection-info {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .console-container {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-header {
+            background: #2a2a2a;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-output {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #00ff00;
+            background: #000;
+        }
+
+        .console-input-container {
+            display: flex;
+            border-top: 1px solid #333;
+        }
+
+        .console-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .console-input:focus {
+            outline: none;
+        }
+
+        .console-send {
+            padding: 10px 20px;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(81, 207, 102, 0.1);
+            border-color: #51cf66;
+            color: #51cf66;
+        }
+
+        .alert-error {
+            background: rgba(255, 107, 107, 0.1);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .alert-info {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: #4ecdc4;
+            color: #4ecdc4;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #ccc;
+        }
+
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .websocket-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .ws-connected {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid #51cf66;
+        }
+
+        .ws-disconnected {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="websocket-status" id="wsStatus">Connecting...</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🐉 DragonShard Reverse Shell Manager</h1>
+            <p>Manage reverse shell connections, monitor console output, and interact with captured shells in real-time.</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalConnections">0</div>
+                <div class="stat-label">Total Connections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="listeningConnections">0</div>
+                <div class="stat-label">Listening</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="connectedConnections">0</div>
+                <div class="stat-label">Connected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeConnections">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="section">
+                    <h3>Create Listener</h3>
+                    <div class="form-group">
+                        <label for="portInput">Port (optional):</label>
+                        <input type="number" id="portInput" placeholder="Auto-assign if empty">
+                    </div>
+                    <div class="form-group">
+                        <label for="timeoutInput">Timeout (seconds):</label>
+                        <input type="number" id="timeoutInput" value="300" min="60" max="3600">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoCloseCheck" checked>
+                            Auto-close inactive connections
+                        </label>
+                    </div>
+                    <button class="btn btn-success" onclick="createListener()">Create Listener</button>
+                </div>
+
+                <div class="section">
+                    <h3>Connections</h3>
+                    <div class="connection-list" id="connectionList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading connections...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Actions</h3>
+                    <button class="btn" onclick="refreshConnections()">Refresh</button>
+                    <button class="btn btn-danger" onclick="cleanupConnections()">Cleanup Inactive</button>
+                </div>
+            </div>
+
+            <div class="main-panel">
+                <div class="section">
+                    <h3>Console Output</h3>
+                    <div id="consoleContainer" class="console-container hidden">
+                        <div class="console-header">
+                            <span id="consoleTitle">Console</span>
+                            <div>
+                                <button class="btn" onclick="clearConsole()">Clear</button>
+                                <button class="btn" onclick="downloadHistory()">Download</button>
+                            </div>
+                        </div>
+                        <div class="console-output" id="consoleOutput"></div>
+                        <div class="console-input-container">
+                            <input type="text" class="console-input" id="consoleInput" placeholder="Enter command..." onkeypress="handleConsoleKeyPress(event)">
+                            <button class="console-send" onclick="sendCommand()">Send</button>
+                        </div>
+                    </div>
+                    <div id="noConnectionMessage" class="alert alert-info">
+                        Select a connection from the sidebar to view console output and send commands.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentConnectionId = null;
+        let websocket = null;
+        let connections = [];
+        let consoleHistory = [];
+
+        // API base URL
+        const API_BASE = '/api/v1';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWebSocket();
+            loadConnections();
+            updateStats();
+        });
+
+        // WebSocket management
+        function initializeWebSocket() {
+            const wsUrl = `ws://${window.location.host}/api/v1/reverse-shells/ws`;
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function() {
+                document.getElementById('wsStatus').textContent = 'Connected';
+                document.getElementById('wsStatus').className = 'websocket-status ws-connected';
+            };
+            
+            websocket.onclose = function() {
+                document.getElementById('wsStatus').textContent = 'Disconnected';
+                document.getElementById('wsStatus').className = 'websocket-status ws-disconnected';
+                // Try to reconnect after 5 seconds
+                setTimeout(initializeWebSocket, 5000);
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                document.getElementById('wsStatus').textContent = 'Error';
+                document.getElementById('wsStatus').className = 'websocket-status ws-disconnected';
+            };
+        }
+
+        // API functions
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                showAlert('Error: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        // Load connections
+        async function loadConnections() {
+            try {
+                const data = await apiRequest('/reverse-shells/connections');
+                connections = data;
+                renderConnections();
+                updateStats();
+            } catch (error) {
+                console.error('Failed to load connections:', error);
+            }
+        }
+
+        // Render connections list
+        function renderConnections() {
+            const container = document.getElementById('connectionList');
+            
+            if (connections.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No connections found. Create a listener to get started.</div>';
+                return;
+            }
+            
+            container.innerHTML = connections.map(conn => `
+                <div class="connection-item ${conn.connection_id === currentConnectionId ? 'active' : ''}" 
+                     onclick="selectConnection('${conn.connection_id}')">
+                    <div>
+                        <span class="connection-status status-${conn.status}"></span>
+                        <strong>Port ${conn.port}</strong>
+                    </div>
+                    <div class="connection-info">
+                        Status: ${conn.status}<br>
+                        ${conn.remote_address ? `Remote: ${conn.remote_address}:${conn.remote_port}` : 'Waiting for connection...'}<br>
+                        Created: ${new Date(conn.created_at).toLocaleString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Select a connection
+        async function selectConnection(connectionId) {
+            currentConnectionId = connectionId;
+            renderConnections();
+            
+            // Load console history
+            try {
+                const data = await apiRequest(`/reverse-shells/connections/${connectionId}/history`);
+                consoleHistory = data.history || [];
+                renderConsole();
+                
+                // Show console container
+                document.getElementById('consoleContainer').classList.remove('hidden');
+                document.getElementById('noConnectionMessage').classList.add('hidden');
+                
+                // Update console title
+                const connection = connections.find(c => c.connection_id === connectionId);
+                if (connection) {
+                    document.getElementById('consoleTitle').textContent = `Console - Port ${connection.port}`;
+                }
+                
+            } catch (error) {
+                console.error('Failed to load console history:', error);
+            }
+        }
+
+        // Render console output
+        function renderConsole() {
+            const output = document.getElementById('consoleOutput');
+            output.innerHTML = consoleHistory.map(line => `<div>${escapeHtml(line)}</div>`).join('');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Send command
+        async function sendCommand() {
+            if (!currentConnectionId) {
+                showAlert('No connection selected', 'error');
+                return;
+            }
+            
+            const input = document.getElementById('consoleInput');
+            const command = input.value.trim();
+            
+            if (!command) return;
+            
+            try {
+                await apiRequest(`/reverse-shells/connections/${currentConnectionId}/send`, {
+                    method: 'POST',
+                    body: JSON.stringify({ command: command })
+                });
+                
+                // Add command to history
+                consoleHistory.push(`[${new Date().toISOString()}] > ${command}`);
+                renderConsole();
+                
+                // Clear input
+                input.value = '';
+                
+            } catch (error) {
+                console.error('Failed to send command:', error);
+            }
+        }
+
+        // Handle console key press
+        function handleConsoleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendCommand();
+            }
+        }
+
+        // Create listener
+        async function createListener() {
+            const port = document.getElementById('portInput').value;
+            const timeout = document.getElementById('timeoutInput').value;
+            const autoClose = document.getElementById('autoCloseCheck').checked;
+            
+            try {
+                const data = await apiRequest('/reverse-shells/listeners', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        port: port ? parseInt(port) : null,
+                        auto_close: autoClose,
+                        timeout: parseInt(timeout)
+                    })
+                });
+                
+                showAlert(`Listener created successfully on port ${data.connection_info.port}`, 'success');
+                
+                // Clear form
+                document.getElementById('portInput').value = '';
+                
+                // Reload connections
+                await loadConnections();
+                
+            } catch (error) {
+                console.error('Failed to create listener:', error);
+            }
+        }
+
+        // Refresh connections
+        async function refreshConnections() {
+            await loadConnections();
+            showAlert('Connections refreshed', 'info');
+        }
+
+        // Cleanup inactive connections
+        async function cleanupConnections() {
+            try {
+                const data = await apiRequest('/reverse-shells/cleanup', {
+                    method: 'POST',
+                    body: JSON.stringify({ timeout_seconds: 300 })
+                });
+                
+                showAlert(`Cleaned up ${data.cleaned_connections} inactive connections`, 'success');
+                await loadConnections();
+                
+            } catch (error) {
+                console.error('Failed to cleanup connections:', error);
+            }
+        }
+
+        // Update statistics
+        async function updateStats() {
+            try {
+                const data = await apiRequest('/reverse-shells/summary');
+                
+                document.getElementById('totalConnections').textContent = data.total_connections;
+                document.getElementById('listeningConnections').textContent = data.listening_connections;
+                document.getElementById('connectedConnections').textContent = data.connected_connections;
+                document.getElementById('activeConnections').textContent = data.connected_connections + data.listening_connections;
+                
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        // Clear console
+        function clearConsole() {
+            consoleHistory = [];
+            renderConsole();
+        }
+
+        // Download history
+        function downloadHistory() {
+            if (!currentConnectionId) return;
+            
+            const connection = connections.find(c => c.connection_id === currentConnectionId);
+            const filename = `reverse-shell-${connection.port}-${new Date().toISOString().split('T')[0]}.txt`;
+            
+            const content = consoleHistory.join('\n');
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Auto-refresh connections every 10 seconds
+        setInterval(loadConnections, 10000);
+        
+        // Auto-update stats every 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html> 
