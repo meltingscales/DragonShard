@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+echo "🐉 DragonShard - NixOS Setup Helper"
+echo "===================================="
+echo ""
+
+# Check if we're on NixOS
+if [ -f /etc/os-release ] && grep -q "nixos" /etc/os-release; then
+    echo "✅ Detected NixOS system"
+else
+    echo "⚠️  This script is designed for NixOS systems"
+    echo "   For other systems, use: make setup"
+    exit 1
+fi
+
+echo ""
+echo "📋 Required NixOS Configuration:"
+echo "================================="
+echo ""
+echo "Add the following to your /etc/nixos/configuration.nix:"
+echo ""
+echo "environment.systemPackages = with pkgs; ["
+echo "  # Python with tkinter support"
+echo "  python3"
+echo "  python3Packages.tkinter"
+echo "  # Node.js and pnpm for frontend"
+echo "  nodejs_20"
+echo "  nodePackages.pnpm"
+echo "  # Additional tools"
+echo "  git"
+echo "  docker"
+echo "  docker-compose"
+echo "];"
+echo ""
+echo "Or add to your home-manager configuration:"
+echo ""
+echo "home.packages = with pkgs; ["
+echo "  python3"
+echo "  python3Packages.tkinter"
+echo "  nodejs_20"
+echo "  nodePackages.pnpm"
+echo "];"
+echo ""
+echo "After updating your configuration, run:"
+echo "  sudo nixos-rebuild switch"
+echo ""
+echo "Then run: make setup-nixos"
+echo ""
+echo "⚠️  Note: Playwright browser automation will be limited on NixOS"
+echo "   due to dynamic linking restrictions. Core functionality will work." 

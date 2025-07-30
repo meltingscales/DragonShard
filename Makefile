@@ -27,7 +27,7 @@ help:
 	@echo "  test-executor          - Run executor integration test"
 	@echo "  test-executor-stress   - Run executor stress test with complex vulnerabilities"
 	@echo "  test-visualization-api - Run visualization API test"
-	@echo "  start-visualization    - Start visualization API server"
+	@echo "  start-visualization-api - Start visualization API server"
 	@echo "  start-visualization-frontend - Start React development server"
 	@echo "  build-visualization    - Build React frontend for production"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
@@ -40,6 +40,8 @@ help:
 	@echo ""
 	@echo "🔧 Development:"
 	@echo "  setup         - Set up development environment (install deps + Playwright)"
+	@echo "  setup-nixos   - Set up development environment optimized for NixOS"
+	@echo "  setup-nixos-help - Show NixOS configuration requirements"
 	@echo "  clean         - Clean up cache and temporary files"
 	@echo ""
 
@@ -127,17 +129,17 @@ test-visualization-api:
 	@echo "🌐 Running visualization API test..."
 	@PYTHONPATH=. uv run python scripts/test_visualization_api.py
 
-start-visualization:
+start-visualization-api:
 	@echo "🚀 Starting DragonShard Visualization API..."
 	@PYTHONPATH=. uv run uvicorn dragonshard.visualizer.api.app:app --host 0.0.0.0 --port 8000 --reload
 
 start-visualization-frontend:
 	@echo "🌐 Starting DragonShard Visualization Frontend..."
-	@cd dragonshard/visualizer/frontend && npm run start
+	@cd dragonshard/visualizer/frontend && pnpm run start
 
 build-visualization:
 	@echo "🔨 Building DragonShard Visualization Frontend..."
-	@cd dragonshard/visualizer/frontend && npm run build
+	@cd dragonshard/visualizer/frontend && pnpm run build
 
 test-benchmark:
 	@echo "📊 Running genetic algorithm benchmarks..."
@@ -166,11 +168,28 @@ test-env-clean:
 setup:
 	@echo "🔧 Setting up development environment..."
 	@uv pip install -r requirements.lock.txt
-	@echo "🎭 Installing Playwright browsers..."
-	@uv run playwright install chromium
-	@echo "🎨 Installing tkinter for visualization..."
-	@sudo apt update && sudo apt install -y python3-tk
+	@echo "🎨 Checking tkinter availability..."
+	@python3 -c "import tkinter; print('✅ tkinter is available')" || (echo "⚠️  tkinter not available - install python3-tkinter on your system" && exit 1)
+	@echo "🌐 Setting up frontend dependencies..."
+	@cd dragonshard/visualizer/frontend && pnpm install
+	@echo "🎭 Checking Playwright compatibility..."
+	@python3 -c "import playwright; print('✅ Playwright installed')" || echo "⚠️  Playwright has compatibility issues on NixOS - browser automation features will be limited"
 	@echo "✅ Setup completed!"
+
+setup-nixos:
+	@echo "🔧 Setting up development environment for NixOS..."
+	@echo "📦 Installing Python dependencies..."
+	@uv pip install fastapi httpx uvicorn pytest ruff bandit safety matplotlib pandas numpy networkx beautifulsoup4 requests python-nmap
+	@echo "🎨 Checking tkinter availability..."
+	@python3 -c "import tkinter; print('✅ tkinter is available')" || (echo "⚠️  tkinter not available - add python3-tkinter to your NixOS configuration" && exit 1)
+	@echo "🌐 Setting up frontend dependencies..."
+	@cd dragonshard/visualizer/frontend && pnpm install
+	@echo "⚠️  Note: Playwright browser automation is limited on NixOS due to dynamic linking restrictions"
+	@echo "✅ NixOS setup completed!"
+
+setup-nixos-help:
+	@echo "🔧 NixOS Setup Helper"
+	@./scripts/setup-nixos.sh
 
 clean:
 	@echo "🧹 Cleaning up..."
