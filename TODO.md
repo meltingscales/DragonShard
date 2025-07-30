@@ -301,5 +301,3 @@ The next major milestone is implementing the planner module. This will include:
 - **Plugin System**: Extensible architecture for custom modules
 
 # Extra ideas
-
-- we don't use tailwind, so remove every reference to tailwind CSS. Try to use as simple and clean vanilla CSS as possible.

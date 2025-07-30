@@ -123,6 +123,58 @@ export class ApiService {
   static async getSessionSummary(): Promise<SessionSummary> {
     return this.request<SessionSummary>('/sessions/summary/stats');
   }
+
+  // Target management endpoints
+  static async addTarget(targetData: any): Promise<Host> {
+    return this.request<Host>('/targets/', {
+      method: 'POST',
+      body: JSON.stringify(targetData),
+    });
+  }
+
+  static async getTargets(): Promise<Host[]> {
+    return this.request<Host[]>('/targets/');
+  }
+
+  static async getTarget(id: string): Promise<Host> {
+    return this.request<Host>(`/targets/${id}`);
+  }
+
+  static async deleteTarget(id: string): Promise<any> {
+    return this.request<any>(`/targets/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Scanning endpoints
+  static async scanTarget(targetId: string): Promise<any> {
+    return this.request<any>(`/targets/${targetId}/scan`, {
+      method: 'POST',
+    });
+  }
+
+  static async getScanStatus(targetId: string): Promise<any> {
+    return this.request<any>(`/targets/${targetId}/scan/status`);
+  }
+
+  static async getScanResults(targetId: string): Promise<any> {
+    return this.request<any>(`/targets/${targetId}/scan/results`);
+  }
+
+  // Attack staging endpoints
+  static async stageAttack(targetId: string, vulnerabilityId: string): Promise<AttackChain> {
+    return this.request<AttackChain>('/attacks/stage', {
+      method: 'POST',
+      body: JSON.stringify({
+        target_id: targetId,
+        vulnerability_id: vulnerabilityId,
+      }),
+    });
+  }
+
+  static async getStagedAttacks(): Promise<AttackChain[]> {
+    return this.request<AttackChain[]>('/attacks/staged');
+  }
 }
 
 // WebSocket service
