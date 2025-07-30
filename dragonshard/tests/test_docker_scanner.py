@@ -4,13 +4,16 @@ Docker-based integration tests for DragonShard scanner.
 Tests scanning actual vulnerable containers like DVWA.
 """
 
-import functools
 import logging
-import subprocess
-import time
 import unittest
 
+from dragonshard.core.test_utils import (
+    BaseTestCase, DockerContainerManager, requires_nmap, setup_test_imports
+)
 from dragonshard.recon.scanner import get_open_ports, run_scan, scan_common_services
+
+# Set up test imports
+setup_test_imports()
 
 # Set up logging
 logging.basicConfig(
@@ -19,41 +22,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def requires_nmap(func):
-    """Decorator to check if nmap is available before running a test."""
-
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        try:
-            subprocess.run(["nmap", "--version"], capture_output=True, check=True, timeout=5)
-            logger.info("nmap is available")
-        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-            logger.warning("nmap not available, skipping test")
-            self.skipTest("nmap not available")
-        return func(self, *args, **kwargs)
-
-    return wrapper
-
-
-class TestDockerScanner(unittest.TestCase):
+class TestDockerScanner(BaseTestCase):
     """Integration tests using Docker containers."""
 
     def setUp(self):
         """Set up test fixtures."""
-        logger.info("Setting up Docker scanner tests")
-        self.docker_containers = []
-        self.test_targets = {}
+        super().setUp()
+        self.container_manager = DockerContainerManager()
 
     def tearDown(self):
         """Clean up Docker containers."""
-        logger.info("Cleaning up Docker containers")
-        for container_name in self.docker_containers:
-            try:
-                subprocess.run(["docker", "stop", container_name], capture_output=True, timeout=10)
-                subprocess.run(["docker", "rm", container_name], capture_output=True, timeout=10)
-                logger.info(f"Cleaned up container: {container_name}")
-            except Exception as e:
-                logger.warning(f"Failed to clean up container {container_name}: {e}")
+        super().tearDown()
 
     def wait_for_container_ready(self, container_name: str, max_wait: int = 60) -> bool:
         """

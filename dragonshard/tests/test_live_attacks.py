@@ -18,7 +18,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
-# Import DragonShard modules
+from dragonshard.core.test_utils import (
+    BaseTestCase, TestTargets, TestPayloads, setup_test_imports
+)
 from dragonshard.api_inference.unified_crawler import UnifiedCrawler, smart_crawl
 from dragonshard.fuzzing.fuzzer import Fuzzer
 from dragonshard.executor.reverse_shell import ReverseShellHandler
@@ -26,6 +28,9 @@ from dragonshard.executor.session_manager import SessionManager
 # from dragonshard.fuzzing.mutators import GeneticMutator
 # from dragonshard.planner.chain_planner import ChainPlanner
 # from dragonshard.planner.vulnerability_prioritization import VulnerabilityPrioritizer
+
+# Set up test imports
+setup_test_imports()
 
 # Configure logging
 logging.basicConfig(
@@ -35,26 +40,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class LiveAttackTestBase(unittest.TestCase):
+class LiveAttackTestBase(BaseTestCase):
     """Base class for live attack tests."""
     
     def setUp(self):
         """Set up test environment."""
+        super().setUp()
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'DragonShard/1.0'
         })
         
-        # Test targets
-        self.targets = {
-            'dvwa': 'http://localhost:8080',
-            'juice-shop': 'http://localhost:3000',
-            'webgoat': 'http://localhost:8081',
-            'vuln-php': 'http://localhost:8082',
-            'vuln-node': 'http://localhost:8083',
-            'vuln-python': 'http://localhost:8084',
-            'vuln-stress-test': 'http://localhost:8085'
-        }
+        # Use shared test targets
+        self.targets = TestTargets.get_available_targets()
         
         # Initialize DragonShard components
         self.crawler = UnifiedCrawler()
@@ -62,34 +60,12 @@ class LiveAttackTestBase(unittest.TestCase):
         # self.mutator = GeneticMutator()  # Commented out since import is commented
         # self.session_manager = SessionManager()  # Commented out since import is commented
         # self.reverse_shell_handler = ReverseShellHandler()  # Commented out since import is commented
-        
-    def wait_for_target(self, target_url: str, timeout: int = 60) -> bool:
-        """Wait for a target to become available."""
-        logger.info(f"Waiting for target: {target_url}")
-        start_time = time.time()
-        
-        while time.time() - start_time < timeout:
-            try:
-                response = self.session.get(target_url, timeout=5)
-                if response.status_code == 200:
-                    logger.info(f"✅ Target {target_url} is available")
-                    return True
-            except requests.exceptions.RequestException:
-                pass
-            
-            time.sleep(2)
-        
-        logger.error(f"❌ Target {target_url} failed to become available")
-        return False
     
     def test_target_availability(self):
         """Test that all vulnerable targets are available."""
         logger.info("🧪 Testing target availability...")
         
-        # Skip WebGoat and vuln-python as they take longer to start or have issues
-        test_targets = {k: v for k, v in self.targets.items() if k not in ['webgoat', 'vuln-python']}
-        
-        for name, url in test_targets.items():
+        for name, url in self.targets.items():
             with self.subTest(target=name):
                 self.assertTrue(
                     self.wait_for_target(url, timeout=30),
@@ -121,13 +97,7 @@ class LiveSQLInjectionTests(LiveAttackTestBase):
             self.assertEqual(response.status_code, 200)
             
             # Test SQL injection on the SQL Injection page
-            sql_payloads = [
-                "1' OR '1'='1",
-                "1' UNION SELECT 1,2,3--",
-                "admin'--",
-                "1' AND 1=1--",
-                "1' AND 1=2--"
-            ]
+            sql_payloads = TestPayloads.get_payloads_by_type('sql')
             
             for payload in sql_payloads:
                 with self.subTest(payload=payload):
@@ -164,13 +134,7 @@ class LiveSQLInjectionTests(LiveAttackTestBase):
         """Test SQL injection against vulnerable PHP app."""
         target_url = self.targets['vuln-php']
         
-        sql_payloads = [
-            "1' OR '1'='1",
-            "1' UNION SELECT 1,2,3--",
-            "admin'--",
-            "1' AND 1=1--",
-            "1' AND 1=2--"
-        ]
+        sql_payloads = TestPayloads.get_payloads_by_type('sql')
         
         for payload in sql_payloads:
             with self.subTest(payload=payload):
@@ -203,13 +167,7 @@ class LiveSQLInjectionTests(LiveAttackTestBase):
         """Test SQL injection against vulnerable Node.js app."""
         target_url = self.targets['vuln-node']
         
-        sql_payloads = [
-            "1' OR '1'='1",
-            "1' UNION SELECT 1,2,3--",
-            "admin'--",
-            "1' AND 1=1--",
-            "1' AND 1=2--"
-        ]
+        sql_payloads = TestPayloads.get_payloads_by_type('sql')
         
         for payload in sql_payloads:
             with self.subTest(payload=payload):
@@ -245,13 +203,7 @@ class LiveXSSTests(LiveAttackTestBase):
         """Test XSS against vulnerable PHP app."""
         target_url = self.targets['vuln-php']
         
-        xss_payloads = [
-            "<script>alert('XSS')</script>",
-            "<img src=x onerror=alert(1)>",
-            "javascript:alert(1)",
-            "<svg onload=alert(1)>",
-            "'><script>alert('XSS')</script>"
-        ]
+        xss_payloads = TestPayloads.get_payloads_by_type('xss')
         
         for payload in xss_payloads:
             with self.subTest(payload=payload):
@@ -269,13 +221,7 @@ class LiveXSSTests(LiveAttackTestBase):
         """Test XSS against vulnerable Node.js app."""
         target_url = self.targets['vuln-node']
         
-        xss_payloads = [
-            "<script>alert('XSS')</script>",
-            "<img src=x onerror=alert(1)>",
-            "javascript:alert(1)",
-            "<svg onload=alert(1)>",
-            "'><script>alert('XSS')</script>"
-        ]
+        xss_payloads = TestPayloads.get_payloads_by_type('xss')
         
         for payload in xss_payloads:
             with self.subTest(payload=payload):
@@ -298,13 +244,7 @@ class LiveCommandInjectionTests(LiveAttackTestBase):
         """Test command injection against vulnerable PHP app."""
         target_url = self.targets['vuln-php']
         
-        cmd_payloads = [
-            "127.0.0.1; ls",
-            "127.0.0.1 && whoami",
-            "127.0.0.1 | cat /etc/passwd",
-            "127.0.0.1; id",
-            "127.0.0.1; pwd"
-        ]
+        cmd_payloads = TestPayloads.get_payloads_by_type('command')
         
         for payload in cmd_payloads:
             with self.subTest(payload=payload):
@@ -338,13 +278,7 @@ class LiveCommandInjectionTests(LiveAttackTestBase):
         """Test command injection against vulnerable Node.js app."""
         target_url = self.targets['vuln-node']
         
-        cmd_payloads = [
-            "127.0.0.1; ls",
-            "127.0.0.1 && whoami",
-            "127.0.0.1 | cat /etc/passwd",
-            "127.0.0.1; id",
-            "127.0.0.1; pwd"
-        ]
+        cmd_payloads = TestPayloads.get_payloads_by_type('command')
         
         for payload in cmd_payloads:
             with self.subTest(payload=payload):
@@ -382,13 +316,7 @@ class LivePathTraversalTests(LiveAttackTestBase):
         """Test path traversal against vulnerable PHP app."""
         target_url = self.targets['vuln-php']
         
-        path_payloads = [
-            "../../../etc/passwd",
-            "..\\..\\..\\windows\\system32\\drivers\\etc\\hosts",
-            "....//....//....//etc/passwd",
-            "../../../etc/hosts",
-            "../../../proc/version"
-        ]
+        path_payloads = TestPayloads.get_payloads_by_type('path')
         
         for payload in path_payloads:
             with self.subTest(payload=payload):
@@ -518,11 +446,7 @@ class LiveFuzzerTests(LiveAttackTestBase):
             test_url = f"{target_url}/command"
             
             # Base command injection payloads
-            base_payloads = [
-                "127.0.0.1; ls",
-                "127.0.0.1 && whoami",
-                "127.0.0.1 | cat /etc/passwd"
-            ]
+            base_payloads = TestPayloads.get_payloads_by_type('command')
             
             # Run fuzzing
             results = fuzzer.fuzz_url(
