@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ApiService, WebSocketService } from '../services/api';
 import type { AttackSummary, VulnerabilitySummary, GeneticAlgorithmStats, SessionSummary } from '../types/api';
-import AttackMonitor from './AttackMonitor';
 import VulnerabilityMap from './VulnerabilityMap';
 import NetworkGraph from './NetworkGraph';
 import FuzzingProgress from './FuzzingProgress';
@@ -165,15 +164,9 @@ const VisualizationsPage: React.FC = () => {
           {/* Network Stats */}
           <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
             <h3 className="text-dragon-primary font-semibold mb-4">🌐 Network Topology</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">1</div>
-                <div className="text-sm text-gray-400">Hosts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">2</div>
-                <div className="text-sm text-gray-400">Services</div>
-              </div>
+            <div className="text-center text-gray-400">
+              <div className="text-2xl font-bold text-blue-400">0</div>
+              <div className="text-sm text-gray-400">Hosts</div>
             </div>
           </div>
 
@@ -199,7 +192,6 @@ const VisualizationsPage: React.FC = () => {
 
         {/* Components Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <AttackMonitor />
           <VulnerabilityMap />
           <NetworkGraph />
           <FuzzingProgress />

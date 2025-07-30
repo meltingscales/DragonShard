@@ -36,6 +36,24 @@ export class ApiService {
     return this.request<AttackChain[]>('/attacks/current/running');
   }
 
+  static async startAttack(attackId: string): Promise<any> {
+    return this.request<any>(`/attacks/${attackId}/start`, {
+      method: 'POST',
+    });
+  }
+
+  static async stopAttack(attackId: string): Promise<any> {
+    return this.request<any>(`/attacks/${attackId}/stop`, {
+      method: 'POST',
+    });
+  }
+
+  static async deleteAttack(attackId: string): Promise<any> {
+    return this.request<any>(`/attacks/${attackId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Vulnerability endpoints
   static async getVulnerabilities(): Promise<Vulnerability[]> {
     return this.request<Vulnerability[]>('/vulnerabilities/');

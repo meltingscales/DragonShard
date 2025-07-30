@@ -24,44 +24,15 @@ const ReverseShellManager: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const consoleRef = useRef<HTMLDivElement>(null);
 
-  // Mock data for demonstration
+  // Load initial data
   useEffect(() => {
-    // Initialize with some mock data
-    const mockConnections: ShellConnection[] = [
-      {
-        id: '1',
-        port: 4444,
-        host: '192.168.1.100',
-        status: 'listening',
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
-        consoleHistory: ['[*] Listening on port 4444...', '[+] Connection established from 192.168.1.100']
-      },
-      {
-        id: '2',
-        port: 4445,
-        host: '10.0.0.50',
-        status: 'connected',
-        createdAt: new Date(Date.now() - 300000).toISOString(),
-        lastActivity: new Date().toISOString(),
-        consoleHistory: [
-          '[*] Listening on port 4445...',
-          '[+] Connection established from 10.0.0.50',
-          'root@target:~# whoami',
-          'root',
-          'root@target:~# pwd',
-          '/root'
-        ]
-      }
-    ];
-
-    const mockPorts: PortAllocation[] = Array.from({ length: 10 }, (_, i) => ({
+    // Initialize with empty state
+    const initialPorts: PortAllocation[] = Array.from({ length: 10 }, (_, i) => ({
       port: 4444 + i,
-      status: i < 2 ? 'allocated' : 'available'
+      status: 'available'
     }));
 
-    setConnections(mockConnections);
-    setAllocatedPorts(mockPorts);
+    setAllocatedPorts(initialPorts);
   }, []);
 
   const createListener = async () => {
