@@ -15,6 +15,21 @@ help:
 	@echo "  security      - Run security checks (Bandit + Safety)"
 	@echo "  all-checks    - Run all quality checks"
 	@echo ""
+	@echo "🗄️  Database:"
+	@echo "  db-init       - Initialize database and create tables"
+	@echo "  db-status     - Check database status and table counts"
+	@echo "  db-migrate    - Run database migrations"
+	@echo "  db-create-migration - Create new migration"
+	@echo "  db-drop       - Drop all database tables"
+	@echo "  db-check      - Check database connection"
+	@echo "  db-test       - Run database tests"
+	@echo ""
+	@echo "🐳 Docker:"
+	@echo "  docker-up     - Start DragonShard with database (docker-compose)"
+	@echo "  docker-down   - Stop DragonShard containers"
+	@echo "  docker-build  - Build DragonShard Docker image"
+	@echo "  docker-logs   - Show Docker container logs"
+	@echo ""
 	@echo "🧪 Testing:"
 	@echo "  test                    - Run all unit tests"
 	@echo "  test-crawlers          - Run crawler tests"
@@ -48,6 +63,57 @@ help:
 	@echo "  setup-nixos-help - Show NixOS configuration requirements"
 	@echo "  clean         - Clean up cache and temporary files"
 	@echo ""
+	@echo "📊 Documentation:"
+	@echo "  diagrams      - Generate ER and module diagrams"
+	@echo "  diagrams-readme - Generate diagrams and update README"
+	@echo "  demo-diagrams - Run diagram generation demo"
+	@echo ""
+
+# Database targets
+db-init:
+	@echo "🗄️  Initializing database..."
+	@python scripts/manage_db.py init
+
+db-status:
+	@echo "📊 Checking database status..."
+	@python scripts/manage_db.py status
+
+db-migrate:
+	@echo "🔄 Running database migrations..."
+	@python scripts/manage_db.py migrate
+
+db-create-migration:
+	@echo "📝 Creating database migration..."
+	@python scripts/manage_db.py create-migration --message "$(message)"
+
+db-drop:
+	@echo "🗑️  Dropping database tables..."
+	@python scripts/manage_db.py drop-tables
+
+db-check:
+	@echo "🔍 Checking database connection..."
+	@python scripts/manage_db.py check
+
+db-test:
+	@echo "🧪 Running database tests..."
+	@python scripts/test_database.py
+
+# Docker targets
+docker-up:
+	@echo "🐳 Starting DragonShard with database..."
+	@docker-compose up -d
+
+docker-down:
+	@echo "🐳 Stopping DragonShard containers..."
+	@docker-compose down
+
+docker-build:
+	@echo "🔨 Building DragonShard Docker image..."
+	@docker-compose build
+
+docker-logs:
+	@echo "📋 Showing Docker container logs..."
+	@docker-compose logs -f
 
 # Linting targets
 lint:
@@ -157,6 +223,18 @@ test-docker:
 	@echo "🐳 Running Docker integration tests..."
 	@python scripts/run_docker_tests.py
 
+test-command-injection:
+	@echo "💥 Running command injection exploitation tests..."
+	@PYTHONPATH=. uv run pytest dragonshard/tests/test_command_injection_exploitation.py -v
+
+demo-command-injection:
+	@echo "🎯 Running command injection exploitation demo..."
+	@PYTHONPATH=. uv run python scripts/demo_command_injection_exploitation.py
+
+demo-command-injection-verbose:
+	@echo "🎯 Running command injection exploitation demo (verbose)..."
+	@PYTHONPATH=. uv run python scripts/demo_command_injection_exploitation.py --verbose
+
 # Test Environment targets
 test-env-start:
 	@echo "🐳 Starting vulnerable test containers..."
@@ -220,6 +298,21 @@ clean:
 	@find . -type f -name "execution_results.json" -delete 2>/dev/null || true
 	@find . -type f -name "stress_test_*.json" -delete 2>/dev/null || true
 	@echo "✅ Cleanup completed!"
+
+# Documentation targets
+diagrams:
+	@echo "📊 Generating ER and module diagrams..."
+	@PYTHONPATH=. uv run python scripts/generate_diagrams.py
+	@echo "✅ Diagrams generated in docs/diagrams/"
+
+diagrams-readme:
+	@echo "📊 Generating diagrams and updating README..."
+	@PYTHONPATH=. uv run python scripts/generate_diagrams.py --update-readme
+	@echo "✅ Diagrams generated and README updated"
+
+demo-diagrams:
+	@echo "🎯 Running diagram generation demo..."
+	@PYTHONPATH=. uv run python scripts/demo_diagrams.py
 
 # Convenience targets
 dev: lint-fix format test

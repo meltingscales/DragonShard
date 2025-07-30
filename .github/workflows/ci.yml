@@ -51,6 +51,11 @@ jobs:
       run: |
         ruff check dragonshard/
 
+    - name: Generate diagrams
+      run: |
+        pip install graphviz
+        python scripts/generate_diagrams.py
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

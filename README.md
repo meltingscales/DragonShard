@@ -41,6 +41,19 @@ cd frontend
 pnpm install
 ```
 
+
+## 📊 Architecture Diagrams
+
+The following diagrams are auto-generated from the codebase:
+
+### Entity-Relationship Diagram
+![ER Diagram](docs/diagrams/er_diagram.svg)
+
+### Module Dependency Diagram  
+![Module Diagram](docs/diagrams/module_diagram.svg)
+
+*Diagrams are automatically updated during the build process.*
+
 ## Testing
 
 ### Unit Tests

@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: dragonshard-postgres
+    environment:
+      POSTGRES_DB: dragonshard
+      POSTGRES_USER: dragonshard
+      POSTGRES_PASSWORD: dragonshard
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dragonshard -d dragonshard"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+    networks:
+      - dragonshard-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: dragonshard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+      interval: 5s
+      start_period: 10s
+    networks:
+      - dragonshard-network
+
+  # DragonShard Application
+  dragonshard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: dragonshard-app
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://dragonshard:dragonshard@postgres:5432/dragonshard
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dragonshard
+      POSTGRES_USER: dragonshard
+      POSTGRES_PASSWORD: dragonshard
+      
+      # Redis configuration (optional)
+      REDIS_URL: redis://redis:6379/0
+      
+      # Application configuration
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      
+      # Logging
+      LOG_LEVEL: INFO
+      
+      # API configuration
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      API_WORKERS: 4
+      
+      # Development settings
+      DEBUG: ${DEBUG:-false}
+      RELOAD: ${RELOAD:-false}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./dragonshard:/app/dragonshard
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 40s
+    networks:
+      - dragonshard-network
+    restart: unless-stopped
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: dragonshard-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - dragonshard
+    networks:
+      - dragonshard-network
+    restart: unless-stopped
+
+  # Database management tool (optional)
+  adminer:
+    image: adminer:latest
+    container_name: dragonshard-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - dragonshard-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  dragonshard-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 
