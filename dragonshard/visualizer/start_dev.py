@@ -17,7 +17,7 @@ def start_backend():
     print("🚀 Starting FastAPI backend server...")
     backend_process = subprocess.Popen([
         sys.executable, "-m", "uvicorn", 
-        "dragonshard.visualizer.api.app:app",
+        "dragonshard.api.app:app",
         "--host", "0.0.0.0",
         "--port", "8000",
         "--reload"

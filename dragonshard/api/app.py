@@ -1,5 +1,9 @@
 """
-FastAPI Application for DragonShard Visualization System
+FastAPI Application for DragonShard API
+
+This is the main API application for DragonShard, providing
+comprehensive endpoints for attack monitoring, vulnerability analysis,
+and real-time visualization.
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -15,92 +19,32 @@ import os
 
 from .models import *
 from .websocket_manager import websocket_manager
+from .config import *
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
     
     app = FastAPI(
-        title="DragonShard Visualization API",
-        description="""
-        ## DragonShard Visualization API
-        
-        Real-time visualization API for DragonShard attack monitoring and analysis.
-        
-        ### Features
-        - **Attack Monitoring**: Track and visualize attack chains in real-time
-        - **Vulnerability Analysis**: Monitor and correlate discovered vulnerabilities
-        - **Network Topology**: Interactive network graph visualization
-        - **Genetic Fuzzing**: Monitor genetic algorithm progress and mutations
-        - **Session Management**: Track authentication and session states
-        - **Reverse Shell**: Manage reverse shell connections and consoles
-        - **Data Export**: Export results and reports in various formats
-        
-        ### Authentication
-        Currently no authentication required for development.
-        
-        ### WebSocket Support
-        Real-time updates available via WebSocket at `/ws`
-        """,
-        version="1.0.0",
+        title=API_TITLE,
+        description=API_DESCRIPTION,
+        version=API_VERSION,
         docs_url="/api/docs",
         redoc_url="/api/redoc",
         openapi_url="/api/openapi.json",
-        servers=[
-            {"url": "http://localhost:8000", "description": "Development server"},
-            {"url": "https://api.dragonshard.com", "description": "Production server"}
-        ],
-        contact={
-            "name": "DragonShard Team",
-            "url": "https://github.com/dragonshard/dragonshard",
-        },
-        license_info={
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT",
-        },
-        tags_metadata=[
-            {
-                "name": "attacks",
-                "description": "Attack chain monitoring and management operations",
-            },
-            {
-                "name": "vulnerabilities", 
-                "description": "Vulnerability discovery and analysis operations",
-            },
-            {
-                "name": "network",
-                "description": "Network topology and host discovery operations",
-            },
-            {
-                "name": "fuzzing",
-                "description": "Genetic algorithm and fuzzing operations",
-            },
-            {
-                "name": "sessions",
-                "description": "Session management and authentication operations",
-            },
-            {
-                "name": "export",
-                "description": "Data export and reporting operations",
-            },
-            {
-                "name": "genetic_algorithm",
-                "description": "Genetic algorithm progress and mutation tracking",
-            },
-            {
-                "name": "reverse_shells",
-                "description": "Reverse shell connection management",
-            },
-        ]
+        servers=SERVERS,
+        contact=API_CONTACT,
+        license_info=API_LICENSE,
+        tags_metadata=API_TAGS_METADATA
     )
     
     # Configure CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # In production, specify actual origins
+        allow_origins=CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

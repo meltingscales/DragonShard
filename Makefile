@@ -30,7 +30,8 @@ help:
 	@echo "  test-live-attacks       - Run live attack tests against vulnerable containers"
 	@echo "  test-full-workflow      - Run full DragonShard workflow tests"
 	@echo "  test-visualization-api - Run visualization API test"
-	@echo "  start-visualization-api - Start visualization API server"
+	@echo "  start-api              - Start main DragonShard API server"
+	@echo "  start-visualization-api - Start visualization API server (legacy)"
 	@echo "  start-frontend        - Start React development server"
 	@echo "  build-frontend        - Build React frontend for production"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
@@ -132,8 +133,12 @@ test-visualization-api:
 	@echo "🌐 Running visualization API test..."
 	@PYTHONPATH=. uv run python scripts/test_visualization_api.py
 
+start-api:
+	@echo "🚀 Starting DragonShard API..."
+	@PYTHONPATH=. uv run uvicorn dragonshard.api.app:app --host 0.0.0.0 --port 8000 --reload
+
 start-visualization-api:
-	@echo "🚀 Starting DragonShard Visualization API..."
+	@echo "🚀 Starting DragonShard Visualization API (legacy)..."
 	@PYTHONPATH=. uv run uvicorn dragonshard.visualizer.api.app:app --host 0.0.0.0 --port 8000 --reload
 
 start-frontend:

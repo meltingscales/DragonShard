@@ -303,9 +303,6 @@ The next major milestone is implementing the planner module. This will include:
 # Extra ideas
 
 - feature: Make sure that DragonShard can spider a website, find a command injection vulnerability, exploit it to get a reverse shell, and hold on to that connection. Use one of our existing dockerfiles to test this.
-- Can we make a separate visualization that shows the full tree of mutations?
-- Make frontend and api used for the entire project, not just viz. so, move the api package up a bit.
 - let's use a database backend instead of an in-memory store.
 - I don't want to just simulate fuzzing or other functionality. Make the fuzzing web UI and API actually fuzz and perform real functionality. Get rid of all the dummy data in the UI.
-- let's add a swagger API definition using a python library. one that gets automatically generated based on our code. also, make sure the UI links to the swagger API definition in the navbar.
 - How should I generate an ER diagram or module diagram for my codebase? Can we have that be auto-generated as part of a build step and displayed in the README somehow?
