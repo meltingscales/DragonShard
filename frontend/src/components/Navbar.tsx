@@ -36,7 +36,7 @@ const Navbar: React.FC = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center gap-2 px-4 py-2 rounded text-white font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded text-white font-medium transition ${
                     isActive(link.path) 
                       ? 'bg-primary text-white' 
                       : 'hover:bg-dark'
@@ -51,9 +51,9 @@ const Navbar: React.FC = () => {
           
           {/* Status and Mobile Menu */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-dragon-card px-3 py-1 rounded">
+            <div className="flex items-center gap-2 bg-card px-3 py-1 rounded">
               <div className="status-dot success"></div>
-              <span className="text-sm text-dragon-text-muted hidden sm:inline">API Connected</span>
+              <span className="text-sm text-gray-400 hidden sm:inline">API Connected</span>
             </div>
             
             {/* API Documentation Link */}
@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
               href="http://localhost:8000/api/docs"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-2 px-3 py-1 bg-primary text-white rounded hover:bg-primary/80 transition-colors"
+              className="hidden md:flex items-center gap-2 px-3 py-1 bg-primary text-white rounded hover:bg-primary transition"
             >
               <FileText size={16} />
               <span className="text-sm">API Docs</span>
@@ -69,7 +69,7 @@ const Navbar: React.FC = () => {
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-dragon-text-muted hover:text-white hover:bg-dragon-card rounded cursor-pointer"
+              className="md:hidden p-2 text-gray-400 hover:text-white hover:bg-card rounded cursor-pointer"
             >
               {mobileMenuOpen ? (
                 <X size={24} />
@@ -91,7 +91,7 @@ const Navbar: React.FC = () => {
                     key={link.path}
                     to={link.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded text-white font-medium transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded text-white font-medium transition ${
                       isActive(link.path) 
                         ? 'bg-primary text-white' 
                         : 'hover:bg-dark'
@@ -109,7 +109,7 @@ const Navbar: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded text-white font-medium transition-colors hover:bg-dark"
+                className="flex items-center gap-3 px-4 py-3 rounded text-white font-medium transition hover:bg-dark"
               >
                 <FileText size={20} />
                 <span>API Documentation</span>

@@ -36,15 +36,15 @@ const AttacksPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'running':
-        return 'bg-dragon-success';
+        return 'bg-success';
       case 'completed':
-        return 'bg-dragon-info';
+        return 'bg-info';
       case 'failed':
-        return 'bg-dragon-danger';
+        return 'bg-danger';
       case 'pending':
-        return 'bg-dragon-warning';
+        return 'bg-warning';
       default:
-        return 'bg-dragon-text-muted';
+        return 'bg-gray-400';
     }
   };
 
@@ -77,10 +77,10 @@ const AttacksPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dragon-dark text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="min-h-screen bg-dark text-white">
+        <div className="container p-6">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dragon-primary mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-gray-400">Loading attacks...</p>
           </div>
         </div>
@@ -89,10 +89,10 @@ const AttacksPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dragon-dark text-white">
+    <div className="min-h-screen bg-dark text-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-dragon-primary to-dragon-secondary p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-primary p-6">
+        <div className="container">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold mb-2">⚡ Attack Management</h1>
@@ -100,7 +100,7 @@ const AttacksPage: React.FC = () => {
             </div>
             <button
               onClick={() => setShowNewAttackForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-black px-6 py-3 rounded-lg font-semibold flex items-center"
+              className="btn btn-primary flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
               New Attack
@@ -111,8 +111,8 @@ const AttacksPage: React.FC = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-red-600 text-white p-4 rounded-lg">
+        <div className="container p-4">
+          <div className="bg-danger text-white p-4 rounded">
             <div className="flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2" />
               <span>{error}</span>
@@ -122,44 +122,44 @@ const AttacksPage: React.FC = () => {
       )}
 
       {/* Stats Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container p-6">
         {attackSummary && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
+            <div className="card">
               <div className="flex items-center">
-                <Zap className="h-8 w-8 text-blue-400 mr-3" />
+                <Zap className="h-8 w-8 text-info mr-3" />
                 <div>
-                  <div className="text-2xl font-bold text-blue-400">{attackSummary.total_attacks}</div>
+                  <div className="text-2xl font-bold text-info">{attackSummary.total_attacks}</div>
                   <div className="text-sm text-gray-400">Total Attacks</div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
+            <div className="card">
               <div className="flex items-center">
-                <Play className="h-8 w-8 text-green-400 mr-3" />
+                <Play className="h-8 w-8 text-success mr-3" />
                 <div>
-                  <div className="text-2xl font-bold text-green-400">{attackSummary.running_attacks}</div>
+                  <div className="text-2xl font-bold text-success">{attackSummary.running_attacks}</div>
                   <div className="text-sm text-gray-400">Running</div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
+            <div className="card">
               <div className="flex items-center">
-                <Target className="h-8 w-8 text-blue-400 mr-3" />
+                <Target className="h-8 w-8 text-info mr-3" />
                 <div>
-                  <div className="text-2xl font-bold text-blue-400">{attackSummary.completed_attacks}</div>
+                  <div className="text-2xl font-bold text-info">{attackSummary.completed_attacks}</div>
                   <div className="text-sm text-gray-400">Completed</div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
+            <div className="card">
               <div className="flex items-center">
-                <AlertTriangle className="h-8 w-8 text-red-400 mr-3" />
+                <AlertTriangle className="h-8 w-8 text-danger mr-3" />
                 <div>
-                  <div className="text-2xl font-bold text-red-400">{attackSummary.failed_attacks}</div>
+                  <div className="text-2xl font-bold text-danger">{attackSummary.failed_attacks}</div>
                   <div className="text-sm text-gray-400">Failed</div>
                 </div>
               </div>
@@ -168,12 +168,12 @@ const AttacksPage: React.FC = () => {
         )}
 
         {/* Active Attacks */}
-        <div className="bg-dragon-card border border-dragon-border rounded-lg p-6 mb-6">
+        <div className="card mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-dragon-primary">🔥 Active Attacks</h2>
+            <h2 className="text-2xl font-bold text-primary">🔥 Active Attacks</h2>
             <button
               onClick={loadAttacks}
-              className="text-dragon-primary hover:text-dragon-secondary text-sm"
+              className="text-primary hover:text-secondary text-sm"
             >
               Refresh
             </button>
@@ -188,19 +188,19 @@ const AttacksPage: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {attacks.map((attack) => (
-                <div key={attack.id} className="bg-dragon-dark border border-dragon-border rounded-lg p-6">
+                <div key={attack.id} className="bg-dark border border-border rounded p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-white">{attack.name}</h3>
                       <p className="text-gray-400 text-sm">{attack.description}</p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(attack.status)}`}>
                         {attack.status}
                       </span>
                       <button
                         onClick={() => setSelectedAttack(attack)}
-                        className="text-blue-400 hover:text-blue-300 p-1"
+                        className="text-info hover:text-blue-300 p-1"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
@@ -208,7 +208,7 @@ const AttacksPage: React.FC = () => {
                       {attack.status === 'running' && (
                         <button
                           onClick={() => handleStopAttack(attack.id)}
-                          className="text-red-400 hover:text-red-300 p-1"
+                          className="text-danger hover:text-red-300 p-1"
                           title="Stop Attack"
                         >
                           <Square className="w-4 h-4" />
@@ -217,7 +217,7 @@ const AttacksPage: React.FC = () => {
                       {attack.status === 'pending' && (
                         <button
                           onClick={() => handleStartAttack(attack.id)}
-                          className="text-green-400 hover:text-green-300 p-1"
+                          className="text-success hover:text-green-300 p-1"
                           title="Start Attack"
                         >
                           <Play className="w-4 h-4" />
@@ -225,7 +225,7 @@ const AttacksPage: React.FC = () => {
                       )}
                       <button
                         onClick={() => handleDeleteAttack(attack.id)}
-                        className="text-red-400 hover:text-red-300 p-1"
+                        className="text-danger hover:text-red-300 p-1"
                         title="Delete Attack"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -237,15 +237,15 @@ const AttacksPage: React.FC = () => {
                     <span className="text-gray-400">
                       Progress: {attack.completed_steps}/{attack.total_steps}
                     </span>
-                    <span className="text-yellow-400">
+                    <span className="text-warning">
                       {attack.success_rate.toFixed(1)}% success
                     </span>
                   </div>
                   
                   {/* Progress bar */}
-                  <div className="w-full bg-dragon-dark rounded-full h-2 mb-4">
+                  <div className="w-full bg-dark rounded-full h-2 mb-4">
                     <div 
-                      className="bg-dragon-primary h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition"
                       style={{ width: `${(attack.completed_steps / attack.total_steps) * 100}%` }}
                     ></div>
                   </div>
@@ -277,29 +277,29 @@ const AttacksPage: React.FC = () => {
         </div>
 
         {/* Attack Templates */}
-        <div className="bg-dragon-card border border-dragon-border rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-dragon-primary mb-6">📋 Attack Templates</h2>
+        <div className="card">
+          <h2 className="text-2xl font-bold text-primary mb-6">📋 Attack Templates</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
+            <div className="bg-dark border border-border rounded p-4">
               <h3 className="font-semibold text-white mb-2">SQL Injection</h3>
               <p className="text-gray-400 text-sm mb-3">Automated SQL injection testing with payload generation</p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
+              <button className="btn btn-primary text-sm">
                 Start Template
               </button>
             </div>
             
-            <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
+            <div className="bg-dark border border-border rounded p-4">
               <h3 className="font-semibold text-white mb-2">XSS Detection</h3>
               <p className="text-gray-400 text-sm mb-3">Cross-site scripting vulnerability scanner</p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
+              <button className="btn btn-primary text-sm">
                 Start Template
               </button>
             </div>
             
-            <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
+            <div className="bg-dark border border-border rounded p-4">
               <h3 className="font-semibold text-white mb-2">Directory Traversal</h3>
               <p className="text-gray-400 text-sm mb-3">Path traversal and file inclusion testing</p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
+              <button className="btn btn-primary text-sm">
                 Start Template
               </button>
             </div>
@@ -310,7 +310,7 @@ const AttacksPage: React.FC = () => {
       {/* Attack Details Modal */}
       {selectedAttack && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-dragon-card border border-dragon-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div className="card max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Attack Details</h2>
               <button
@@ -342,7 +342,7 @@ const AttacksPage: React.FC = () => {
                 <h4 className="font-semibold text-white mb-2">Steps</h4>
                 <div className="space-y-2">
                   {selectedAttack.steps.map((step) => (
-                    <div key={step.id} className="bg-dragon-dark border border-dragon-border rounded p-3">
+                    <div key={step.id} className="bg-dark border border-border rounded p-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-white">{step.name}</span>
                         <span className={`px-2 py-1 rounded text-xs ${getStatusColor(step.status)}`}>

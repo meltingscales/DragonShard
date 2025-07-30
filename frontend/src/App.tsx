@@ -11,7 +11,7 @@ import './App.css';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-dragon-dark">
+      <div className="min-h-screen bg-dark">
         <Navbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
