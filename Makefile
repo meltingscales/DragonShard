@@ -23,6 +23,7 @@ help:
 	@echo "  db-drop       - Drop all database tables"
 	@echo "  db-check      - Check database connection"
 	@echo "  db-test       - Run database tests"
+	@echo "  db-demo       - Run database demo"
 	@echo ""
 	@echo "🐳 Docker:"
 	@echo "  docker-up     - Start DragonShard with database (docker-compose)"
@@ -72,31 +73,35 @@ help:
 # Database targets
 db-init:
 	@echo "🗄️  Initializing database..."
-	@python scripts/manage_db.py init
+	@uv run python scripts/manage_db.py init
 
 db-status:
 	@echo "📊 Checking database status..."
-	@python scripts/manage_db.py status
+	@uv run python scripts/manage_db.py status
 
 db-migrate:
 	@echo "🔄 Running database migrations..."
-	@python scripts/manage_db.py migrate
+	@uv run python scripts/manage_db.py migrate
 
 db-create-migration:
 	@echo "📝 Creating database migration..."
-	@python scripts/manage_db.py create-migration --message "$(message)"
+	@uv run python scripts/manage_db.py create-migration --message "$(message)"
 
 db-drop:
 	@echo "🗑️  Dropping database tables..."
-	@python scripts/manage_db.py drop-tables
+	@uv run python scripts/manage_db.py drop-tables
 
 db-check:
 	@echo "🔍 Checking database connection..."
-	@python scripts/manage_db.py check
+	@uv run python scripts/manage_db.py check
 
 db-test:
 	@echo "🧪 Running database tests..."
-	@python scripts/test_database.py
+	@uv run python scripts/test_database.py
+
+db-demo:
+	@echo "🎭 Running database demo..."
+	@uv run python scripts/demo_database.py
 
 # Docker targets
 docker-up:

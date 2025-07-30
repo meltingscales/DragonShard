@@ -135,7 +135,7 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def get_repository(self, model_class: Type[T]) -> "Repository[T]":
+    def get_repository(self, model_class: Type[T]) -> "Repository":
         """
         Get a repository for a specific model class.
 
@@ -177,7 +177,8 @@ class Repository:
             session.add(instance)
             session.flush()
             session.refresh(instance)
-            return instance
+            # Return a copy of the instance to avoid session binding issues
+            return self.model_class(**{c.name: getattr(instance, c.name) for c in instance.__table__.columns})
 
     def get_by_id(self, id_value: str) -> Optional[T]:
         """
@@ -190,9 +191,13 @@ class Repository:
             Model instance or None
         """
         with self.db_manager.get_session() as session:
-            return session.query(self.model_class).filter_by(
+            instance = session.query(self.model_class).filter_by(
                 **{self.model_class.__table__.primary_key.columns.keys()[0]: id_value}
             ).first()
+            if instance:
+                # Return a copy to avoid session binding issues
+                return self.model_class(**{c.name: getattr(instance, c.name) for c in instance.__table__.columns})
+            return None
 
     def get_all(self) -> List[T]:
         """
@@ -202,7 +207,9 @@ class Repository:
             List of model instances
         """
         with self.db_manager.get_session() as session:
-            return session.query(self.model_class).all()
+            instances = session.query(self.model_class).all()
+            # Return copies to avoid session binding issues
+            return [self.model_class(**{c.name: getattr(instance, c.name) for c in instance.__table__.columns}) for instance in instances]
 
     def update(self, id_value: str, **kwargs) -> Optional[T]:
         """
@@ -225,8 +232,10 @@ class Repository:
                     setattr(instance, key, value)
                 session.flush()
                 session.refresh(instance)
+                # Return a copy to avoid session binding issues
+                return self.model_class(**{c.name: getattr(instance, c.name) for c in instance.__table__.columns})
             
-            return instance
+            return None
 
     def delete(self, id_value: str) -> bool:
         """
@@ -260,7 +269,9 @@ class Repository:
             List of matching model instances
         """
         with self.db_manager.get_session() as session:
-            return session.query(self.model_class).filter_by(**kwargs).all()
+            instances = session.query(self.model_class).filter_by(**kwargs).all()
+            # Return copies to avoid session binding issues
+            return [self.model_class(**{c.name: getattr(instance, c.name) for c in instance.__table__.columns}) for instance in instances]
 
     def count(self) -> int:
         """
@@ -313,7 +324,7 @@ def initialize_database(database_url: Optional[str] = None) -> DatabaseManager:
     return _db_manager
 
 
-def get_repository(model_class: Type[T]) -> Repository[T]:
+def get_repository(model_class: Type[T]) -> Repository:
     """
     Get a repository for a specific model class.
 

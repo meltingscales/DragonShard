@@ -155,9 +155,9 @@ def test_repository_operations():
         from dragonshard.data.models import Host, HostStatus
         host_repo = db_manager.get_repository(Host)
         
-        # Create a test host
+        # Create a test host with unique ID
         host_data = {
-            "host_id": "test_host_123",
+            "host_id": f"test_host_{int(time.time())}",
             "hostname": "test.example.com",
             "ip_address": "192.168.1.100",
             "status": HostStatus.DISCOVERED,
@@ -170,7 +170,7 @@ def test_repository_operations():
         logger.info(f"✓ Created host: {host.host_id}")
         
         # Retrieve host
-        retrieved_host = host_repo.get_by_id("test_host_123")
+        retrieved_host = host_repo.get_by_id(host.host_id)
         if retrieved_host:
             logger.info(f"✓ Retrieved host: {retrieved_host.hostname}")
         else:
@@ -178,7 +178,7 @@ def test_repository_operations():
             return False
         
         # Update host
-        updated_host = host_repo.update("test_host_123", status=HostStatus.SCANNED)
+        updated_host = host_repo.update(host.host_id, status=HostStatus.SCANNED)
         if updated_host:
             logger.info(f"✓ Updated host status: {updated_host.status}")
         else:
@@ -190,7 +190,7 @@ def test_repository_operations():
         logger.info(f"✓ Host count: {count}")
         
         # Delete host
-        deleted = host_repo.delete("test_host_123")
+        deleted = host_repo.delete(host.host_id)
         if deleted:
             logger.info("✓ Deleted test host")
         else:
