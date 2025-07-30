@@ -126,39 +126,39 @@ export class ApiService {
 
   // Target management endpoints
   static async addTarget(targetData: any): Promise<Host> {
-    return this.request<Host>('/targets/', {
+    return this.request<Host>('/network/hosts', {
       method: 'POST',
       body: JSON.stringify(targetData),
     });
   }
 
   static async getTargets(): Promise<Host[]> {
-    return this.request<Host[]>('/targets/');
+    return this.request<Host[]>('/network/hosts');
   }
 
   static async getTarget(id: string): Promise<Host> {
-    return this.request<Host>(`/targets/${id}`);
+    return this.request<Host>(`/network/hosts/${id}`);
   }
 
   static async deleteTarget(id: string): Promise<any> {
-    return this.request<any>(`/targets/${id}`, {
+    return this.request<any>(`/network/hosts/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Scanning endpoints
   static async scanTarget(targetId: string): Promise<any> {
-    return this.request<any>(`/targets/${targetId}/scan`, {
+    return this.request<any>(`/network/hosts/${targetId}/scan`, {
       method: 'POST',
     });
   }
 
   static async getScanStatus(targetId: string): Promise<any> {
-    return this.request<any>(`/targets/${targetId}/scan/status`);
+    return this.request<any>(`/network/hosts/${targetId}/scan/status`);
   }
 
   static async getScanResults(targetId: string): Promise<any> {
-    return this.request<any>(`/targets/${targetId}/scan/results`);
+    return this.request<any>(`/network/hosts/${targetId}/scan/results`);
   }
 
   // Attack staging endpoints

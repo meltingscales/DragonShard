@@ -78,6 +78,113 @@ async def create_host(host: Host):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.delete("/hosts/{host_id}")
+async def delete_host(host_id: str):
+    """Delete a host"""
+    try:
+        for i, host in enumerate(hosts):
+            if host.id == host_id:
+                deleted_host = hosts.pop(i)
+                logger.info(f"Deleted host: {host_id}")
+                return {"message": "Host deleted successfully"}
+        
+        raise HTTPException(status_code=404, detail="Host not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting host {host_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/hosts/{host_id}/scan")
+async def scan_host(host_id: str):
+    """Start a scan on a host"""
+    try:
+        # Find the host
+        host = None
+        for h in hosts:
+            if h.id == host_id:
+                host = h
+                break
+        
+        if not host:
+            raise HTTPException(status_code=404, detail="Host not found")
+        
+        # Mock scan operation - in real implementation, this would trigger actual scanning
+        logger.info(f"Starting scan on host: {host_id}")
+        
+        # Broadcast scan start to WebSocket clients
+        await websocket_manager.broadcast({
+            "type": "scan_started", 
+            "data": {"host_id": host_id, "status": "running"}
+        })
+        
+        return {"message": "Scan started successfully", "host_id": host_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting scan on host {host_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/hosts/{host_id}/scan/status")
+async def get_scan_status(host_id: str):
+    """Get scan status for a host"""
+    try:
+        # Find the host
+        host = None
+        for h in hosts:
+            if h.id == host_id:
+                host = h
+                break
+        
+        if not host:
+            raise HTTPException(status_code=404, detail="Host not found")
+        
+        # Mock scan status - in real implementation, this would check actual scan status
+        return {
+            "host_id": host_id,
+            "status": "completed",  # Mock status
+            "progress": 100,
+            "last_scan": datetime.now().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting scan status for host {host_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/hosts/{host_id}/scan/results")
+async def get_scan_results(host_id: str):
+    """Get scan results for a host"""
+    try:
+        # Find the host
+        host = None
+        for h in hosts:
+            if h.id == host_id:
+                host = h
+                break
+        
+        if not host:
+            raise HTTPException(status_code=404, detail="Host not found")
+        
+        # Return the host's vulnerabilities as scan results
+        return {
+            "host_id": host_id,
+            "scan_completed": True,
+            "vulnerabilities_found": len(host.vulnerabilities),
+            "services_discovered": len(host.services),
+            "vulnerabilities": host.vulnerabilities,
+            "services": host.services
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting scan results for host {host_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 # Mock data for testing
 def create_mock_network():
     """Create mock network data for testing"""
