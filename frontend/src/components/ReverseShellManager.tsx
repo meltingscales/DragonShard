@@ -162,7 +162,7 @@ const ReverseShellManager: React.FC = () => {
               <button
                 onClick={createListener}
                 disabled={isLoading}
-                className="w-full bg-dragon-primary hover:bg-dragon-secondary text-white py-2 px-4 rounded transition-all duration-200 disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-black py-2 px-4 rounded transition-all duration-200 disabled:opacity-50"
               >
                 {isLoading ? 'Creating...' : 'Create Listener'}
               </button>
@@ -268,7 +268,7 @@ const ReverseShellManager: React.FC = () => {
                         input.value = '';
                       }
                     }}
-                    className="bg-dragon-primary hover:bg-dragon-secondary text-white px-4 py-2 rounded"
+                    className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded"
                   >
                     Send
                   </button>

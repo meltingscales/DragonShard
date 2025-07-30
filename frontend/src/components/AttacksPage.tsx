@@ -100,7 +100,7 @@ const AttacksPage: React.FC = () => {
             </div>
             <button
               onClick={() => setShowNewAttackForm(true)}
-              className="bg-dragon-primary hover:bg-dragon-secondary text-white px-6 py-3 rounded-lg font-semibold flex items-center"
+              className="bg-blue-600 hover:bg-blue-700 text-black px-6 py-3 rounded-lg font-semibold flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
               New Attack
@@ -283,7 +283,7 @@ const AttacksPage: React.FC = () => {
             <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">SQL Injection</h3>
               <p className="text-gray-400 text-sm mb-3">Automated SQL injection testing with payload generation</p>
-              <button className="bg-dragon-primary hover:bg-dragon-secondary text-white px-4 py-2 rounded text-sm">
+              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
                 Start Template
               </button>
             </div>
@@ -291,7 +291,7 @@ const AttacksPage: React.FC = () => {
             <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">XSS Detection</h3>
               <p className="text-gray-400 text-sm mb-3">Cross-site scripting vulnerability scanner</p>
-              <button className="bg-dragon-primary hover:bg-dragon-secondary text-white px-4 py-2 rounded text-sm">
+              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
                 Start Template
               </button>
             </div>
@@ -299,7 +299,7 @@ const AttacksPage: React.FC = () => {
             <div className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
               <h3 className="font-semibold text-white mb-2">Directory Traversal</h3>
               <p className="text-gray-400 text-sm mb-3">Path traversal and file inclusion testing</p>
-              <button className="bg-dragon-primary hover:bg-dragon-secondary text-white px-4 py-2 rounded text-sm">
+              <button className="bg-blue-600 hover:bg-blue-700 text-black px-4 py-2 rounded text-sm">
                 Start Template
               </button>
             </div>

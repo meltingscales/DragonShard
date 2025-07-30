@@ -302,4 +302,4 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
-none right now :)
+- we don't use tailwind, so remove every reference to tailwind CSS. Try to use as simple and clean vanilla CSS as possible.
