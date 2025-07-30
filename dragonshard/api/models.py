@@ -2,10 +2,12 @@
 Pydantic models for DragonShard Visualization API
 """
 
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field
+
 
 # Enums
 class AttackStatus(str, Enum):
@@ -15,11 +17,13 @@ class AttackStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
+
 class VulnerabilityLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+
 
 class ServiceType(str, Enum):
     HTTP = "http"
@@ -35,17 +39,20 @@ class ServiceType(str, Enum):
     REDIS = "redis"
     MONGODB = "mongodb"
 
+
 class FuzzingStatus(str, Enum):
     IDLE = "idle"
     RUNNING = "running"
     PAUSED = "paused"
     COMPLETED = "completed"
 
+
 # Base Models
 class BaseResponse(BaseModel):
     success: bool = True
     message: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
+
 
 # Attack Models
 class AttackStep(BaseModel):
@@ -60,6 +67,7 @@ class AttackStep(BaseModel):
     end_time: Optional[datetime] = None
     duration: Optional[float] = None
 
+
 class AttackChain(BaseModel):
     id: str
     name: str
@@ -73,6 +81,7 @@ class AttackChain(BaseModel):
     duration: Optional[float] = None
     success_rate: float = 0.0
 
+
 class AttackSummary(BaseModel):
     total_attacks: int
     running_attacks: int
@@ -80,6 +89,7 @@ class AttackSummary(BaseModel):
     failed_attacks: int
     success_rate: float
     average_duration: float
+
 
 # Vulnerability Models
 class Vulnerability(BaseModel):
@@ -94,6 +104,7 @@ class Vulnerability(BaseModel):
     discovered_at: datetime
     details: Optional[Dict[str, Any]] = None
 
+
 class VulnerabilitySummary(BaseModel):
     total_vulnerabilities: int
     critical_count: int
@@ -102,6 +113,7 @@ class VulnerabilitySummary(BaseModel):
     low_count: int
     by_service: Dict[str, int]
     by_level: Dict[str, int]
+
 
 # Network Models
 class Host(BaseModel):
@@ -114,6 +126,7 @@ class Host(BaseModel):
     services: List["Service"]
     vulnerabilities: List[Vulnerability]
 
+
 class Service(BaseModel):
     id: str
     name: str
@@ -124,12 +137,14 @@ class Service(BaseModel):
     discovered_at: datetime
     vulnerabilities: List[Vulnerability]
 
+
 class NetworkTopology(BaseModel):
     hosts: List[Host]
     total_hosts: int
     total_services: int
     total_vulnerabilities: int
     network_range: Optional[str] = None
+
 
 # Fuzzing Models
 class FuzzingSession(BaseModel):
@@ -147,6 +162,7 @@ class FuzzingSession(BaseModel):
     end_time: Optional[datetime] = None
     duration: Optional[float] = None
 
+
 class FuzzingProgress(BaseModel):
     session_id: str
     generation: int
@@ -158,6 +174,7 @@ class FuzzingProgress(BaseModel):
     successful_payloads: int
     timestamp: datetime
 
+
 class GeneticAlgorithmStats(BaseModel):
     total_sessions: int
     active_sessions: int
@@ -165,6 +182,7 @@ class GeneticAlgorithmStats(BaseModel):
     total_mutations: int
     average_fitness: float
     best_fitness: float
+
 
 # Session Models
 class Session(BaseModel):
@@ -178,11 +196,13 @@ class Session(BaseModel):
     last_used: datetime
     requests_count: int
 
+
 class SessionSummary(BaseModel):
     total_sessions: int
     authenticated_sessions: int
     active_sessions: int
     by_target: Dict[str, int]
+
 
 # Export Models
 class ExportRequest(BaseModel):
@@ -190,6 +210,7 @@ class ExportRequest(BaseModel):
     format: str = "json"  # "json", "csv", "html"
     filters: Optional[Dict[str, Any]] = None
     include_details: bool = True
+
 
 class ExportResponse(BaseModel):
     export_id: str
@@ -199,16 +220,19 @@ class ExportResponse(BaseModel):
     download_url: str
     expires_at: datetime
 
+
 # WebSocket Models
 class WebSocketMessage(BaseModel):
     type: str
     data: Optional[Dict[str, Any]] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
+
 class SubscriptionRequest(BaseModel):
     type: str = "subscribe"
     stream: str  # "attacks", "vulnerabilities", "network", "fuzzing", "sessions"
 
+
 # Update references
 Host.model_rebuild()
-Service.model_rebuild() 
+Service.model_rebuild()

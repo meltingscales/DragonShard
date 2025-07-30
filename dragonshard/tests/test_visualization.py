@@ -23,6 +23,7 @@ class TestVisualizationModule(unittest.TestCase):
         """Test that the visualization module can be imported."""
         try:
             from dragonshard.api.endpoints import genetic_algorithm
+
             self.assertTrue(hasattr(genetic_algorithm, "router"))
         except ImportError as e:
             self.skipTest(f"Visualization API not available: {e}")
@@ -54,12 +55,7 @@ class TestVisualizationModule(unittest.TestCase):
 
             # Check that the router has expected routes
             router = genetic_algorithm.router
-            expected_routes = [
-                "/progress",
-                "/population",
-                "/fitness",
-                "/mutations"
-            ]
+            expected_routes = ["/progress", "/population", "/fitness", "/mutations"]
 
             # Test that the router has routes (basic check)
             self.assertTrue(len(router.routes) > 0, "Router should have routes")

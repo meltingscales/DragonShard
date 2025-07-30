@@ -8,7 +8,10 @@ import logging
 import unittest
 
 from dragonshard.core.test_utils import (
-    BaseTestCase, DockerContainerManager, requires_nmap, setup_test_imports
+    BaseTestCase,
+    DockerContainerManager,
+    requires_nmap,
+    setup_test_imports,
 )
 from dragonshard.recon.scanner import get_open_ports, run_scan, scan_common_services
 

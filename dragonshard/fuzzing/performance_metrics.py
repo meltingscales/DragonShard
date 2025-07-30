@@ -5,12 +5,12 @@ DragonShard Performance Metrics Module
 Provides real-time performance monitoring and analysis for genetic algorithms.
 """
 
-import time
-import threading
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
-from collections import deque
 import statistics
+import threading
+import time
+from collections import deque
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 from .genetic_mutator import GeneticMutator, GeneticPayload
 

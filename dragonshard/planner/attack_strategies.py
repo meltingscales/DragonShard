@@ -12,13 +12,14 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from .chain_planner import AttackType, AttackComplexity, AttackImpact, AttackStep, AttackChain
+from .chain_planner import AttackChain, AttackComplexity, AttackImpact, AttackStep, AttackType
 
 logger = logging.getLogger(__name__)
 
 
 class StrategyType(Enum):
     """Types of attack strategies."""
+
     WEB_APPLICATION = "web_application"
     API_ATTACK = "api_attack"
     NETWORK_PENETRATION = "network_penetration"
@@ -30,6 +31,7 @@ class StrategyType(Enum):
 @dataclass
 class AttackStrategy:
     """Represents a predefined attack strategy."""
+
     strategy_id: str
     name: str
     description: str
@@ -68,42 +70,42 @@ class AttackStrategies:
                         "name": "Information Gathering",
                         "description": "Collect information about the target application",
                         "duration": 30,
-                        "tools": ["browser", "curl", "nmap"]
+                        "tools": ["browser", "curl", "nmap"],
                     },
                     {
                         "step_id": "enumeration",
                         "name": "Endpoint Discovery",
                         "description": "Discover all accessible endpoints and parameters",
                         "duration": 45,
-                        "tools": ["crawler", "dirb", "burp_suite"]
+                        "tools": ["crawler", "dirb", "burp_suite"],
                     },
                     {
                         "step_id": "vulnerability_scanning",
                         "name": "Vulnerability Assessment",
                         "description": "Identify potential vulnerabilities",
                         "duration": 60,
-                        "tools": ["fuzzer", "scanner", "manual_testing"]
+                        "tools": ["fuzzer", "scanner", "manual_testing"],
                     },
                     {
                         "step_id": "exploitation",
                         "name": "Vulnerability Exploitation",
                         "description": "Exploit discovered vulnerabilities",
                         "duration": 90,
-                        "tools": ["custom_payloads", "exploit_frameworks"]
+                        "tools": ["custom_payloads", "exploit_frameworks"],
                     },
                     {
                         "step_id": "post_exploitation",
                         "name": "Post-Exploitation",
                         "description": "Maintain access and gather additional information",
                         "duration": 120,
-                        "tools": ["shell", "data_exfiltration_tools"]
-                    }
+                        "tools": ["shell", "data_exfiltration_tools"],
+                    },
                 ],
                 success_criteria=[
                     "All endpoints discovered and tested",
                     "Vulnerabilities identified and exploited",
                     "Access maintained and documented",
-                    "Comprehensive report generated"
+                    "Comprehensive report generated",
                 ],
                 risk_level=AttackComplexity.HIGH,
                 estimated_duration=345,  # 5 hours 45 minutes
@@ -112,8 +114,8 @@ class AttackStrategies:
                     "Implement comprehensive input validation",
                     "Use secure coding practices",
                     "Regular security assessments",
-                    "Implement defense in depth"
-                ]
+                    "Implement defense in depth",
+                ],
             ),
             "sql_injection_chain": AttackStrategy(
                 strategy_id="sql_injection_chain",
@@ -128,35 +130,35 @@ class AttackStrategies:
                         "name": "Confirm SQL Injection",
                         "description": "Verify SQL injection vulnerability exists",
                         "duration": 15,
-                        "tools": ["sqlmap", "manual_testing"]
+                        "tools": ["sqlmap", "manual_testing"],
                     },
                     {
                         "step_id": "database_enumeration",
                         "name": "Database Enumeration",
                         "description": "Enumerate database structure and contents",
                         "duration": 30,
-                        "tools": ["sqlmap", "custom_queries"]
+                        "tools": ["sqlmap", "custom_queries"],
                     },
                     {
                         "step_id": "data_extraction",
                         "name": "Data Extraction",
                         "description": "Extract sensitive data from database",
                         "duration": 45,
-                        "tools": ["sqlmap", "custom_scripts"]
+                        "tools": ["sqlmap", "custom_scripts"],
                     },
                     {
                         "step_id": "privilege_escalation",
                         "name": "Privilege Escalation",
                         "description": "Attempt to gain elevated database privileges",
                         "duration": 60,
-                        "tools": ["custom_queries", "exploit_techniques"]
-                    }
+                        "tools": ["custom_queries", "exploit_techniques"],
+                    },
                 ],
                 success_criteria=[
                     "SQL injection vulnerability confirmed",
                     "Database structure enumerated",
                     "Sensitive data extracted",
-                    "Privilege escalation achieved"
+                    "Privilege escalation achieved",
                 ],
                 risk_level=AttackComplexity.MEDIUM,
                 estimated_duration=150,  # 2 hours 30 minutes
@@ -165,8 +167,8 @@ class AttackStrategies:
                     "Use parameterized queries",
                     "Implement input validation",
                     "Apply principle of least privilege",
-                    "Regular security testing"
-                ]
+                    "Regular security testing",
+                ],
             ),
             "xss_attack_chain": AttackStrategy(
                 strategy_id="xss_attack_chain",
@@ -181,27 +183,27 @@ class AttackStrategies:
                         "name": "Payload Development",
                         "description": "Develop effective XSS payloads",
                         "duration": 20,
-                        "tools": ["payload_generators", "manual_testing"]
+                        "tools": ["payload_generators", "manual_testing"],
                     },
                     {
                         "step_id": "session_hijacking",
                         "name": "Session Hijacking",
                         "description": "Attempt to hijack user sessions",
                         "duration": 30,
-                        "tools": ["custom_scripts", "session_analysis"]
+                        "tools": ["custom_scripts", "session_analysis"],
                     },
                     {
                         "step_id": "data_exfiltration",
                         "name": "Data Exfiltration",
                         "description": "Extract sensitive data via XSS",
                         "duration": 40,
-                        "tools": ["custom_payloads", "data_collection"]
-                    }
+                        "tools": ["custom_payloads", "data_collection"],
+                    },
                 ],
                 success_criteria=[
                     "XSS vulnerability confirmed",
                     "Session hijacking successful",
-                    "Data exfiltration achieved"
+                    "Data exfiltration achieved",
                 ],
                 risk_level=AttackComplexity.LOW,
                 estimated_duration=90,  # 1 hour 30 minutes
@@ -210,8 +212,8 @@ class AttackStrategies:
                     "Implement output encoding",
                     "Use Content Security Policy",
                     "Input validation and sanitization",
-                    "Regular security assessments"
-                ]
+                    "Regular security assessments",
+                ],
             ),
             "rce_attack_chain": AttackStrategy(
                 strategy_id="rce_attack_chain",
@@ -226,35 +228,35 @@ class AttackStrategies:
                         "name": "Confirm Command Injection",
                         "description": "Verify command injection vulnerability",
                         "duration": 20,
-                        "tools": ["manual_testing", "payload_generators"]
+                        "tools": ["manual_testing", "payload_generators"],
                     },
                     {
                         "step_id": "shell_establishment",
                         "name": "Shell Establishment",
                         "description": "Establish reverse shell connection",
                         "duration": 30,
-                        "tools": ["netcat", "custom_payloads"]
+                        "tools": ["netcat", "custom_payloads"],
                     },
                     {
                         "step_id": "privilege_escalation",
                         "name": "Privilege Escalation",
                         "description": "Attempt to gain elevated system privileges",
                         "duration": 60,
-                        "tools": ["exploit_frameworks", "manual_techniques"]
+                        "tools": ["exploit_frameworks", "manual_techniques"],
                     },
                     {
                         "step_id": "persistence",
                         "name": "Persistence Establishment",
                         "description": "Establish persistent access to the system",
                         "duration": 45,
-                        "tools": ["custom_scripts", "system_tools"]
-                    }
+                        "tools": ["custom_scripts", "system_tools"],
+                    },
                 ],
                 success_criteria=[
                     "Command injection confirmed",
                     "Reverse shell established",
                     "Privilege escalation achieved",
-                    "Persistent access maintained"
+                    "Persistent access maintained",
                 ],
                 risk_level=AttackComplexity.HIGH,
                 estimated_duration=155,  # 2 hours 35 minutes
@@ -263,8 +265,8 @@ class AttackStrategies:
                     "Avoid command execution",
                     "Implement proper input validation",
                     "Use secure coding practices",
-                    "Regular security monitoring"
-                ]
+                    "Regular security monitoring",
+                ],
             ),
             "api_attack_chain": AttackStrategy(
                 strategy_id="api_attack_chain",
@@ -279,35 +281,35 @@ class AttackStrategies:
                         "name": "API Endpoint Discovery",
                         "description": "Discover all API endpoints and methods",
                         "duration": 30,
-                        "tools": ["crawler", "manual_testing", "documentation"]
+                        "tools": ["crawler", "manual_testing", "documentation"],
                     },
                     {
                         "step_id": "authentication_bypass",
                         "name": "Authentication Bypass",
                         "description": "Attempt to bypass API authentication",
                         "duration": 45,
-                        "tools": ["custom_scripts", "manual_testing"]
+                        "tools": ["custom_scripts", "manual_testing"],
                     },
                     {
                         "step_id": "data_extraction",
                         "name": "Data Extraction",
                         "description": "Extract sensitive data from API endpoints",
                         "duration": 60,
-                        "tools": ["custom_scripts", "data_analysis"]
+                        "tools": ["custom_scripts", "data_analysis"],
                     },
                     {
                         "step_id": "privilege_escalation",
                         "name": "Privilege Escalation",
                         "description": "Attempt to gain elevated API privileges",
                         "duration": 45,
-                        "tools": ["custom_scripts", "manual_techniques"]
-                    }
+                        "tools": ["custom_scripts", "manual_techniques"],
+                    },
                 ],
                 success_criteria=[
                     "All API endpoints discovered",
                     "Authentication bypassed",
                     "Sensitive data extracted",
-                    "Elevated privileges obtained"
+                    "Elevated privileges obtained",
                 ],
                 risk_level=AttackComplexity.MEDIUM,
                 estimated_duration=180,  # 3 hours
@@ -316,9 +318,9 @@ class AttackStrategies:
                     "Implement proper authentication",
                     "Use API security best practices",
                     "Regular security testing",
-                    "Implement rate limiting"
-                ]
-            )
+                    "Implement rate limiting",
+                ],
+            ),
         }
         return strategies
 
@@ -346,7 +348,9 @@ class AttackStrategies:
         """
         return [s for s in self.strategies.values() if s.strategy_type == strategy_type]
 
-    def get_strategies_for_vulnerability(self, vulnerability_type: AttackType) -> List[AttackStrategy]:
+    def get_strategies_for_vulnerability(
+        self, vulnerability_type: AttackType
+    ) -> List[AttackStrategy]:
         """
         Get strategies suitable for a specific vulnerability type.
 
@@ -367,8 +371,9 @@ class AttackStrategies:
         strategy_ids = vulnerability_strategy_map.get(vulnerability_type, [])
         return [self.strategies[sid] for sid in strategy_ids if sid in self.strategies]
 
-    def convert_strategy_to_chain(self, strategy: AttackStrategy, target_host: str, 
-                                 vulnerabilities: List[Any]) -> AttackChain:
+    def convert_strategy_to_chain(
+        self, strategy: AttackStrategy, target_host: str, vulnerabilities: List[Any]
+    ) -> AttackChain:
         """
         Convert an attack strategy to an attack chain.
 
@@ -392,7 +397,7 @@ class AttackStrategies:
                 expected_outcome=step["description"],
                 success_criteria=f"Step {step['step_id']} completed successfully",
                 dependencies=[s["step_id"] for s in strategy.attack_steps[:i]],
-                estimated_time=step["duration"] * 60  # Convert to seconds
+                estimated_time=step["duration"] * 60,  # Convert to seconds
             )
             attack_steps.append(attack_step)
 
@@ -410,7 +415,7 @@ class AttackStrategies:
             success_probability=success_probability,
             estimated_duration=strategy.estimated_duration * 60,  # Convert to seconds
             risk_assessment=f"Risk level: {strategy.risk_level.value}",
-            mitigation_strategies=strategy.mitigation_strategies
+            mitigation_strategies=strategy.mitigation_strategies,
         )
 
         return chain
@@ -445,7 +450,7 @@ class AttackStrategies:
                     "risk_level": s.risk_level.value,
                     "estimated_duration": s.estimated_duration,
                     "required_tools": s.required_tools,
-                    "mitigation_strategies": s.mitigation_strategies
+                    "mitigation_strategies": s.mitigation_strategies,
                 }
                 for s in self.strategies.values()
             ]
@@ -460,6 +465,7 @@ class AttackStrategies:
 if __name__ == "__main__":
     # Example usage
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     # Initialize attack strategies
@@ -477,4 +483,4 @@ if __name__ == "__main__":
     print(f"\nSQL Injection strategies: {len(sql_strategies)}")
 
     # Export strategies
-    strategies.export_strategies("attack_strategies.json") 
+    strategies.export_strategies("attack_strategies.json")

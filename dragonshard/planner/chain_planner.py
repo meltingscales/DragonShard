@@ -9,10 +9,10 @@ and fuzzing results to generate actionable attack strategies.
 import json
 import logging
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import httpx
 
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class AttackType(Enum):
     """Types of attacks that can be planned."""
+
     SQL_INJECTION = "sql_injection"
     XSS = "xss"
     COMMAND_INJECTION = "command_injection"
@@ -39,6 +40,7 @@ class AttackType(Enum):
 
 class AttackComplexity(Enum):
     """Complexity levels for attack chains."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -47,6 +49,7 @@ class AttackComplexity(Enum):
 
 class AttackImpact(Enum):
     """Impact levels for attack chains."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -56,6 +59,7 @@ class AttackImpact(Enum):
 @dataclass
 class Vulnerability:
     """Represents a discovered vulnerability."""
+
     target_url: str
     vulnerability_type: AttackType
     payload: str
@@ -79,6 +83,7 @@ class Vulnerability:
 @dataclass
 class AttackStep:
     """Represents a single step in an attack chain."""
+
     step_id: str
     step_name: str
     attack_type: AttackType
@@ -101,6 +106,7 @@ class AttackStep:
 @dataclass
 class AttackChain:
     """Represents a complete attack chain."""
+
     chain_id: str
     chain_name: str
     description: str
@@ -141,17 +147,17 @@ class ChainPlanner:
         self.llm_api_key = llm_api_key
         self.llm_base_url = llm_base_url or "https://api.openai.com/v1"
         self.client = httpx.Client(timeout=30.0)
-        
+
         # Load attack strategies and templates
         self.attack_strategies = self._load_attack_strategies()
         self.vulnerability_patterns = self._load_vulnerability_patterns()
         self.chain_templates = self._load_chain_templates()
-        
+
         # Planning state
         self.discovered_vulnerabilities: List[Vulnerability] = []
         self.generated_chains: List[AttackChain] = []
         self.target_information: Dict[str, Any] = {}
-        
+
         logger.info("ChainPlanner initialized successfully")
 
     def _load_attack_strategies(self) -> Dict[str, Any]:
@@ -164,10 +170,10 @@ class ChainPlanner:
                     "vulnerability_discovery",
                     "payload_injection",
                     "data_extraction",
-                    "privilege_escalation"
+                    "privilege_escalation",
                 ],
                 "complexity": AttackComplexity.MEDIUM,
-                "impact": AttackImpact.HIGH
+                "impact": AttackImpact.HIGH,
             },
             "xss_chain": {
                 "name": "Cross-Site Scripting Chain",
@@ -175,10 +181,10 @@ class ChainPlanner:
                     "input_discovery",
                     "payload_testing",
                     "session_hijacking",
-                    "data_exfiltration"
+                    "data_exfiltration",
                 ],
                 "complexity": AttackComplexity.LOW,
-                "impact": AttackImpact.MEDIUM
+                "impact": AttackImpact.MEDIUM,
             },
             "rce_chain": {
                 "name": "Remote Code Execution Chain",
@@ -187,10 +193,10 @@ class ChainPlanner:
                     "payload_development",
                     "code_injection",
                     "shell_establishment",
-                    "persistence"
+                    "persistence",
                 ],
                 "complexity": AttackComplexity.HIGH,
-                "impact": AttackImpact.CRITICAL
+                "impact": AttackImpact.CRITICAL,
             },
             "authentication_bypass": {
                 "name": "Authentication Bypass Chain",
@@ -198,11 +204,11 @@ class ChainPlanner:
                     "endpoint_discovery",
                     "auth_mechanism_analysis",
                     "bypass_technique_selection",
-                    "access_granted"
+                    "access_granted",
                 ],
                 "complexity": AttackComplexity.MEDIUM,
-                "impact": AttackImpact.HIGH
-            }
+                "impact": AttackImpact.HIGH,
+            },
         }
         return strategies
 
@@ -213,26 +219,26 @@ class ChainPlanner:
                 "indicators": ["sql", "mysql", "postgresql", "oracle", "syntax error"],
                 "payloads": ["' OR 1=1--", "'; DROP TABLE users--", "' UNION SELECT 1,2,3--"],
                 "impact": AttackImpact.HIGH,
-                "complexity": AttackComplexity.MEDIUM
+                "complexity": AttackComplexity.MEDIUM,
             },
             AttackType.XSS: {
                 "indicators": ["alert", "script", "javascript", "onload", "onerror"],
                 "payloads": ["<script>alert(1)</script>", "<img src=x onerror=alert(1)>"],
                 "impact": AttackImpact.MEDIUM,
-                "complexity": AttackComplexity.LOW
+                "complexity": AttackComplexity.LOW,
             },
             AttackType.COMMAND_INJECTION: {
                 "indicators": ["root:", "uid=", "gid=", "drwx", "ls -la"],
                 "payloads": ["; ls", "&& whoami", "| cat /etc/passwd"],
                 "impact": AttackImpact.CRITICAL,
-                "complexity": AttackComplexity.HIGH
+                "complexity": AttackComplexity.HIGH,
             },
             AttackType.PATH_TRAVERSAL: {
                 "indicators": ["root:x:", "bin:x:", "daemon:x:", "/etc/passwd"],
                 "payloads": ["../../../etc/passwd", "..\\..\\..\\windows\\system32"],
                 "impact": AttackImpact.HIGH,
-                "complexity": AttackComplexity.MEDIUM
-            }
+                "complexity": AttackComplexity.MEDIUM,
+            },
         }
         return patterns
 
@@ -246,8 +252,8 @@ class ChainPlanner:
                     "reconnaissance",
                     "vulnerability_discovery",
                     "exploitation",
-                    "post_exploitation"
-                ]
+                    "post_exploitation",
+                ],
             },
             "api_attack": {
                 "name": "API Attack Chain",
@@ -256,8 +262,8 @@ class ChainPlanner:
                     "endpoint_discovery",
                     "authentication_bypass",
                     "data_extraction",
-                    "privilege_escalation"
-                ]
+                    "privilege_escalation",
+                ],
             },
             "network_penetration": {
                 "name": "Network Penetration Chain",
@@ -266,9 +272,9 @@ class ChainPlanner:
                     "network_scanning",
                     "service_enumeration",
                     "vulnerability_exploitation",
-                    "lateral_movement"
-                ]
-            }
+                    "lateral_movement",
+                ],
+            },
         }
         return templates
 
@@ -280,7 +286,9 @@ class ChainPlanner:
             vulnerability: The discovered vulnerability
         """
         self.discovered_vulnerabilities.append(vulnerability)
-        logger.info(f"Added vulnerability: {vulnerability.vulnerability_type.value} on {vulnerability.target_url}")
+        logger.info(
+            f"Added vulnerability: {vulnerability.vulnerability_type.value} on {vulnerability.target_url}"
+        )
 
     def add_target_information(self, host: str, information: Dict[str, Any]) -> None:
         """
@@ -309,30 +317,38 @@ class ChainPlanner:
             "impact_distribution": {},
             "complexity_distribution": {},
             "high_risk_targets": [],
-            "attack_opportunities": []
+            "attack_opportunities": [],
         }
 
         # Analyze vulnerability types
         for vuln in self.discovered_vulnerabilities:
             vuln_type = vuln.vulnerability_type.value
-            analysis["vulnerability_types"][vuln_type] = analysis["vulnerability_types"].get(vuln_type, 0) + 1
+            analysis["vulnerability_types"][vuln_type] = (
+                analysis["vulnerability_types"].get(vuln_type, 0) + 1
+            )
 
             # Impact distribution
             impact = vuln.impact.value
-            analysis["impact_distribution"][impact] = analysis["impact_distribution"].get(impact, 0) + 1
+            analysis["impact_distribution"][impact] = (
+                analysis["impact_distribution"].get(impact, 0) + 1
+            )
 
             # Complexity distribution
             complexity = vuln.complexity.value
-            analysis["complexity_distribution"][complexity] = analysis["complexity_distribution"].get(complexity, 0) + 1
+            analysis["complexity_distribution"][complexity] = (
+                analysis["complexity_distribution"].get(complexity, 0) + 1
+            )
 
             # High risk targets
             if vuln.impact in [AttackImpact.HIGH, AttackImpact.CRITICAL]:
-                analysis["high_risk_targets"].append({
-                    "url": vuln.target_url,
-                    "type": vuln.vulnerability_type.value,
-                    "impact": vuln.impact.value,
-                    "confidence": vuln.confidence
-                })
+                analysis["high_risk_targets"].append(
+                    {
+                        "url": vuln.target_url,
+                        "type": vuln.vulnerability_type.value,
+                        "impact": vuln.impact.value,
+                        "confidence": vuln.confidence,
+                    }
+                )
 
         # Identify attack opportunities
         analysis["attack_opportunities"] = self._identify_attack_opportunities()
@@ -356,9 +372,11 @@ class ChainPlanner:
             opportunity = {
                 "target": target,
                 "vulnerability_count": len(vulns),
-                "high_impact_vulns": [v for v in vulns if v.impact in [AttackImpact.HIGH, AttackImpact.CRITICAL]],
+                "high_impact_vulns": [
+                    v for v in vulns if v.impact in [AttackImpact.HIGH, AttackImpact.CRITICAL]
+                ],
                 "attack_chains": self._identify_chain_opportunities(vulns),
-                "risk_score": self._calculate_risk_score(vulns)
+                "risk_score": self._calculate_risk_score(vulns),
             }
             opportunities.append(opportunity)
 
@@ -379,12 +397,16 @@ class ChainPlanner:
             chains.append("xss_chain")
 
         # Check for RCE chains
-        rce_vulns = [v for v in vulnerabilities if v.vulnerability_type == AttackType.COMMAND_INJECTION]
+        rce_vulns = [
+            v for v in vulnerabilities if v.vulnerability_type == AttackType.COMMAND_INJECTION
+        ]
         if rce_vulns:
             chains.append("rce_chain")
 
         # Check for authentication bypass opportunities
-        auth_vulns = [v for v in vulnerabilities if v.vulnerability_type == AttackType.AUTHENTICATION_BYPASS]
+        auth_vulns = [
+            v for v in vulnerabilities if v.vulnerability_type == AttackType.AUTHENTICATION_BYPASS
+        ]
         if auth_vulns:
             chains.append("authentication_bypass_chain")
 
@@ -399,8 +421,10 @@ class ChainPlanner:
         for vuln in vulnerabilities:
             # Base score from impact and complexity
             impact_score = {"low": 1, "medium": 2, "high": 3, "critical": 4}[vuln.impact.value]
-            complexity_score = {"low": 1, "medium": 2, "high": 3, "critical": 4}[vuln.complexity.value]
-            
+            complexity_score = {"low": 1, "medium": 2, "high": 3, "critical": 4}[
+                vuln.complexity.value
+            ]
+
             # Factor in confidence and exploitability
             score = (impact_score + complexity_score) * vuln.confidence * vuln.exploitability
             total_score += score
@@ -424,7 +448,9 @@ class ChainPlanner:
         # Filter vulnerabilities by target if specified
         target_vulns = self.discovered_vulnerabilities
         if target_host:
-            target_vulns = [v for v in self.discovered_vulnerabilities if target_host in v.target_url]
+            target_vulns = [
+                v for v in self.discovered_vulnerabilities if target_host in v.target_url
+            ]
 
         if not target_vulns:
             logger.warning(f"No vulnerabilities found for target: {target_host}")
@@ -456,7 +482,9 @@ class ChainPlanner:
 
         return chains
 
-    def _generate_sql_injection_chains(self, vulnerabilities: List[Vulnerability]) -> List[AttackChain]:
+    def _generate_sql_injection_chains(
+        self, vulnerabilities: List[Vulnerability]
+    ) -> List[AttackChain]:
         """Generate SQL injection attack chains."""
         sql_vulns = [v for v in vulnerabilities if v.vulnerability_type == AttackType.SQL_INJECTION]
         if not sql_vulns:
@@ -473,7 +501,7 @@ class ChainPlanner:
                     payload="",
                     expected_outcome="Identify vulnerable endpoints",
                     success_criteria="Endpoint discovered",
-                    estimated_time=30
+                    estimated_time=30,
                 ),
                 AttackStep(
                     step_id="discovery",
@@ -484,7 +512,7 @@ class ChainPlanner:
                     expected_outcome="Confirm SQL injection vulnerability",
                     success_criteria="SQL error or unexpected response",
                     dependencies=["recon"],
-                    estimated_time=60
+                    estimated_time=60,
                 ),
                 AttackStep(
                     step_id="extraction",
@@ -495,7 +523,7 @@ class ChainPlanner:
                     expected_outcome="Extract sensitive data",
                     success_criteria="Database data retrieved",
                     dependencies=["discovery"],
-                    estimated_time=120
+                    estimated_time=120,
                 ),
                 AttackStep(
                     step_id="escalation",
@@ -506,8 +534,8 @@ class ChainPlanner:
                     expected_outcome="Gain elevated privileges",
                     success_criteria="Database structure modified",
                     dependencies=["extraction"],
-                    estimated_time=180
-                )
+                    estimated_time=180,
+                ),
             ]
 
             chain = AttackChain(
@@ -520,7 +548,7 @@ class ChainPlanner:
                 total_complexity=AttackComplexity.MEDIUM,
                 success_probability=vuln.confidence,
                 estimated_duration=sum(step.estimated_time for step in steps),
-                risk_assessment="High risk - potential data breach and system compromise"
+                risk_assessment="High risk - potential data breach and system compromise",
             )
             chains.append(chain)
 
@@ -543,7 +571,7 @@ class ChainPlanner:
                     payload="",
                     expected_outcome="Identify user input points",
                     success_criteria="Input fields identified",
-                    estimated_time=30
+                    estimated_time=30,
                 ),
                 AttackStep(
                     step_id="payload_testing",
@@ -554,7 +582,7 @@ class ChainPlanner:
                     expected_outcome="Confirm XSS vulnerability",
                     success_criteria="JavaScript execution confirmed",
                     dependencies=["input_discovery"],
-                    estimated_time=60
+                    estimated_time=60,
                 ),
                 AttackStep(
                     step_id="session_hijacking",
@@ -565,8 +593,8 @@ class ChainPlanner:
                     expected_outcome="Steal user sessions",
                     success_criteria="Session data exfiltrated",
                     dependencies=["payload_testing"],
-                    estimated_time=90
-                )
+                    estimated_time=90,
+                ),
             ]
 
             chain = AttackChain(
@@ -579,7 +607,7 @@ class ChainPlanner:
                 total_complexity=AttackComplexity.LOW,
                 success_probability=vuln.confidence,
                 estimated_duration=sum(step.estimated_time for step in steps),
-                risk_assessment="Medium risk - potential session hijacking and data theft"
+                risk_assessment="Medium risk - potential session hijacking and data theft",
             )
             chains.append(chain)
 
@@ -587,7 +615,9 @@ class ChainPlanner:
 
     def _generate_rce_chains(self, vulnerabilities: List[Vulnerability]) -> List[AttackChain]:
         """Generate Remote Code Execution attack chains."""
-        rce_vulns = [v for v in vulnerabilities if v.vulnerability_type == AttackType.COMMAND_INJECTION]
+        rce_vulns = [
+            v for v in vulnerabilities if v.vulnerability_type == AttackType.COMMAND_INJECTION
+        ]
         if not rce_vulns:
             return []
 
@@ -602,7 +632,7 @@ class ChainPlanner:
                     payload=vuln.payload,
                     expected_outcome="Confirm command injection vulnerability",
                     success_criteria="Command execution confirmed",
-                    estimated_time=60
+                    estimated_time=60,
                 ),
                 AttackStep(
                     step_id="shell_establishment",
@@ -613,7 +643,7 @@ class ChainPlanner:
                     expected_outcome="Establish reverse shell",
                     success_criteria="Reverse shell connection established",
                     dependencies=["vuln_discovery"],
-                    estimated_time=120
+                    estimated_time=120,
                 ),
                 AttackStep(
                     step_id="persistence",
@@ -624,8 +654,8 @@ class ChainPlanner:
                     expected_outcome="Establish persistent access",
                     success_criteria="Persistence mechanism installed",
                     dependencies=["shell_establishment"],
-                    estimated_time=180
-                )
+                    estimated_time=180,
+                ),
             ]
 
             chain = AttackChain(
@@ -638,15 +668,19 @@ class ChainPlanner:
                 total_complexity=AttackComplexity.HIGH,
                 success_probability=vuln.confidence,
                 estimated_duration=sum(step.estimated_time for step in steps),
-                risk_assessment="Critical risk - complete system compromise"
+                risk_assessment="Critical risk - complete system compromise",
             )
             chains.append(chain)
 
         return chains
 
-    def _generate_auth_bypass_chains(self, vulnerabilities: List[Vulnerability]) -> List[AttackChain]:
+    def _generate_auth_bypass_chains(
+        self, vulnerabilities: List[Vulnerability]
+    ) -> List[AttackChain]:
         """Generate authentication bypass attack chains."""
-        auth_vulns = [v for v in vulnerabilities if v.vulnerability_type == AttackType.AUTHENTICATION_BYPASS]
+        auth_vulns = [
+            v for v in vulnerabilities if v.vulnerability_type == AttackType.AUTHENTICATION_BYPASS
+        ]
         if not auth_vulns:
             return []
 
@@ -661,7 +695,7 @@ class ChainPlanner:
                     payload="",
                     expected_outcome="Identify authentication endpoints",
                     success_criteria="Login endpoints identified",
-                    estimated_time=30
+                    estimated_time=30,
                 ),
                 AttackStep(
                     step_id="bypass_attempt",
@@ -672,8 +706,8 @@ class ChainPlanner:
                     expected_outcome="Bypass authentication mechanism",
                     success_criteria="Access granted without credentials",
                     dependencies=["endpoint_discovery"],
-                    estimated_time=90
-                )
+                    estimated_time=90,
+                ),
             ]
 
             chain = AttackChain(
@@ -686,7 +720,7 @@ class ChainPlanner:
                 total_complexity=AttackComplexity.MEDIUM,
                 success_probability=vuln.confidence,
                 estimated_duration=sum(step.estimated_time for step in steps),
-                risk_assessment="High risk - unauthorized access to protected resources"
+                risk_assessment="High risk - unauthorized access to protected resources",
             )
             chains.append(chain)
 
@@ -720,7 +754,7 @@ class ChainPlanner:
                 if isinstance(obj, (AttackType, AttackComplexity, AttackImpact)):
                     return obj.value
                 return obj
-            
+
             def convert_chain(chain):
                 chain_dict = asdict(chain)
                 # Convert enum values in attack steps
@@ -733,11 +767,11 @@ class ChainPlanner:
                 chain_dict["total_impact"] = chain_dict["total_impact"].value
                 chain_dict["total_complexity"] = chain_dict["total_complexity"].value
                 return chain_dict
-            
+
             data = {
                 "generated_at": time.time(),
                 "total_chains": len(self.generated_chains),
-                "chains": [convert_chain(chain) for chain in self.generated_chains]
+                "chains": [convert_chain(chain) for chain in self.generated_chains],
             }
             with open(filename, "w") as f:
                 json.dump(data, f, indent=2)
@@ -757,9 +791,18 @@ class ChainPlanner:
             "total_vulnerabilities": len(self.discovered_vulnerabilities),
             "total_chains": len(self.generated_chains),
             "targets_analyzed": len(set(v.target_url for v in self.discovered_vulnerabilities)),
-            "high_risk_chains": len([c for c in self.generated_chains if c.total_impact in [AttackImpact.HIGH, AttackImpact.CRITICAL]]),
-            "average_success_probability": sum(c.success_probability for c in self.generated_chains) / len(self.generated_chains) if self.generated_chains else 0,
-            "recommendations": self._generate_recommendations()
+            "high_risk_chains": len(
+                [
+                    c
+                    for c in self.generated_chains
+                    if c.total_impact in [AttackImpact.HIGH, AttackImpact.CRITICAL]
+                ]
+            ),
+            "average_success_probability": sum(c.success_probability for c in self.generated_chains)
+            / len(self.generated_chains)
+            if self.generated_chains
+            else 0,
+            "recommendations": self._generate_recommendations(),
         }
         return summary
 
@@ -775,13 +818,19 @@ class ChainPlanner:
 
         # Generate recommendations based on findings
         if vuln_counts.get("sql_injection", 0) > 0:
-            recommendations.append("Implement input validation and parameterized queries to prevent SQL injection")
+            recommendations.append(
+                "Implement input validation and parameterized queries to prevent SQL injection"
+            )
 
         if vuln_counts.get("xss", 0) > 0:
-            recommendations.append("Implement output encoding and Content Security Policy to prevent XSS")
+            recommendations.append(
+                "Implement output encoding and Content Security Policy to prevent XSS"
+            )
 
         if vuln_counts.get("command_injection", 0) > 0:
-            recommendations.append("Avoid command execution and implement proper input sanitization")
+            recommendations.append(
+                "Avoid command execution and implement proper input sanitization"
+            )
 
         if vuln_counts.get("path_traversal", 0) > 0:
             recommendations.append("Implement proper path validation and use whitelist approach")
@@ -795,6 +844,7 @@ class ChainPlanner:
 if __name__ == "__main__":
     # Example usage
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     # Initialize planner
@@ -812,7 +862,7 @@ if __name__ == "__main__":
             complexity=AttackComplexity.MEDIUM,
             exploitability=0.8,
             description="SQL injection vulnerability in search parameter",
-            remediation="Use parameterized queries"
+            remediation="Use parameterized queries",
         ),
         Vulnerability(
             target_url="http://example.com/comment.php",
@@ -824,8 +874,8 @@ if __name__ == "__main__":
             complexity=AttackComplexity.LOW,
             exploitability=0.6,
             description="Reflected XSS vulnerability",
-            remediation="Implement output encoding"
-        )
+            remediation="Implement output encoding",
+        ),
     ]
 
     for vuln in sample_vulns:
@@ -833,7 +883,7 @@ if __name__ == "__main__":
 
     # Generate attack chains
     chains = planner.generate_attack_chains()
-    
+
     print(f"Generated {len(chains)} attack chains")
     for chain in chains:
         print(f"- {chain.chain_name} (Success: {chain.success_probability:.2f})")

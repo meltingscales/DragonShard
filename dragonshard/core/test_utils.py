@@ -26,20 +26,20 @@ def setup_test_imports():
 
 class TestTargets:
     """Common test targets used across multiple test files."""
-    
+
     # Standard vulnerable application targets
     TARGETS = {
         "dvwa": "http://localhost:8080",
-        "juice-shop": "http://localhost:3000", 
+        "juice-shop": "http://localhost:3000",
         "webgoat": "http://localhost:8081",
         "vuln-php": "http://localhost:8082",
         "vuln-node": "http://localhost:8083",
         "vuln-python": "http://localhost:8084",
     }
-    
+
     # Targets that are known to have startup issues
-    PROBLEMATIC_TARGETS = {'webgoat', 'vuln-python'}
-    
+    PROBLEMATIC_TARGETS = {"webgoat", "vuln-python"}
+
     @classmethod
     def get_available_targets(cls, exclude_problematic: bool = True) -> Dict[str, str]:
         """Get available targets, optionally excluding problematic ones."""
@@ -50,7 +50,7 @@ class TestTargets:
 
 class TestPayloads:
     """Common test payloads used across multiple test files."""
-    
+
     # SQL Injection payloads
     SQL_PAYLOADS = [
         "1' OR '1'='1",
@@ -62,7 +62,7 @@ class TestPayloads:
         "1' AND (SELECT COUNT(*) FROM users)>0--",
         "1' AND (SELECT LENGTH(password) FROM users LIMIT 1)>5--",
     ]
-    
+
     # XSS payloads
     XSS_PAYLOADS = [
         "<script>alert('XSS')</script>",
@@ -74,7 +74,7 @@ class TestPayloads:
         "<input onfocus=alert('XSS') autofocus>",
         "<details open ontoggle=alert('XSS')>",
     ]
-    
+
     # Command Injection payloads
     COMMAND_PAYLOADS = [
         "127.0.0.1; ls",
@@ -86,7 +86,7 @@ class TestPayloads:
         "127.0.0.1; cat /etc/hosts",
         "127.0.0.1 && ls -la",
     ]
-    
+
     # Path Traversal payloads
     PATH_PAYLOADS = [
         "../../../etc/passwd",
@@ -97,36 +97,36 @@ class TestPayloads:
         "..%c0%af..%c0%af..%c0%afetc%c0%afpasswd",
         "..%255c..%255c..%255cwindows%255csystem32%255cdrivers%255cetc%255chosts",
     ]
-    
+
     # Basic test payloads
     BASIC_PAYLOADS = [
         "test1",
-        "test2", 
+        "test2",
         "test3",
         "admin",
         "password",
         "123456",
     ]
-    
+
     @classmethod
     def get_payloads_by_type(cls, payload_type: str) -> List[str]:
         """Get payloads by type."""
         payload_map = {
-            'sql': cls.SQL_PAYLOADS,
-            'xss': cls.XSS_PAYLOADS,
-            'command': cls.COMMAND_PAYLOADS,
-            'path': cls.PATH_PAYLOADS,
-            'basic': cls.BASIC_PAYLOADS,
+            "sql": cls.SQL_PAYLOADS,
+            "xss": cls.XSS_PAYLOADS,
+            "command": cls.COMMAND_PAYLOADS,
+            "path": cls.PATH_PAYLOADS,
+            "basic": cls.BASIC_PAYLOADS,
         }
         return payload_map.get(payload_type, [])
 
 
 class DockerContainerManager:
     """Manages Docker containers for integration tests."""
-    
+
     def __init__(self):
         self.containers = []
-    
+
     def wait_for_container_ready(self, container_name: str, max_wait: int = 60) -> bool:
         """
         Wait for a container to be ready by checking its status.
@@ -216,25 +216,33 @@ class DockerContainerManager:
     def start_dvwa_container(self) -> str:
         """Start a DVWA container for testing."""
         container_name = f"dvwa-test-{int(time.time())}"
-        
+
         try:
             # Start DVWA container
-            subprocess.run([
-                "docker", "run", "-d",
-                "--name", container_name,
-                "-p", "8080:80",
-                "vulnerables/web-dvwa"
-            ], check=True, capture_output=True)
-            
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "-d",
+                    "--name",
+                    container_name,
+                    "-p",
+                    "8080:80",
+                    "vulnerables/web-dvwa",
+                ],
+                check=True,
+                capture_output=True,
+            )
+
             self.containers.append(container_name)
             logger.info(f"Started DVWA container: {container_name}")
-            
+
             # Wait for container to be ready
             if self.wait_for_container_ready(container_name):
                 return container_name
             else:
                 raise RuntimeError(f"DVWA container {container_name} failed to start properly")
-                
+
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to start DVWA container: {e}")
             raise
@@ -252,10 +260,10 @@ class DockerContainerManager:
 
 class TargetAvailabilityChecker:
     """Checks availability of test targets."""
-    
+
     def __init__(self, targets: Optional[Dict[str, str]] = None):
         self.targets = targets or TestTargets.get_available_targets()
-    
+
     def check_target_availability(self) -> Dict[str, bool]:
         """Check if all targets are available."""
         results = {}
@@ -270,7 +278,7 @@ class TargetAvailabilityChecker:
                 logger.warning(f"✗ {name}: {url} - Not available: {e}")
 
         return results
-    
+
     def get_available_targets(self) -> Dict[str, str]:
         """Get only the available targets."""
         availability = self.check_target_availability()
@@ -279,6 +287,7 @@ class TargetAvailabilityChecker:
 
 def requires_nmap(func):
     """Decorator to check if nmap is available before running a test."""
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
@@ -288,12 +297,13 @@ def requires_nmap(func):
             logger.warning("nmap not available, skipping test")
             self.skipTest("nmap not available")
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
 class BaseTestCase(unittest.TestCase):
     """Base test case with common setup and utilities."""
-    
+
     def setUp(self):
         """Set up test fixtures."""
         setup_test_imports()
@@ -301,11 +311,11 @@ class BaseTestCase(unittest.TestCase):
         self.payloads = TestPayloads()
         self.container_manager = DockerContainerManager()
         self.target_checker = TargetAvailabilityChecker(self.targets)
-    
+
     def tearDown(self):
         """Clean up after tests."""
         self.container_manager.cleanup_containers()
-    
+
     def wait_for_target(self, url: str, timeout: int = 30) -> bool:
         """Wait for a target to become available."""
         start_time = time.time()
@@ -317,4 +327,4 @@ class BaseTestCase(unittest.TestCase):
             except Exception:
                 pass
             time.sleep(1)
-        return False 
+        return False

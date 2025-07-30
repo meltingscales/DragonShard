@@ -67,7 +67,7 @@ API_TAGS_METADATA = [
         "description": "Attack chain monitoring and management operations",
     },
     {
-        "name": "vulnerabilities", 
+        "name": "vulnerabilities",
         "description": "Vulnerability discovery and analysis operations",
     },
     {
@@ -99,7 +99,7 @@ API_TAGS_METADATA = [
 # Server URLs
 SERVERS = [
     {"url": "http://localhost:8000", "description": "Development server"},
-    {"url": "https://api.dragonshard.com", "description": "Production server"}
+    {"url": "https://api.dragonshard.com", "description": "Production server"},
 ]
 
 # Logging Configuration
@@ -112,4 +112,4 @@ WS_MAX_CONNECTIONS = 100
 
 # Rate Limiting (if implemented)
 RATE_LIMIT_REQUESTS = 100  # requests per minute
-RATE_LIMIT_WINDOW = 60  # seconds 
+RATE_LIMIT_WINDOW = 60  # seconds

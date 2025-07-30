@@ -6,13 +6,13 @@ Provides comprehensive benchmarking capabilities for genetic algorithm performan
 including speed, effectiveness, and comparison with other fuzzing approaches.
 """
 
-import time
 import json
-import statistics
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Any, Optional, Tuple
-from enum import Enum
 import logging
+import statistics
+import time
+from dataclasses import asdict, dataclass
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 from .genetic_mutator import GeneticMutator, GeneticPayload, PayloadType
 from .response_analyzer import ResponseAnalyzer
@@ -377,7 +377,7 @@ class GeneticAlgorithmBenchmarker:
         avg_success_rate = statistics.mean(r.success_rate for r in self.results)
         total_vulnerabilities = sum(r.vulnerabilities_found for r in self.results)
 
-        report.append(f"📊 Summary Statistics:")
+        report.append("📊 Summary Statistics:")
         report.append(f"  Total Benchmarks: {total_benchmarks}")
         report.append(f"  Average Time: {avg_time:.2f}s")
         report.append(f"  Average Success Rate: {avg_success_rate:.2%}")

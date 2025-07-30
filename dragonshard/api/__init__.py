@@ -6,4 +6,4 @@ including visualization, attack monitoring, and management endpoints.
 """
 
 __version__ = "1.0.0"
-__author__ = "DragonShard Team" 
+__author__ = "DragonShard Team"

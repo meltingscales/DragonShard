@@ -52,30 +52,30 @@ help:
 # Linting targets
 lint:
 	@echo "🔍 Running ruff linting checks..."
-	@ruff check dragonshard/
+	@uv run ruff check dragonshard/
 
 lint-fix:
 	@echo "🔧 Running ruff linting with auto-fix..."
-	@ruff check dragonshard/ --fix
+	@uv run ruff check dragonshard/ --fix
 
 lint-unsafe:
 	@echo "⚠️  Running ruff linting with unsafe fixes..."
-	@ruff check dragonshard/ --fix --unsafe-fixes
+	@uv run ruff check dragonshard/ --fix --unsafe-fixes
 
 format:
 	@echo "🎨 Formatting code with ruff..."
-	@ruff format dragonshard/
+	@uv run ruff format dragonshard/
 
 format-check:
 	@echo "🔍 Checking code formatting..."
-	@ruff format dragonshard/ --check
+	@uv run ruff format dragonshard/ --check
 
 security:
 	@echo "🔒 Running security checks..."
 	@echo "📦 Running Bandit..."
-	@bandit -r dragonshard/ -f txt
+	@uv run bandit -r dragonshard/ -f txt
 	@echo "🛡️ Running Safety..."
-	@safety check
+	@uv run safety check
 
 all-checks: lint format-check security
 	@echo "✅ All checks completed!"

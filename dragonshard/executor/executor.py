@@ -8,26 +8,33 @@ managing sessions, state, and progress tracking.
 
 import json
 import logging
-import time
 import threading
-from dataclasses import dataclass, asdict
+import time
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urljoin, urlparse
 
 import httpx
 from httpx import Response
 
-from ..planner.chain_planner import AttackChain, AttackStep, AttackType, AttackComplexity, AttackImpact
-from ..fuzzing.fuzzer import Fuzzer
 from ..api_inference.unified_crawler import UnifiedCrawler
+from ..fuzzing.fuzzer import Fuzzer
+from ..planner.chain_planner import (
+    AttackChain,
+    AttackComplexity,
+    AttackImpact,
+    AttackStep,
+    AttackType,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class ExecutionStatus(Enum):
     """Status of attack execution."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -38,6 +45,7 @@ class ExecutionStatus(Enum):
 
 class ExecutionResult(Enum):
     """Result of attack execution."""
+
     SUCCESS = "success"
     FAILURE = "failure"
     PARTIAL = "partial"
@@ -48,6 +56,7 @@ class ExecutionResult(Enum):
 @dataclass
 class ExecutionStep:
     """Represents the execution of a single attack step."""
+
     step_id: str
     step_name: str
     target_url: str
@@ -70,6 +79,7 @@ class ExecutionStep:
 @dataclass
 class ExecutionSession:
     """Represents an attack execution session."""
+
     session_id: str
     chain_id: str
     target_host: str
@@ -94,6 +104,7 @@ class ExecutionSession:
 @dataclass
 class ExecutionConfig:
     """Configuration for attack execution."""
+
     timeout: int = 30
     max_retries: int = 3
     retry_delay: float = 1.0
@@ -133,22 +144,22 @@ class AttackExecutor:
             timeout=self.config.timeout,
             follow_redirects=self.config.follow_redirects,
             verify=self.config.verify_ssl,
-            headers=self.config.default_headers
+            headers=self.config.default_headers,
         )
-        
+
         # Initialize supporting modules
         self.fuzzer = Fuzzer()
         self.crawler = UnifiedCrawler()
-        
+
         # Execution state
         self.active_sessions: Dict[str, ExecutionSession] = {}
         self.completed_sessions: List[ExecutionSession] = []
         self.execution_history: List[ExecutionStep] = []
-        
+
         # Threading for concurrent execution
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
-        
+
         logger.info("AttackExecutor initialized successfully")
 
     def execute_attack_chain(self, attack_chain: AttackChain) -> ExecutionSession:
@@ -162,29 +173,29 @@ class AttackExecutor:
             ExecutionSession with results
         """
         session_id = f"session_{int(time.time())}_{attack_chain.chain_id}"
-        
+
         session = ExecutionSession(
             session_id=session_id,
             chain_id=attack_chain.chain_id,
             target_host=attack_chain.target_host,
             status=ExecutionStatus.RUNNING,
             start_time=time.time(),
-            total_steps=len(attack_chain.attack_steps)
+            total_steps=len(attack_chain.attack_steps),
         )
-        
+
         self.active_sessions[session_id] = session
         logger.info(f"Starting execution of attack chain: {attack_chain.chain_name}")
-        
+
         try:
             # Execute each step in the chain
             for step in attack_chain.attack_steps:
                 if self._stop_event.is_set():
                     logger.info("Execution stopped by user")
                     break
-                
+
                 execution_step = self._execute_step(step, session)
                 self.execution_history.append(execution_step)
-                
+
                 # Update session progress
                 with self._lock:
                     session.completed_steps += 1
@@ -192,33 +203,37 @@ class AttackExecutor:
                         session.success_rate = session.completed_steps / session.total_steps
                     elif execution_step.result == ExecutionResult.FAILURE:
                         session.failed_steps += 1
-                
+
                 # Add delay between steps if rate limiting is configured
                 if self.config.rate_limit:
                     time.sleep(1.0 / self.config.rate_limit)
-            
+
             # Finalize session
             session.end_time = time.time()
             session.total_execution_time = session.end_time - session.start_time
             session.status = ExecutionStatus.COMPLETED
-            
+
             # Calculate final success rate
-            session.success_rate = (session.completed_steps - session.failed_steps) / session.total_steps
-            
-            logger.info(f"Attack chain execution completed: {session.success_rate:.2%} success rate")
-            
+            session.success_rate = (
+                session.completed_steps - session.failed_steps
+            ) / session.total_steps
+
+            logger.info(
+                f"Attack chain execution completed: {session.success_rate:.2%} success rate"
+            )
+
         except Exception as e:
             session.status = ExecutionStatus.FAILED
             session.error_log.append(f"Execution failed: {str(e)}")
             logger.error(f"Attack chain execution failed: {e}")
-        
+
         finally:
             # Move session to completed
             with self._lock:
                 if session_id in self.active_sessions:
                     del self.active_sessions[session_id]
                 self.completed_sessions.append(session)
-        
+
         return session
 
     def _execute_step(self, step: AttackStep, session: ExecutionSession) -> ExecutionStep:
@@ -238,14 +253,14 @@ class AttackExecutor:
             target_url=step.target_url,
             payload=step.payload,
             status=ExecutionStatus.RUNNING,
-            result=ExecutionResult.FAILURE
+            result=ExecutionResult.FAILURE,
         )
-        
+
         start_time = time.time()
-        
+
         try:
             logger.info(f"Executing step: {step.step_name} on {step.target_url}")
-            
+
             # Execute based on attack type
             if step.attack_type == AttackType.SQL_INJECTION:
                 result = self._execute_sql_injection(step)
@@ -259,7 +274,7 @@ class AttackExecutor:
                 result = self._execute_path_traversal(step)
             else:
                 result = self._execute_generic_attack(step)
-            
+
             # Update execution step with results
             execution_step.status = ExecutionStatus.COMPLETED
             execution_step.result = result["result"]
@@ -268,16 +283,16 @@ class AttackExecutor:
             execution_step.response_size = result.get("response_size")
             execution_step.evidence = result.get("evidence")
             execution_step.error_message = result.get("error_message")
-            
+
         except Exception as e:
             execution_step.status = ExecutionStatus.FAILED
             execution_step.result = ExecutionResult.ERROR
             execution_step.error_message = str(e)
             logger.error(f"Step execution failed: {e}")
-        
+
         finally:
             execution_step.execution_time = time.time() - start_time
-        
+
         return execution_step
 
     def _execute_sql_injection(self, step: AttackStep) -> Dict[str, Any]:
@@ -285,50 +300,42 @@ class AttackExecutor:
         try:
             # Use the fuzzer to test SQL injection payloads
             result = self.fuzzer._test_payload(
-                url=step.target_url,
-                method="GET",
-                payload=step.payload,
-                payload_type="sqli"
+                url=step.target_url, method="GET", payload=step.payload, payload_type="sqli"
             )
-            
+
             return {
-                "result": ExecutionResult.SUCCESS if result.is_vulnerable else ExecutionResult.FAILURE,
+                "result": ExecutionResult.SUCCESS
+                if result.is_vulnerable
+                else ExecutionResult.FAILURE,
                 "response_code": result.response.status_code if result.response else None,
                 "response_time": result.response_time,
                 "response_size": len(result.response.text) if result.response else 0,
-                "evidence": result.evidence if result.is_vulnerable else None
+                "evidence": result.evidence if result.is_vulnerable else None,
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def _execute_xss(self, step: AttackStep) -> Dict[str, Any]:
         """Execute XSS attack step."""
         try:
             # Use the fuzzer to test XSS payloads
             result = self.fuzzer._test_payload(
-                url=step.target_url,
-                method="GET",
-                payload=step.payload,
-                payload_type="xss"
+                url=step.target_url, method="GET", payload=step.payload, payload_type="xss"
             )
-            
+
             return {
-                "result": ExecutionResult.SUCCESS if result.is_vulnerable else ExecutionResult.FAILURE,
+                "result": ExecutionResult.SUCCESS
+                if result.is_vulnerable
+                else ExecutionResult.FAILURE,
                 "response_code": result.response.status_code if result.response else None,
                 "response_time": result.response_time,
                 "response_size": len(result.response.text) if result.response else 0,
-                "evidence": result.evidence if result.is_vulnerable else None
+                "evidence": result.evidence if result.is_vulnerable else None,
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def _execute_command_injection(self, step: AttackStep) -> Dict[str, Any]:
         """Execute command injection attack step."""
@@ -338,92 +345,82 @@ class AttackExecutor:
                 url=step.target_url,
                 method="GET",
                 payload=step.payload,
-                payload_type="command_injection"
+                payload_type="command_injection",
             )
-            
+
             return {
-                "result": ExecutionResult.SUCCESS if result.is_vulnerable else ExecutionResult.FAILURE,
+                "result": ExecutionResult.SUCCESS
+                if result.is_vulnerable
+                else ExecutionResult.FAILURE,
                 "response_code": result.response.status_code if result.response else None,
                 "response_time": result.response_time,
                 "response_size": len(result.response.text) if result.response else 0,
-                "evidence": result.evidence if result.is_vulnerable else None
+                "evidence": result.evidence if result.is_vulnerable else None,
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def _execute_auth_bypass(self, step: AttackStep) -> Dict[str, Any]:
         """Execute authentication bypass attack step."""
         try:
             # Test authentication bypass techniques
             response = self.client.get(step.target_url, params={"payload": step.payload})
-            
+
             # Check if we got access (not redirected to login, different response, etc.)
             is_bypassed = (
-                response.status_code == 200 and
-                "login" not in response.text.lower() and
-                "unauthorized" not in response.text.lower()
+                response.status_code == 200
+                and "login" not in response.text.lower()
+                and "unauthorized" not in response.text.lower()
             )
-            
+
             return {
                 "result": ExecutionResult.SUCCESS if is_bypassed else ExecutionResult.FAILURE,
                 "response_code": response.status_code,
                 "response_time": response.elapsed.total_seconds(),
                 "response_size": len(response.text),
-                "evidence": "Authentication bypassed" if is_bypassed else None
+                "evidence": "Authentication bypassed" if is_bypassed else None,
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def _execute_path_traversal(self, step: AttackStep) -> Dict[str, Any]:
         """Execute path traversal attack step."""
         try:
             # Test path traversal
             response = self.client.get(step.target_url, params={"file": step.payload})
-            
+
             # Check for sensitive file content indicators
             sensitive_indicators = ["root:", "uid=", "gid=", "/etc/passwd", "windows/system32"]
             is_vulnerable = any(indicator in response.text for indicator in sensitive_indicators)
-            
+
             return {
                 "result": ExecutionResult.SUCCESS if is_vulnerable else ExecutionResult.FAILURE,
                 "response_code": response.status_code,
                 "response_time": response.elapsed.total_seconds(),
                 "response_size": len(response.text),
-                "evidence": "Sensitive file accessed" if is_vulnerable else None
+                "evidence": "Sensitive file accessed" if is_vulnerable else None,
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def _execute_generic_attack(self, step: AttackStep) -> Dict[str, Any]:
         """Execute generic attack step."""
         try:
             response = self.client.get(step.target_url, params={"payload": step.payload})
-            
+
             return {
                 "result": ExecutionResult.SUCCESS,
                 "response_code": response.status_code,
                 "response_time": response.elapsed.total_seconds(),
                 "response_size": len(response.text),
-                "evidence": "Request completed successfully"
+                "evidence": "Request completed successfully",
             }
-            
+
         except Exception as e:
-            return {
-                "result": ExecutionResult.ERROR,
-                "error_message": str(e)
-            }
+            return {"result": ExecutionResult.ERROR, "error_message": str(e)}
 
     def execute_multiple_chains(self, attack_chains: List[AttackChain]) -> List[ExecutionSession]:
         """
@@ -437,19 +434,16 @@ class AttackExecutor:
         """
         sessions = []
         threads = []
-        
+
         for chain in attack_chains:
-            thread = threading.Thread(
-                target=self._execute_chain_thread,
-                args=(chain, sessions)
-            )
+            thread = threading.Thread(target=self._execute_chain_thread, args=(chain, sessions))
             threads.append(thread)
             thread.start()
-        
+
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
-        
+
         return sessions
 
     def _execute_chain_thread(self, chain: AttackChain, sessions: List[ExecutionSession]):
@@ -475,12 +469,12 @@ class AttackExecutor:
         # Check active sessions
         if session_id in self.active_sessions:
             return self.active_sessions[session_id]
-        
+
         # Check completed sessions
         for session in self.completed_sessions:
             if session.session_id == session_id:
                 return session
-        
+
         return None
 
     def get_all_sessions(self) -> List[ExecutionSession]:
@@ -501,21 +495,27 @@ class AttackExecutor:
             Execution summary with statistics
         """
         all_sessions = self.get_all_sessions()
-        
+
         if not all_sessions:
             return {"message": "No executions found"}
-        
+
         total_sessions = len(all_sessions)
         completed_sessions = len([s for s in all_sessions if s.status == ExecutionStatus.COMPLETED])
         failed_sessions = len([s for s in all_sessions if s.status == ExecutionStatus.FAILED])
         running_sessions = len([s for s in all_sessions if s.status == ExecutionStatus.RUNNING])
-        
+
         total_steps = sum(s.total_steps for s in all_sessions)
         successful_steps = sum(s.completed_steps - s.failed_steps for s in all_sessions)
-        
-        avg_success_rate = sum(s.success_rate for s in all_sessions) / total_sessions if total_sessions > 0 else 0
-        avg_execution_time = sum(s.total_execution_time for s in all_sessions) / total_sessions if total_sessions > 0 else 0
-        
+
+        avg_success_rate = (
+            sum(s.success_rate for s in all_sessions) / total_sessions if total_sessions > 0 else 0
+        )
+        avg_execution_time = (
+            sum(s.total_execution_time for s in all_sessions) / total_sessions
+            if total_sessions > 0
+            else 0
+        )
+
         summary = {
             "total_sessions": total_sessions,
             "completed_sessions": completed_sessions,
@@ -533,12 +533,12 @@ class AttackExecutor:
                     "target_host": s.target_host,
                     "status": s.status.value,
                     "success_rate": s.success_rate,
-                    "execution_time": s.total_execution_time
+                    "execution_time": s.total_execution_time,
                 }
                 for s in all_sessions[-10:]  # Last 10 sessions
-            ]
+            ],
         }
-        
+
         return summary
 
     def export_execution_results(self, filename: str) -> None:
@@ -548,28 +548,29 @@ class AttackExecutor:
         Args:
             filename: Output filename
         """
+
         def convert_enum(obj):
             """Convert Enum values to strings for JSON serialization."""
             if isinstance(obj, dict):
                 return {k: convert_enum(v) for k, v in obj.items()}
             elif isinstance(obj, list):
                 return [convert_enum(item) for item in obj]
-            elif hasattr(obj, 'value'):  # Enum objects
+            elif hasattr(obj, "value"):  # Enum objects
                 return obj.value
             else:
                 return obj
-        
+
         data = {
             "exported_at": time.time(),
             "config": convert_enum(asdict(self.config)),
             "sessions": [convert_enum(asdict(session)) for session in self.completed_sessions],
             "execution_history": [convert_enum(asdict(step)) for step in self.execution_history],
-            "summary": convert_enum(self.get_execution_summary())
+            "summary": convert_enum(self.get_execution_summary()),
         }
-        
+
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
-        
+
         logger.info(f"Exported execution results to {filename}")
 
     def clear_history(self):
@@ -583,6 +584,7 @@ class AttackExecutor:
 if __name__ == "__main__":
     # Example usage
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     # Initialize executor
@@ -590,7 +592,13 @@ if __name__ == "__main__":
     executor = AttackExecutor(config)
 
     # Create sample attack chain
-    from dragonshard.planner.chain_planner import AttackChain, AttackStep, AttackType, AttackImpact, AttackComplexity
+    from dragonshard.planner.chain_planner import (
+        AttackChain,
+        AttackComplexity,
+        AttackImpact,
+        AttackStep,
+        AttackType,
+    )
 
     sample_steps = [
         AttackStep(
@@ -601,7 +609,7 @@ if __name__ == "__main__":
             payload="' OR 1=1--",
             expected_outcome="SQL injection successful",
             success_criteria="Database error returned",
-            estimated_time=30
+            estimated_time=30,
         )
     ]
 
@@ -614,14 +622,14 @@ if __name__ == "__main__":
         total_impact=AttackImpact.HIGH,
         total_complexity=AttackComplexity.MEDIUM,
         success_probability=0.8,
-        estimated_duration=30
+        estimated_duration=30,
     )
 
     # Execute the attack chain
     session = executor.execute_attack_chain(sample_chain)
-    
+
     print(f"Execution completed: {session.success_rate:.2%} success rate")
     print(f"Execution time: {session.total_execution_time:.2f} seconds")
-    
+
     # Export results
     executor.export_execution_results("execution_results.json")
