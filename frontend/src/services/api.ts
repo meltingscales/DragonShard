@@ -63,6 +63,10 @@ export class ApiService {
     return this.request<GeneticAlgorithmStats>('/fuzzing/stats');
   }
 
+  static async getMutationTree(): Promise<Record<string, MutationNode>> {
+    return this.request<Record<string, MutationNode>>('/fuzzing/mutation-tree');
+  }
+
   static async getFuzzingProgress(sessionId: string): Promise<FuzzingProgress[]> {
     return this.request<FuzzingProgress[]>(`/fuzzing/progress/${sessionId}`);
   }
@@ -91,10 +95,6 @@ export class ApiService {
 
   static async getGenerationData(): Promise<any[]> {
     return this.request<any[]>('/genetic/generations');
-  }
-
-  static async getMutationTree(): Promise<any> {
-    return this.request<any>('/genetic/mutation-tree');
   }
 
   // Session endpoints
@@ -204,4 +204,5 @@ import type {
   Session,
   SessionSummary,
   WebSocketMessage,
+  MutationNode,
 } from '../types/api'; 

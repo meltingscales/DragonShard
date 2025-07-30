@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ApiService, WebSocketService } from '../services/api';
-import type { AttackSummary, VulnerabilitySummary, GeneticAlgorithmStats, SessionSummary } from '../types/api';
+import type { AttackSummary, VulnerabilitySummary, GeneticAlgorithmStats, SessionSummary, MutationNode } from '../types/api';
 import AttackMonitor from './AttackMonitor';
 import VulnerabilityMap from './VulnerabilityMap';
 import NetworkGraph from './NetworkGraph';
@@ -8,6 +8,7 @@ import FuzzingProgress from './FuzzingProgress';
 import SessionManager from './SessionManager';
 import GeneticAlgorithmViz from './GeneticAlgorithmViz';
 import WebFuzzingViz from './WebFuzzingViz';
+import MutationTree from './MutationTree';
 
 const Dashboard: React.FC = () => {
   const [attackSummary, setAttackSummary] = useState<AttackSummary | null>(null);
@@ -212,6 +213,13 @@ const Dashboard: React.FC = () => {
         
         <div className="mt-6">
           <WebFuzzingViz />
+        </div>
+
+        <div className="mt-6">
+          <MutationTree 
+            nodes={{}} 
+            onNodeSelect={(node) => console.log('Selected node:', node)}
+          />
         </div>
 
         <div className="mt-6">

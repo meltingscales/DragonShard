@@ -303,7 +303,7 @@ The next major milestone is implementing the planner module. This will include:
 # Extra ideas
 
 - Can we make a separate visualization that shows the full tree of mutations?
-- Fix vite and frontend
 - Make frontend and api used for the entire project, not just viz
-- let's add uvicorn[standard] to our pip packages.
 - let's use a database backend instead of an in-memory store.
+- I don't want to just simulate fuzzing. Make the fuzzing web UI and API actually fuzz.
+- In the web UI, move the visualizations to their own sub-page, like `/visualizations`, and make a homepage. Also, make a navbar that's the same across all pages and make a homepage.

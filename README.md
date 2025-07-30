@@ -28,10 +28,17 @@ See [TODO.md](TODO.md) for current development status and roadmap.
 
 ## Setup
 
+### Backend Setup
 ```bash
 uv venv
 source .venv/bin/activate
 uv pip install -r requirements.lock.txt
+```
+
+### Frontend Setup
+```bash
+cd frontend
+pnpm install
 ```
 
 ## Testing
@@ -79,25 +86,27 @@ make test-env-clean
 
 **Note:** Docker tests are optional and will be skipped if Docker is not available.
 
-## Visualization Features
+## Frontend Interface
 
-DragonShard includes advanced visualization tools for understanding genetic algorithm evolution and mutation trees:
+DragonShard includes a modern React-based frontend for real-time monitoring and control:
 
-### Genetic Algorithm Visualization
+### Web Dashboard
 ```bash
-make test-visualization
+make start-frontend
 ```
-- **Real-time evolution tracking** with fitness charts
-- **Mutation history visualization** showing different mutation types
-- **Population dynamics** and convergence analysis
-- **Interactive GUI** with Tkinter and matplotlib
+- **Real-time dashboard** with live attack monitoring
+- **Interactive network topology** visualization
+- **Genetic algorithm progress** tracking
+- **Mutation tree visualization** with Cytoscape.js
+- **WebSocket integration** for live updates
 
-### Web Fuzzing Visualization
+### API Server
 ```bash
-make test-web-fuzzing-viz
+make start-visualization-api
 ```
-- **Real-time web fuzzing** against vulnerable targets
-- **Mutation tree visualization** showing payload evolution
+- **RESTful API** for all DragonShard components
+- **WebSocket support** for real-time communication
+- **Comprehensive documentation** at `/api/docs`
 - **Vulnerability discovery tracking** with confidence scores
 - **HTTP response analysis** and anomaly detection
 - **Multi-payload type support** (SQL Injection, XSS, Command Injection, etc.)

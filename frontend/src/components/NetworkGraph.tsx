@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ApiService } from '../services/api';
 import type { NetworkTopology, Host } from '../types/api';
+import CytoscapeNetworkGraph from './CytoscapeNetworkGraph';
 
 const NetworkGraph: React.FC = () => {
   const [topology, setTopology] = useState<NetworkTopology | null>(null);
@@ -74,61 +75,71 @@ const NetworkGraph: React.FC = () => {
         </div>
       </div>
 
-      {/* Hosts */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {topology.hosts.map((host) => (
-          <div key={host.id} className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h4 className="font-semibold text-white">{host.ip_address}</h4>
-                {host.hostname && (
-                  <p className="text-sm text-gray-400">{host.hostname}</p>
-                )}
-              </div>
-              <div className="text-right text-xs text-gray-500">
-                <div>Last seen: {new Date(host.last_seen).toLocaleString()}</div>
-                {host.os_info && <div>OS: {host.os_info}</div>}
-              </div>
-            </div>
-
-            {/* Services */}
-            {host.services.length > 0 && (
-              <div className="mb-3">
-                <h5 className="text-sm font-semibold text-gray-300 mb-2">Services:</h5>
-                <div className="flex flex-wrap gap-2">
-                  {host.services.map((service) => (
-                    <div key={service.id} className="bg-gray-700 px-2 py-1 rounded text-xs">
-                      {service.name} ({service.port})
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Vulnerabilities */}
-            {host.vulnerabilities.length > 0 && (
-              <div>
-                <h5 className="text-sm font-semibold text-gray-300 mb-2">Vulnerabilities:</h5>
-                <div className="space-y-1">
-                  {host.vulnerabilities.map((vuln) => (
-                    <div key={vuln.id} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400">{vuln.name}</span>
-                      <span className={`px-2 py-1 rounded ${
-                        vuln.level === 'critical' ? 'bg-red-500' :
-                        vuln.level === 'high' ? 'bg-orange-500' :
-                        vuln.level === 'medium' ? 'bg-yellow-500' :
-                        'bg-green-500'
-                      }`}>
-                        {vuln.level}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+      {/* Interactive Network Graph */}
+      <div className="mt-6">
+        <CytoscapeNetworkGraph topology={topology} height="500px" />
       </div>
+
+      {/* Host Details (Collapsible) */}
+      <details className="mt-6">
+        <summary className="cursor-pointer text-dragon-primary font-semibold mb-4">
+          📋 Host Details
+        </summary>
+        <div className="space-y-4 max-h-96 overflow-y-auto">
+          {topology.hosts.map((host) => (
+            <div key={host.id} className="bg-dragon-dark border border-dragon-border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="font-semibold text-white">{host.ip_address}</h4>
+                  {host.hostname && (
+                    <p className="text-sm text-gray-400">{host.hostname}</p>
+                  )}
+                </div>
+                <div className="text-right text-xs text-gray-500">
+                  <div>Last seen: {new Date(host.last_seen).toLocaleString()}</div>
+                  {host.os_info && <div>OS: {host.os_info}</div>}
+                </div>
+              </div>
+
+              {/* Services */}
+              {host.services.length > 0 && (
+                <div className="mb-3">
+                  <h5 className="text-sm font-semibold text-gray-300 mb-2">Services:</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {host.services.map((service) => (
+                      <div key={service.id} className="bg-gray-700 px-2 py-1 rounded text-xs">
+                        {service.name} ({service.port})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Vulnerabilities */}
+              {host.vulnerabilities.length > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-gray-300 mb-2">Vulnerabilities:</h5>
+                  <div className="space-y-1">
+                    {host.vulnerabilities.map((vuln) => (
+                      <div key={vuln.id} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400">{vuln.name}</span>
+                        <span className={`px-2 py-1 rounded ${
+                          vuln.level === 'critical' ? 'bg-red-500' :
+                          vuln.level === 'high' ? 'bg-orange-500' :
+                          vuln.level === 'medium' ? 'bg-yellow-500' :
+                          'bg-green-500'
+                        }`}>
+                          {vuln.level}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 };

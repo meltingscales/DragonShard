@@ -5,7 +5,7 @@ Session management API endpoints
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ..models import Session, SessionSummary, BaseResponse
 from ..websocket_manager import websocket_manager

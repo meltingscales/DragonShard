@@ -21,15 +21,14 @@ help:
 	@echo "  test-fuzzer            - Run fuzzer unit tests"
 	@echo "  test-fuzzer-integration - Run fuzzer integration tests"
 	@echo "  test-fuzzer-manual     - Run manual fuzzer test"
-	@echo "  test-visualization     - Run genetic algorithm visualization"
-	@echo "  test-web-fuzzing-viz   - Run web fuzzing visualization with mutation tree"
+	@echo "  test-visualization-api - Run visualization API test"
 	@echo "  test-planner           - Run chain planner integration test"
 	@echo "  test-executor          - Run executor integration test"
 	@echo "  test-executor-stress   - Run executor stress test with complex vulnerabilities"
 	@echo "  test-visualization-api - Run visualization API test"
 	@echo "  start-visualization-api - Start visualization API server"
-	@echo "  start-visualization-frontend - Start React development server"
-	@echo "  build-visualization    - Build React frontend for production"
+	@echo "  start-frontend        - Start React development server"
+	@echo "  build-frontend        - Build React frontend for production"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
 	@echo ""
@@ -79,7 +78,7 @@ all-checks: lint format-check security
 # Testing targets
 test: test-env-start
 	@echo "🧪 Running unit tests..."
-	@uv run pytest dragonshard/tests/ -v -k "not test_genetic_visualization"
+	@uv run pytest dragonshard/tests/ -v
 
 test-crawlers:
 	@echo "🕷️  Running crawler tests..."
@@ -96,22 +95,6 @@ test-fuzzer-integration:
 test-fuzzer-manual:
 	@echo "🧬 Running manual fuzzer test..."
 	@python dragonshard/tests/test_genetic_fuzzer.py
-
-test-visualization:
-	@echo "🎨 Running genetic algorithm visualization..."
-	@if [ -z "$$DISPLAY" ] && [ -n "$$CI" ]; then \
-		echo "⚠️  Skipping visualization test - no GUI available in CI environment"; \
-	else \
-		uv run python scripts/test_visualization.py; \
-	fi
-
-test-web-fuzzing-viz:
-	@echo "🌐 Running web fuzzing visualization..."
-	@if [ -z "$$DISPLAY" ] && [ -n "$$CI" ]; then \
-		echo "⚠️  Skipping web fuzzing visualization - no GUI available in CI environment"; \
-	else \
-		uv run python scripts/test_web_fuzzing_viz.py; \
-	fi
 
 test-planner:
 	@echo "🧠 Running chain planner integration test..."
@@ -133,13 +116,13 @@ start-visualization-api:
 	@echo "🚀 Starting DragonShard Visualization API..."
 	@PYTHONPATH=. uv run uvicorn dragonshard.visualizer.api.app:app --host 0.0.0.0 --port 8000 --reload
 
-start-visualization-frontend:
-	@echo "🌐 Starting DragonShard Visualization Frontend..."
-	@cd dragonshard/visualizer/frontend && pnpm run start
+start-frontend:
+	@echo "🌐 Starting DragonShard Frontend..."
+	@cd frontend && pnpm run start
 
-build-visualization:
-	@echo "🔨 Building DragonShard Visualization Frontend..."
-	@cd dragonshard/visualizer/frontend && pnpm run build
+build-frontend:
+	@echo "🔨 Building DragonShard Frontend..."
+	@cd frontend && pnpm run build
 
 test-benchmark:
 	@echo "📊 Running genetic algorithm benchmarks..."
@@ -179,7 +162,7 @@ setup:
 setup-nixos:
 	@echo "🔧 Setting up development environment for NixOS..."
 	@echo "📦 Installing Python dependencies..."
-	@uv pip install fastapi httpx uvicorn pytest ruff bandit safety matplotlib pandas numpy networkx beautifulsoup4 requests python-nmap
+	@uv pip install fastapi httpx "uvicorn[standard]" websockets pytest ruff bandit safety matplotlib pandas numpy networkx beautifulsoup4 requests python-nmap
 	@echo "🎨 Checking tkinter availability..."
 	@python3 -c "import tkinter; print('✅ tkinter is available')" || (echo "⚠️  tkinter not available - add python3-tkinter to your NixOS configuration" && exit 1)
 	@echo "🌐 Setting up frontend dependencies..."

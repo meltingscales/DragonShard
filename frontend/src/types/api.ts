@@ -174,6 +174,19 @@ export interface GeneticAlgorithmStats {
   best_fitness: number;
 }
 
+export interface MutationNode {
+  id: string;
+  payload: string;
+  payloadType: string;
+  fitnessScore: number;
+  generation: number;
+  mutationType: string;
+  successful: boolean;
+  vulnerabilityDetected: boolean;
+  parentId?: string;
+  children: string[];
+}
+
 // Session Models
 export interface Session {
   id: string;

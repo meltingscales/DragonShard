@@ -189,4 +189,17 @@ executor_results.json
 session_data.json
 state_graph.json
 execution_results.json
-stress_test_*.json 
+stress_test_*.json
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log* 
