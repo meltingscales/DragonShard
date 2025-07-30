@@ -306,8 +306,6 @@ The next major milestone is implementing the planner module. This will include:
 - Can we make a separate visualization that shows the full tree of mutations?
 - Make frontend and api used for the entire project, not just viz. so, move the api package up a bit.
 - let's use a database backend instead of an in-memory store.
-- I don't want to just simulate fuzzing. Make the fuzzing web UI and API actually fuzz.
+- I don't want to just simulate fuzzing or other functionality. Make the fuzzing web UI and API actually fuzz and perform real functionality. Get rid of all the dummy data in the UI.
 - let's add a swagger API definition using a python library. one that gets automatically generated based on our code. also, make sure the UI links to the swagger API definition in the navbar.
-- There's a lot of duplication across test scripts relating to payloads, injection, checking/starting docker images, etc - can we consolidate that?
-- I'd like you to identify duplicate code and routines - classes, models, functions, etc, and move things that make sense to into reusable modules. make sure unit tests pass after you de-duplicate/modularize.
 - How should I generate an ER diagram or module diagram for my codebase? Can we have that be auto-generated as part of a build step and displayed in the README somehow?

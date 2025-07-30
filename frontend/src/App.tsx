@@ -5,6 +5,7 @@ import Homepage from './components/Homepage';
 import VisualizationsPage from './components/VisualizationsPage';
 import AttacksPage from './components/AttacksPage';
 import NetworkPage from './components/NetworkPage';
+import ReverseShellManager from './components/ReverseShellManager';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/visualizations" element={<VisualizationsPage />} />
           <Route path="/attacks" element={<AttacksPage />} />
           <Route path="/network" element={<NetworkPage />} />
+          <Route path="/reverse-shell" element={<ReverseShellManager />} />
         </Routes>
       </div>
     </Router>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, BarChart3, Network, Zap, Home, Menu, X } from 'lucide-react';
+import { Shield, BarChart3, Network, Zap, Home, Menu, X, Terminal, FileText } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -15,6 +15,7 @@ const Navbar: React.FC = () => {
     { path: '/visualizations', label: 'Visualizations', icon: BarChart3 },
     { path: '/attacks', label: 'Attacks', icon: Zap },
     { path: '/network', label: 'Network', icon: Network },
+    { path: '/reverse-shell', label: 'Reverse Shell', icon: Terminal },
   ];
 
   return (
@@ -55,6 +56,17 @@ const Navbar: React.FC = () => {
               <span className="text-sm text-gray-300 hidden sm:inline">API Connected</span>
             </div>
             
+            {/* API Documentation Link */}
+            <a
+              href="http://localhost:8000/api/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-2 px-3 py-1 bg-primary text-white rounded hover:bg-primary/80 transition-colors"
+            >
+              <FileText size={16} />
+              <span className="text-sm">API Docs</span>
+            </a>
+            
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 text-gray-300 hover:text-white hover:bg-dark rounded cursor-pointer"
@@ -90,6 +102,18 @@ const Navbar: React.FC = () => {
                   </Link>
                 );
               })}
+              
+              {/* API Documentation Link in Mobile Menu */}
+              <a
+                href="http://localhost:8000/api/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded text-white font-medium transition-colors hover:bg-dark"
+              >
+                <FileText size={20} />
+                <span>API Documentation</span>
+              </a>
             </div>
           </div>
         )}
