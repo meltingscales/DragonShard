@@ -37,6 +37,86 @@ export enum FuzzingStatus {
   COMPLETED = "completed"
 }
 
+// Website Crawling Models
+export interface WebsitePageForm {
+  form_id: string;
+  page_id: string;
+  form_action?: string;
+  form_method: string;
+  form_name?: string;
+  form_id_attribute?: string;
+  form_class?: string;
+  discovered_at: number;
+  is_login_form: boolean;
+  is_search_form: boolean;
+  form_fields: FormField[];
+}
+
+export interface FormField {
+  name: string;
+  type: string;
+  id?: string;
+  required: boolean;
+  placeholder?: string;
+}
+
+export interface WebsitePageEndpoint {
+  endpoint_id: string;
+  page_id: string;
+  endpoint_path?: string;
+  method: string;
+  content_type?: string;
+  discovered_at: number;
+  is_api_endpoint: boolean;
+  parameters: any[];
+}
+
+export interface WebsitePage {
+  page_id: string;
+  website_id: string;
+  url: string;
+  method: string;
+  status_code?: number;
+  content_type?: string;
+  title?: string;
+  discovered_at: number;
+  last_accessed_at: number;
+  response_size?: number;
+  response_time?: number;
+  is_accessible: boolean;
+  depth: number;
+  parent_page_id?: string;
+}
+
+export interface Website {
+  website_id: string;
+  service_id: string;
+  base_url: string;
+  title?: string;
+  description?: string;
+  discovered_at: number;
+  last_crawled_at: number;
+  crawl_status: string;
+  total_pages: number;
+  total_forms: number;
+  total_endpoints: number;
+  crawl_depth: number;
+  max_pages: number;
+}
+
+export interface WebsiteStatistics {
+  total_websites: number;
+  total_pages: number;
+  total_forms: number;
+  total_endpoints: number;
+  websites_by_status: {
+    pending: number;
+    crawling: number;
+    completed: number;
+    failed: number;
+  };
+}
+
 // Base Models
 export interface BaseResponse {
   success: boolean;

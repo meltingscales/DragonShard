@@ -1,5 +1,26 @@
 // API Service for DragonShard Visualization
 
+import type {
+  AttackChain,
+  AttackSummary,
+  FuzzingSession,
+  GeneticAlgorithmStats,
+  FuzzingProgress,
+  MutationNode,
+  Session,
+  SessionSummary,
+  Host,
+  NetworkTopology,
+  Vulnerability,
+  VulnerabilitySummary,
+  Website,
+  WebsitePage,
+  WebsitePageForm,
+  WebsitePageEndpoint,
+  WebsiteStatistics,
+  WebSocketMessage,
+} from '../types/api';
+
 const API_BASE = 'http://localhost:8000/api/v1';
 
 export class ApiService {
@@ -72,6 +93,51 @@ export class ApiService {
     return this.request<Host[]>('/network/hosts');
   }
 
+  // Website crawling endpoints
+  static async getWebsites(): Promise<{ websites: Website[]; total: number; skip: number; limit: number }> {
+    return this.request<{ websites: Website[]; total: number; skip: number; limit: number }>('/websites/');
+  }
+
+  static async getWebsite(id: string): Promise<Website> {
+    return this.request<Website>(`/websites/${id}`);
+  }
+
+  static async getWebsitePages(websiteId: string): Promise<{ pages: WebsitePage[]; total: number; skip: number; limit: number }> {
+    return this.request<{ pages: WebsitePage[]; total: number; skip: number; limit: number }>(`/websites/${websiteId}/pages`);
+  }
+
+  static async getWebsiteForms(websiteId: string): Promise<{ forms: WebsitePageForm[]; total: number; skip: number; limit: number }> {
+    return this.request<{ forms: WebsitePageForm[]; total: number; skip: number; limit: number }>(`/websites/${websiteId}/forms`);
+  }
+
+  static async getWebsiteEndpoints(websiteId: string): Promise<{ endpoints: WebsitePageEndpoint[]; total: number; skip: number; limit: number }> {
+    return this.request<{ endpoints: WebsitePageEndpoint[]; total: number; skip: number; limit: number }>(`/websites/${websiteId}/endpoints`);
+  }
+
+  static async getAllForms(): Promise<{ forms: WebsitePageForm[]; total: number; skip: number; limit: number }> {
+    return this.request<{ forms: WebsitePageForm[]; total: number; skip: number; limit: number }>('/websites/forms/all');
+  }
+
+  static async getAllEndpoints(): Promise<{ endpoints: WebsitePageEndpoint[]; total: number; skip: number; limit: number }> {
+    return this.request<{ endpoints: WebsitePageEndpoint[]; total: number; skip: number; limit: number }>('/websites/endpoints/all');
+  }
+
+  static async getWebsiteStatistics(): Promise<{ statistics: WebsiteStatistics; timestamp: number }> {
+    return this.request<{ statistics: WebsiteStatistics; timestamp: number }>('/websites/statistics');
+  }
+
+  static async crawlAllWebsites(): Promise<{ message: string; websites_crawled: number; website_ids: string[] }> {
+    return this.request<{ message: string; websites_crawled: number; website_ids: string[] }>('/websites/crawl-all', {
+      method: 'POST',
+    });
+  }
+
+  static async crawlService(serviceId: string): Promise<{ message: string; website: Website }> {
+    return this.request<{ message: string; website: Website }>(`/websites/crawl-service/${serviceId}`, {
+      method: 'POST',
+    });
+  }
+
   // Fuzzing endpoints
   static async getFuzzingSessions(): Promise<FuzzingSession[]> {
     return this.request<FuzzingSession[]>('/fuzzing/sessions');
@@ -121,10 +187,10 @@ export class ApiService {
   }
 
   static async getSessionSummary(): Promise<SessionSummary> {
-    return this.request<SessionSummary>('/sessions/summary/stats');
+    return this.request<SessionSummary>('/sessions/summary');
   }
 
-  // Target management endpoints
+  // Target endpoints
   static async addTarget(targetData: any): Promise<Host> {
     return this.request<Host>('/network/hosts/simple', {
       method: 'POST',
@@ -146,7 +212,6 @@ export class ApiService {
     });
   }
 
-  // Scanning endpoints
   static async scanTarget(targetId: string): Promise<any> {
     return this.request<any>(`/network/hosts/${targetId}/scan`, {
       method: 'POST',
@@ -177,7 +242,6 @@ export class ApiService {
   }
 }
 
-// WebSocket service
 export class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
@@ -206,7 +270,11 @@ export class WebSocketService {
 
       this.ws.onclose = () => {
         console.log('WebSocket disconnected');
-        this.attemptReconnect(onMessage, onError);
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          setTimeout(() => {
+            this.attemptReconnect(onMessage, onError);
+          }, this.reconnectDelay);
+        }
       };
 
       this.ws.onerror = (error) => {
@@ -219,16 +287,9 @@ export class WebSocketService {
   }
 
   private attemptReconnect(onMessage: (message: WebSocketMessage) => void, onError?: (error: Event) => void) {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-      
-      setTimeout(() => {
-        this.connect(onMessage, onError);
-      }, this.reconnectDelay * this.reconnectAttempts);
-    } else {
-      console.error('Max reconnection attempts reached');
-    }
+    this.reconnectAttempts++;
+    console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    this.connect(onMessage, onError);
   }
 
   disconnect() {
@@ -245,34 +306,17 @@ export class WebSocketService {
   }
 
   subscribe(stream: string) {
-    this.send({ 
-      type: 'subscribe', 
+    this.send({
+      type: 'subscribe',
       stream,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   ping() {
-    this.send({ 
+    this.send({
       type: 'ping',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
-}
-
-// Import types
-import type {
-  AttackChain,
-  AttackSummary,
-  Vulnerability,
-  VulnerabilitySummary,
-  NetworkTopology,
-  Host,
-  FuzzingSession,
-  GeneticAlgorithmStats,
-  FuzzingProgress,
-  Session,
-  SessionSummary,
-  WebSocketMessage,
-  MutationNode,
-} from '../types/api'; 
+} 

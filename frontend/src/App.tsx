@@ -9,6 +9,9 @@ import VisualizationsPage from './components/VisualizationsPage';
 import AttacksPage from './components/AttacksPage';
 import NetworkPage from './components/NetworkPage';
 import ReverseShellManager from './components/ReverseShellManager';
+import WebsitesPage from './components/WebsitesPage';
+import WebsiteDetailsPage from './components/WebsiteDetailsPage';
+import FormsAndEndpointsPage from './components/FormsAndEndpointsPage';
 import './App.css';
 
 function App() {
@@ -25,6 +28,9 @@ function App() {
           <Route path="/attacks" element={<AttacksPage />} />
           <Route path="/network" element={<NetworkPage />} />
           <Route path="/reverse-shell" element={<ReverseShellManager />} />
+          <Route path="/websites" element={<WebsitesPage />} />
+          <Route path="/websites/:id" element={<WebsiteDetailsPage />} />
+          <Route path="/fuzzing-targets" element={<FormsAndEndpointsPage />} />
         </Routes>
       </div>
     </Router>

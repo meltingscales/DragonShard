@@ -302,6 +302,4 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
-- I'd like to add a feature that lets you spider across a web service that's found from an nmap scan. Make sure that we log each page response in a new database object, perhaps HTTPCrawlResult, tied to the existing Host object. Or, should we have a separate table called "Website" that has a "WebsitePage" table that also has a "WebsitePageForm" object? Give me your thoughts before writing code. Ultimately, I want the web UI to be able to be used to enumerate every single web form/POST/GET/API endpoint, and be used to stage fuzzing attacks against them.
-
 - The navbar only shows the mobile menu (which works great) but the desktop navbar appears to be gone or hidden.

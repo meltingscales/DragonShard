@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, BarChart3, Network, Zap, Home, Menu, X, Terminal, FileText, Target } from 'lucide-react';
+import { Shield, BarChart3, Network, Zap, Home, Menu, X, Terminal, FileText, Target, Globe, Crosshair } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -16,6 +16,8 @@ const Navbar: React.FC = () => {
     { path: '/visualizations', label: 'Visualizations', icon: BarChart3 },
     { path: '/attacks', label: 'Attacks', icon: Zap },
     { path: '/network', label: 'Network', icon: Network },
+    { path: '/websites', label: 'Websites', icon: Globe },
+    { path: '/fuzzing-targets', label: 'Fuzzing Targets', icon: Crosshair },
     { path: '/reverse-shell', label: 'Reverse Shell', icon: Terminal },
   ];
 
