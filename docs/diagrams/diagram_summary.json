@@ -1,7 +1,7 @@
 {
-  "modules": 60,
-  "classes": 101,
-  "dataclasses": 22,
+  "modules": 67,
+  "classes": 109,
+  "dataclasses": 21,
   "enums": 18,
-  "relationships": 15
+  "relationships": 14
 }

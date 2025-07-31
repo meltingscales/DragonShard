@@ -24,6 +24,11 @@ help:
 	@echo "  db-check      - Check database connection"
 	@echo "  db-test       - Run database tests"
 	@echo "  db-demo       - Run database demo"
+	@echo "  db-reset      - Reset both SQLite and MySQL databases to original state"
+	@echo "  db-reset-sqlite - Reset only SQLite database"
+	@echo "  db-reset-mysql  - Reset only MySQL test database"
+	@echo "  db-status-detailed - Show detailed database status"
+	@echo "  db-test-reset   - Test database reset functionality"
 	@echo ""
 	@echo "🐳 Docker:"
 	@echo "  docker-up     - Start DragonShard with database (docker-compose)"
@@ -52,6 +57,7 @@ help:
 	@echo "  build-frontend        - Build React frontend for production"
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
+	@echo "  test-websocket         - Test WebSocket support"
 	@echo ""
 	@echo "🐳 Test Environment:"
 	@echo "  test-env-start         - Start vulnerable test containers"
@@ -102,6 +108,26 @@ db-test:
 db-demo:
 	@echo "🎭 Running database demo..."
 	@uv run python scripts/demo_database.py
+
+db-reset:
+	@echo "🔄 Resetting both databases to original state..."
+	@uv run python scripts/reset_databases.py
+
+db-reset-sqlite:
+	@echo "🗄️  Resetting only SQLite database..."
+	@uv run python scripts/reset_databases.py --sqlite-only
+
+db-reset-mysql:
+	@echo "🐳 Resetting only MySQL test database..."
+	@uv run python scripts/reset_databases.py --mysql-only
+
+db-status-detailed:
+	@echo "📊 Showing detailed database status..."
+	@uv run python scripts/reset_databases.py --status-only
+
+db-test-reset:
+	@echo "🧪 Testing database reset functionality..."
+	@uv run python scripts/test_reset_databases.py
 
 # Docker targets
 docker-up:
@@ -158,19 +184,19 @@ test: test-env-start
 
 test-crawlers:
 	@echo "🕷️  Running crawler tests..."
-	@python dragonshard/api_inference/test_crawlers.py
+	@uv run python dragonshard/api_inference/test_crawlers.py
 
 test-fuzzer:
 	@echo "🧬 Running fuzzer tests..."
-	@pytest dragonshard/tests/test_fuzzing.py dragonshard/tests/test_genetic_mutator.py dragonshard/tests/test_response_analyzer.py -v
+	@uv run pytest dragonshard/tests/test_fuzzing.py dragonshard/tests/test_genetic_mutator.py dragonshard/tests/test_response_analyzer.py -v
 
 test-fuzzer-integration:
 	@echo "🧬 Running fuzzer integration tests..."
-	@pytest dragonshard/tests/test_genetic_fuzzer_integration.py -v
+	@uv run pytest dragonshard/tests/test_genetic_fuzzer_integration.py -v
 
 test-fuzzer-manual:
 	@echo "🧬 Running manual fuzzer test..."
-	@python dragonshard/tests/test_genetic_fuzzer.py
+	@uv run python dragonshard/tests/test_genetic_fuzzer.py
 
 test-planner:
 	@echo "🧠 Running chain planner integration test..."
@@ -226,7 +252,11 @@ test-benchmark:
 
 test-docker:
 	@echo "🐳 Running Docker integration tests..."
-	@python scripts/run_docker_tests.py
+	@uv run python scripts/run_docker_tests.py
+
+test-websocket:
+	@echo "🔌 Testing WebSocket support..."
+	@uv run python scripts/test_websocket_support.py
 
 test-command-injection:
 	@echo "💥 Running command injection exploitation tests..."
@@ -258,19 +288,21 @@ test-env-clean:
 # Development targets
 setup:
 	@echo "🔧 Setting up development environment..."
-	@uv pip install -r requirements.lock.txt
+	@uv sync --extra dev
 	@echo "🎨 Checking tkinter availability..."
 	@python3 -c "import tkinter; print('✅ tkinter is available')" || (echo "⚠️  tkinter not available - install python3-tkinter on your system" && exit 1)
 	@echo "🌐 Setting up frontend dependencies..."
 	@cd dragonshard/visualizer/frontend && pnpm install
 	@echo "🎭 Checking Playwright compatibility..."
 	@python3 -c "import playwright; print('✅ Playwright installed')" || echo "⚠️  Playwright has compatibility issues on NixOS - browser automation features will be limited"
+	@echo "🔌 Checking WebSocket support..."
+	@python3 -c "import websockets; print('✅ WebSocket support available')" || echo "⚠️  WebSocket support not available - real-time features may not work"
 	@echo "✅ Setup completed!"
 
 setup-nixos:
 	@echo "🔧 Setting up development environment for NixOS..."
 	@echo "📦 Installing Python dependencies..."
-	@uv pip install fastapi httpx "uvicorn[standard]" websockets pytest ruff bandit safety matplotlib pandas numpy networkx beautifulsoup4 requests python-nmap
+	@uv sync --extra dev
 	@echo "🎨 Checking tkinter availability..."
 	@python3 -c "import tkinter; print('✅ tkinter is available')" || (echo "⚠️  tkinter not available - add python3-tkinter to your NixOS configuration" && exit 1)
 	@echo "🌐 Setting up frontend dependencies..."

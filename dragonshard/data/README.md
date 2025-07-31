@@ -11,6 +11,7 @@ This module provides a comprehensive database backend for DragonShard, replacing
 - **State Graph**: Network topology and vulnerability tracking
 - **Migration System**: Alembic-based database migrations
 - **Docker Integration**: Complete Docker Compose setup
+- **Database Reset**: Comprehensive reset functionality for both SQLite and MySQL
 
 ## Architecture
 
@@ -91,6 +92,86 @@ export DATABASE_URL="postgresql://dragonshard:dragonshard@localhost:5432/dragons
 python scripts/manage_db.py init
 ```
 
+## Database Reset Functionality
+
+DragonShard includes comprehensive database reset functionality to ensure clean testing environments:
+
+### Reset Both Databases
+
+```bash
+# Reset both SQLite and MySQL databases to original state
+make db-reset
+```
+
+This command:
+- Drops and recreates all DragonShard SQLite tables
+- Stops and removes MySQL test containers with volumes
+- Restarts MySQL container with fresh initialization
+- Verifies both databases are in clean state
+
+### Reset Individual Databases
+
+```bash
+# Reset only DragonShard's SQLite database
+make db-reset-sqlite
+
+# Reset only MySQL test database
+make db-reset-mysql
+```
+
+### Database Status
+
+```bash
+# Show detailed database status
+make db-status-detailed
+
+# Test reset functionality
+make db-test-reset
+```
+
+### Reset Script Options
+
+The reset script (`scripts/reset_databases.py`) supports various options:
+
+```bash
+# Reset both databases
+python scripts/reset_databases.py
+
+# Reset only SQLite
+python scripts/reset_databases.py --sqlite-only
+
+# Reset only MySQL
+python scripts/reset_databases.py --mysql-only
+
+# Show status only
+python scripts/reset_databases.py --status-only
+
+# Verbose output
+python scripts/reset_databases.py --verbose
+```
+
+### What Gets Reset
+
+**SQLite Database (DragonShard's data):**
+- All sessions and authentication data
+- Network topology (hosts, services, connections)
+- Vulnerability records and attack chains
+- State graph and execution history
+
+**MySQL Database (Test applications):**
+- User accounts and authentication data
+- Product catalog and test data
+- Comments and user-generated content
+- All application-specific data
+
+### Reset Verification
+
+The reset process includes verification steps:
+- Connection testing for both databases
+- Table count verification
+- MySQL initialization script execution check
+- Docker container health monitoring
+
 ## Usage
 
 ### Session Manager
@@ -163,6 +244,12 @@ make db-check
 
 # Run tests
 make db-test
+
+# Reset databases
+make db-reset
+
+# Test reset functionality
+make db-test-reset
 ```
 
 ### Migration System
@@ -208,8 +295,12 @@ The Docker Compose setup includes:
 # Run all database tests
 make db-test
 
+# Test reset functionality
+make db-test-reset
+
 # Or run directly
 python scripts/test_database.py
+python scripts/test_reset_databases.py
 ```
 
 ### Test Coverage
@@ -221,6 +312,8 @@ The database tests cover:
 - State graph operations
 - Repository pattern operations
 - CRUD operations on all models
+- Database reset functionality
+- MySQL container management
 
 ## Performance
 
@@ -252,6 +345,7 @@ docker exec -it dragonshard-postgres psql -U dragonshard -d dragonshard
 2. **Authentication Failed**: Verify database credentials
 3. **Migration Errors**: Run `make db-drop` and `make db-init`
 4. **Docker Issues**: Check container logs with `make docker-logs`
+5. **Reset Failures**: Use `make db-test-reset` to diagnose issues
 
 ### Debug Mode
 
@@ -260,7 +354,7 @@ docker exec -it dragonshard-postgres psql -U dragonshard -d dragonshard
 export LOG_LEVEL=DEBUG
 
 # Run with verbose output
-python scripts/manage_db.py status
+python scripts/reset_databases.py --verbose
 ```
 
 ## Migration from In-Memory
@@ -286,4 +380,5 @@ When adding new database features:
 2. Add repository methods if needed
 3. Create migration: `make db-create-migration message="Add feature"`
 4. Update tests in `scripts/test_database.py`
-5. Update documentation 
+5. Test reset functionality: `make db-test-reset`
+6. Update documentation 

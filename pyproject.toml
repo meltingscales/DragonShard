@@ -3,12 +3,41 @@ name = "dragonshard"
 version = "0.1.0"
 description = "Autonomous vulnerability chaining and attack platform."
 authors = [{name = "Henry Post", email = "henryfbp@gmail.com"}]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.116.1",
+    "uvicorn[standard]>=0.35.0",
+    "sqlalchemy>=2.0.42",
+    "pydantic>=2.11.7",
     "httpx>=0.28.1",
     "python-nmap>=0.7.1",
-    "uvicorn>=0.35.0",
+    "alembic>=1.16.4",
+    "psycopg2-binary>=2.9.10",
+    "redis>=6.2.0",
+    "requests>=2.32.3",
+    "rich>=14.1.0",
+    "pyyaml>=6.0.2",
+    "playwright>=1.45.0",
+    "matplotlib>=3.8.4",
+    "numpy>=2.3.2",
+    "networkx>=3.2.1",
+    "graphviz>=0.21",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.12.7",
+    "pytest>=8.4.1",
+    "pytest-cov>=5.0.0",
+    "coverage>=7.10.1",
+    "bandit>=1.7.8",
+    "safety>=2.3.5",
+]
+
+test = [
+    "pytest>=8.4.1",
+    "pytest-cov>=5.0.0",
+    "coverage>=7.10.1",
 ]
 
 [tool.ruff]
@@ -49,7 +78,5 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
-[dependency-groups]
-dev = [
-    "ruff>=0.12.7",
-]
+# Note: dependency-groups is deprecated in favor of project.optional-dependencies
+# The dev dependencies are defined in [project.optional-dependencies] above

@@ -30,10 +30,14 @@ See [TODO.md](TODO.md) for current development status and roadmap.
 
 ### Backend Setup
 ```bash
-uv venv
-source .venv/bin/activate
-uv pip install -r requirements.lock.txt
+# Modern UV setup (recommended)
+make setup
+
+# Or manual setup
+uv sync
 ```
+
+**Note**: DragonShard now uses modern `uv` dependency management. See [UV Setup Documentation](docs/uv_setup.md) for detailed information.
 
 ### Frontend Setup
 ```bash
@@ -41,6 +45,26 @@ cd frontend
 pnpm install
 ```
 
+### WebSocket Support
+DragonShard includes real-time WebSocket functionality for live monitoring and visualization. See [WebSocket Setup Documentation](docs/websocket_setup.md) for detailed information.
+
+**Quick Setup:**
+```bash
+# Install WebSocket dependencies
+uv pip install "uvicorn[standard]"
+
+# Test WebSocket support
+make test-websocket
+
+# Start API with WebSocket support
+make start-api
+```
+
+**Troubleshooting:**
+If you see WebSocket warnings when starting the API, run:
+```bash
+make test-websocket
+```
 
 ## 📊 Architecture Diagrams
 
