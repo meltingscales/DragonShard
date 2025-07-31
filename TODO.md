@@ -301,3 +301,5 @@ The next major milestone is implementing the planner module. This will include:
 - **Plugin System**: Extensible architecture for custom modules
 
 # Extra ideas
+
+- Is there some way to sync our object and database models across both the UI and API? Don't write any code, just tell me what my options are and the pros/cons.

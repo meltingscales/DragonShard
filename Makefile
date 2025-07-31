@@ -58,6 +58,7 @@ help:
 	@echo "  test-benchmark         - Run genetic algorithm benchmarks"
 	@echo "  test-docker            - Run Docker integration tests"
 	@echo "  test-websocket         - Test WebSocket support"
+	@echo "  test-privileged-scanner - Test privileged scanner functionality"
 	@echo ""
 	@echo "🐳 Test Environment:"
 	@echo "  test-env-start         - Start vulnerable test containers"
@@ -257,6 +258,10 @@ test-docker:
 test-websocket:
 	@echo "🔌 Testing WebSocket support..."
 	@uv run python scripts/test_websocket_support.py
+
+test-privileged-scanner:
+	@echo "🔐 Testing privileged scanner functionality..."
+	@uv run python scripts/test_privileged_scanner.py
 
 test-command-injection:
 	@echo "💥 Running command injection exploitation tests..."
