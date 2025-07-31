@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Target, Plus, Search, Eye, Zap, AlertTriangle, Play, Square, Trash2, RefreshCw } from 'lucide-react';
 import { ApiService } from '../services/api';
 import type { Host, Vulnerability, AttackChain } from '../types/api';
+import Button from './ui/Button';
 
 interface TargetFormData {
   ip_address: string;
@@ -99,9 +100,8 @@ const TargetsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-dark text-white">
         <div className="container p-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-400">Loading targets...</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         </div>
       </div>
@@ -111,20 +111,21 @@ const TargetsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-dark text-white">
       {/* Header */}
-      <div className="bg-primary p-6">
+      <div className="bg-card border-b border-border p-6">
         <div className="container">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold mb-2">🎯 Target Management</h1>
               <p className="text-lg opacity-90">Add targets, scan for vulnerabilities, and stage attacks</p>
             </div>
-            <button
+            <Button
               onClick={addTarget}
-              className="btn btn-primary flex items-center"
+              variant="primary"
+              size="lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Target
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -132,7 +133,7 @@ const TargetsPage: React.FC = () => {
       {/* Error Display */}
       {error && (
         <div className="container p-4">
-          <div className="bg-danger text-white p-4 rounded">
+          <div className="bg-red-900 border border-red-700 text-red-200 p-4 rounded">
             <div className="flex items-center">
               <AlertTriangle className="w-5 h-5 mr-2" />
               <span>{error}</span>
@@ -153,25 +154,29 @@ const TargetsPage: React.FC = () => {
                   <h3 className="text-lg font-semibold">{target.hostname || target.ip_address}</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => {
                       const detailsWindow = window.open(`/targets/${target.id}`, 'targetDetails', 'width=800,height=600,scrollbars=yes,resizable=yes');
                       if (detailsWindow) {
                         detailsWindow.focus();
                       }
                     }}
-                    className="text-info hover:text-blue-300 p-1"
+                    variant="info"
+                    size="sm"
+                    className="p-1"
                     title="View Details"
                   >
                     <Eye className="w-4 h-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => scanTarget(target.id)}
-                    className="text-warning hover:text-yellow-300 p-1"
+                    variant="secondary"
+                    size="sm"
+                    className="p-1"
                     title="Scan Target"
                   >
                     <Search className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               
@@ -217,20 +222,23 @@ const TargetsPage: React.FC = () => {
               {/* Action Buttons */}
               <div className="flex gap-2">
                 {target.vulnerabilities.length > 0 && (
-                  <button
+                  <Button
                     onClick={() => stageAttack(target.id, target.vulnerabilities[0].id)}
-                    className="btn btn-primary text-sm flex-1"
+                    variant="primary"
+                    size="sm"
+                    className="flex-1"
                   >
                     <Zap className="w-4 h-4 mr-1" />
                     Stage Attack
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
                   onClick={() => scanTarget(target.id)}
-                  className="btn btn-secondary text-sm"
+                  variant="secondary"
+                  size="sm"
                 >
                   <RefreshCw className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -278,12 +286,13 @@ const TargetsPage: React.FC = () => {
                               <span className={`px-2 py-1 rounded text-xs ${getVulnerabilityColor(vuln.level)}`}>
                                 {vuln.level}
                               </span>
-                              <button
+                              <Button
                                 onClick={() => stageAttack(result.host.id, vuln.id)}
-                                className="btn btn-primary text-xs"
+                                variant="primary"
+                                size="sm"
                               >
                                 Attack
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         ))}

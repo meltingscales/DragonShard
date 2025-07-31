@@ -28,22 +28,6 @@ async def get_sessions():
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/{session_id}", response_model=Session)
-async def get_session(session_id: str):
-    """Get specific session by ID"""
-    try:
-        for session in sessions:
-            if session.id == session_id:
-                return session
-
-        raise HTTPException(status_code=404, detail="Session not found")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting session {session_id}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
 @router.get("/summary/stats", response_model=SessionSummary)
 async def get_session_summary():
     """Get session statistics summary"""
@@ -67,6 +51,48 @@ async def get_session_summary():
         )
     except Exception as e:
         logger.error(f"Error getting session summary: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/summary", response_model=SessionSummary)
+async def get_session_summary_alt():
+    """Get session statistics summary (alternative endpoint)"""
+    try:
+        total_sessions = len(sessions)
+        authenticated_sessions = len([s for s in sessions if s.authenticated])
+        active_sessions = len(
+            [s for s in sessions if s.last_used > datetime.now() - timedelta(hours=1)]
+        )
+
+        # Group by target
+        by_target = {}
+        for session in sessions:
+            by_target[session.target] = by_target.get(session.target, 0) + 1
+
+        return SessionSummary(
+            total_sessions=total_sessions,
+            authenticated_sessions=authenticated_sessions,
+            active_sessions=active_sessions,
+            by_target=by_target,
+        )
+    except Exception as e:
+        logger.error(f"Error getting session summary: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/{session_id}", response_model=Session)
+async def get_session(session_id: str):
+    """Get specific session by ID"""
+    try:
+        for session in sessions:
+            if session.id == session_id:
+                return session
+
+        raise HTTPException(status_code=404, detail="Session not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting session {session_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

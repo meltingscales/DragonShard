@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ApiService } from '../services/api';
 import type { Website, WebsitePage, WebsitePageForm, WebsitePageEndpoint } from '../types/api';
+import Button from './ui/Button';
 
 const WebsiteDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -91,12 +92,13 @@ const WebsiteDetailsPage: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <button
+            <Button
               onClick={() => window.history.back()}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              variant="secondary"
+              size="md"
             >
               ← Back
-            </button>
+            </Button>
             <h1 className="text-4xl font-bold">🌐 Website Details</h1>
           </div>
           <div className="flex items-center gap-3 mb-2">
@@ -310,6 +312,14 @@ const WebsiteDetailsPage: React.FC = () => {
                           </div>
                         </div>
                       )}
+                      <div className="mt-4 flex gap-2">
+                        <Button variant="info" size="sm">
+                          Test Form
+                        </Button>
+                        <Button variant="success" size="sm">
+                          Stage Fuzzing
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -348,6 +358,14 @@ const WebsiteDetailsPage: React.FC = () => {
                         <div className="text-xs text-gray-500">
                           {formatDate(endpoint.discovered_at)}
                         </div>
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <Button variant="info" size="sm">
+                          Test Endpoint
+                        </Button>
+                        <Button variant="success" size="sm">
+                          Stage Fuzzing
+                        </Button>
                       </div>
                     </div>
                   ))}

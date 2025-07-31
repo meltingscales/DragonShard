@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ApiService } from '../services/api';
 import type { Website, WebsiteStatistics } from '../types/api';
+import Button from './ui/Button';
 
 const WebsitesPage: React.FC = () => {
   const [websites, setWebsites] = useState<Website[]>([]);
@@ -126,14 +127,11 @@ const WebsitesPage: React.FC = () => {
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
           <h3 className="text-xl font-semibold mb-4">Actions</h3>
           <div className="flex flex-wrap gap-4">
-            <button
+            <Button
               onClick={handleCrawlAll}
               disabled={crawling}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                crawling
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+              variant="primary"
+              size="lg"
             >
               {crawling ? (
                 <span className="flex items-center">
@@ -143,13 +141,14 @@ const WebsitesPage: React.FC = () => {
               ) : (
                 '🕷️ Crawl All Websites'
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={loadData}
-              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+              variant="secondary"
+              size="lg"
             >
               🔄 Refresh Data
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -214,12 +213,12 @@ const WebsitesPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                      <Button variant="info" size="sm">
                         View Details
-                      </button>
-                      <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
+                      </Button>
+                      <Button variant="success" size="sm">
                         View Forms
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ApiService } from '../services/api';
 import type { WebsitePageForm, WebsitePageEndpoint } from '../types/api';
+import Button from './ui/Button';
 
 const FormsAndEndpointsPage: React.FC = () => {
   const [forms, setForms] = useState<WebsitePageForm[]>([]);
@@ -101,26 +102,20 @@ const FormsAndEndpointsPage: React.FC = () => {
                 />
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => setActiveTab('forms')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === 'forms'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
+                  variant={activeTab === 'forms' ? 'primary' : 'secondary'}
+                  size="md"
                 >
                   📝 Forms ({filteredForms.length})
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setActiveTab('endpoints')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === 'endpoints'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
+                  variant={activeTab === 'endpoints' ? 'primary' : 'secondary'}
+                  size="md"
                 >
                   🔗 Endpoints ({filteredEndpoints.length})
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -205,12 +200,12 @@ const FormsAndEndpointsPage: React.FC = () => {
                           </div>
                         )}
                         <div className="mt-4 flex gap-2">
-                          <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                          <Button variant="info" size="sm">
                             Test Form
-                          </button>
-                          <button className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
+                          </Button>
+                          <Button variant="success" size="sm">
                             Stage Fuzzing
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))
@@ -259,12 +254,12 @@ const FormsAndEndpointsPage: React.FC = () => {
                           </div>
                         </div>
                         <div className="mt-4 flex gap-2">
-                          <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                          <Button variant="info" size="sm">
                             Test Endpoint
-                          </button>
-                          <button className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
+                          </Button>
+                          <Button variant="success" size="sm">
                             Stage Fuzzing
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))
