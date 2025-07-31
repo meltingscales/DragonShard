@@ -84,6 +84,27 @@ code {
   gap: 32px;
 }
 
+/* Space utilities for horizontal spacing */
+.space-x-2 > * + * {
+  margin-left: 8px;
+}
+
+.space-x-3 > * + * {
+  margin-left: 12px;
+}
+
+.space-x-4 > * + * {
+  margin-left: 16px;
+}
+
+.space-x-6 > * + * {
+  margin-left: 24px;
+}
+
+.space-x-8 > * + * {
+  margin-left: 32px;
+}
+
 /* Spacing utilities */
 .p-2 {
   padding: 8px;
@@ -303,6 +324,10 @@ code {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
 /* Grid utilities */
 .grid {
   display: grid;
@@ -370,6 +395,10 @@ code {
 }
 
 @media (min-width: 1024px) {
+  .lg\\:flex {
+    display: flex !important;
+  }
+  
   .lg\\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

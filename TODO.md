@@ -302,4 +302,11 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
-- The navbar only shows the mobile menu (which works great) but the desktop navbar appears to be gone or hidden.
+- ✅ **Fixed**: The navbar only shows the mobile menu (which works great) but the desktop navbar appears to be gone or hidden.
+  - **Solution**: Enhanced the navbar component with better responsive design, improved spacing with `space-x-6` utilities, and ensured proper CSS classes for desktop visibility.
+  - **Improvements**: Added better hover states, shadow effects, and improved accessibility with proper ARIA labels.
+
+- ✅ **Enhanced**: Website crawling workflow integration with target management.
+  - **Solution**: Added "Crawl Websites" button directly to target cards for hosts with HTTP/HTTPS services.
+  - **Improvements**: Added workflow explanation section, automatic detection of web services, and seamless integration between target scanning and website crawling.
+  - **User Experience**: Users can now crawl websites directly from the Targets page without needing to navigate to the separate Websites page.
