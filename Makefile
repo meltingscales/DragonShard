@@ -75,6 +75,8 @@ help:
 	@echo "  diagrams      - Generate ER and module diagrams"
 	@echo "  diagrams-readme - Generate diagrams and update README"
 	@echo "  demo-diagrams - Run diagram generation demo"
+	@echo "  db-diagram    - Generate database ER diagram"
+	@echo "  db-diagram-readme - Generate database ER diagram and update README"
 	@echo ""
 
 # Database targets
@@ -345,16 +347,30 @@ clean:
 diagrams:
 	@echo "📊 Generating ER and module diagrams..."
 	@PYTHONPATH=. uv run python scripts/generate_diagrams.py
+	@echo "🗄️  Generating database ER diagram..."
+	@PYTHONPATH=. uv run python scripts/generate_db_er_diagram.py
 	@echo "✅ Diagrams generated in docs/diagrams/"
 
 diagrams-readme:
 	@echo "📊 Generating diagrams and updating README..."
 	@PYTHONPATH=. uv run python scripts/generate_diagrams.py --update-readme
+	@echo "🗄️  Generating database ER diagram and updating README..."
+	@PYTHONPATH=. uv run python scripts/generate_db_er_diagram.py --update-readme
 	@echo "✅ Diagrams generated and README updated"
 
 demo-diagrams:
 	@echo "🎯 Running diagram generation demo..."
 	@PYTHONPATH=. uv run python scripts/demo_diagrams.py
+
+db-diagram:
+	@echo "🗄️  Generating database ER diagram..."
+	@PYTHONPATH=. uv run python scripts/generate_db_er_diagram.py
+	@echo "✅ Database ER diagram generated in docs/diagrams/"
+
+db-diagram-readme:
+	@echo "🗄️  Generating database ER diagram and updating README..."
+	@PYTHONPATH=. uv run python scripts/generate_db_er_diagram.py --update-readme
+	@echo "✅ Database ER diagram generated and README updated"
 
 # Convenience targets
 dev: lint-fix format test

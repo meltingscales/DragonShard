@@ -73,6 +73,11 @@ The following diagrams are auto-generated from the codebase:
 ### Entity-Relationship Diagram
 ![ER Diagram](docs/diagrams/er_diagram.svg)
 
+### Database Schema Diagram
+![Database ER Diagram](docs/diagrams/db_er_diagram.svg)
+
+*Database schema diagram showing tables, relationships, and constraints.*
+
 ### Module Dependency Diagram  
 ![Module Diagram](docs/diagrams/module_diagram.svg)
 

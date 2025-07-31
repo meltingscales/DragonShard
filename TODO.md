@@ -302,4 +302,6 @@ The next major milestone is implementing the planner module. This will include:
 
 # Extra ideas
 
-- Is there some way to sync our object and database models across both the UI and API? Don't write any code, just tell me what my options are and the pros/cons.
+- I'd like to add a feature that lets you spider across a web service that's found from an nmap scan. Make sure that we log each page response in a new database object, perhaps HTTPCrawlResult, tied to the existing Host object.
+
+- As part of the existing makefile target, I'd like to have an ER diagram of the database schema also be automatically generated and put into the docs/diagrams folder as well as shown in the readme.

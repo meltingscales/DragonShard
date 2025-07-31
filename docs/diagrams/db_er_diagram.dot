@@ -1,0 +1,19 @@
+// DragonShard Database ER Diagram
+digraph {
+	rankdir=TB
+	node [fillcolor=lightblue shape=record style=filled]
+	sessions [label="{ sessions | session_id (String) PK\l target_host (String) NOT NULL\l state (SQLEnum) NOT NULL\l auth_method (SQLEnum) NOT NULL\l cookies (Text)\l headers (Text)\l ... (8 more)\l}"]
+	auth_credentials [label="{ auth_credentials | id (Integer) PK\l session_id (String) FK\l username (String) NOT NULL\l password (String) NOT NULL\l token (String)\l api_key (String)\l session_id_ref (String)\l}"]
+	hosts [label="{ hosts | host_id (String) PK\l hostname (String) NOT NULL\l ip_address (String) NOT NULL\l status (SQLEnum) NOT NULL\l discovered_at (Float) NOT NULL\l last_seen (Float) NOT NULL\l ... (4 more)\l}"]
+	services [label="{ services | service_id (String) PK\l host_id (String) FK\l port (Integer) NOT NULL\l service_type (SQLEnum) NOT NULL\l protocol (String) NOT NULL\l banner (Text)\l version (String)\l ... (4 more)\l}"]
+	vulnerabilities [label="{ vulnerabilities | vuln_id (String) PK\l service_id (String) FK\l vuln_type (String) NOT NULL\l severity (SQLEnum) NOT NULL\l description (Text) NOT NULL\l discovered_at (Float) NOT NULL\l cve_id (String)\l ... (5 more)\l}"]
+	connections [label="{ connections | connection_id (String) PK\l source_host (String) FK\l target_host (String) FK\l connection_type (String) NOT NULL\l protocol (String) NOT NULL\l port (Integer) NOT NULL\l established_at (Float) NOT NULL\l last_seen (Float) NOT NULL\l ... (2 more)\l}"]
+	host_vulnerabilities [label="{ host_vulnerabilities | host_id (String) PK\l vuln_id (String) PK\l}"]
+	auth_credentials -> sessions [label="FK: session_id" arrowhead=crow arrowsize=2]
+	services -> hosts [label="FK: host_id" arrowhead=crow arrowsize=2]
+	vulnerabilities -> services [label="FK: service_id" arrowhead=crow arrowsize=2]
+	connections -> hosts [label="FK: source_host" arrowhead=crow arrowsize=2]
+	connections -> hosts [label="FK: target_host" arrowhead=crow arrowsize=2]
+	host_vulnerabilities -> hosts [label="FK: host_id" arrowhead=crow arrowsize=2]
+	host_vulnerabilities -> vulnerabilities [label="FK: vuln_id" arrowhead=tee arrowsize=2]
+}
