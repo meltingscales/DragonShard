@@ -94,6 +94,7 @@ def create_app() -> FastAPI:
         reverse_shells,
         sessions,
         vulnerabilities,
+        websites,
     )
 
     # Include routers
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
         genetic_algorithm.router, prefix="/api/v1/genetic", tags=["genetic_algorithm"]
     )
     app.include_router(reverse_shells.router, prefix="/api/v1", tags=["reverse_shells"])
+    app.include_router(websites.router, prefix="/api/v1/websites", tags=["websites"])
 
     # Serve static files
     static_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "public")

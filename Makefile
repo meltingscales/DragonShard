@@ -78,6 +78,13 @@ help:
 	@echo "  db-diagram    - Generate database ER diagram"
 	@echo "  db-diagram-readme - Generate database ER diagram and update README"
 	@echo ""
+	@echo "🌐 Web Crawling:"
+	@echo "  web-crawl-all    - Crawl all HTTP/HTTPS services"
+	@echo "  web-crawl-service - Crawl specific service by ID"
+	@echo "  web-list-services - List all HTTP/HTTPS services"
+	@echo "  web-stats         - Show web crawling statistics"
+	@echo "  web-test          - Test web crawling functionality"
+	@echo ""
 
 # Database targets
 db-init:
@@ -371,6 +378,32 @@ db-diagram-readme:
 	@echo "🗄️  Generating database ER diagram and updating README..."
 	@PYTHONPATH=. uv run python scripts/generate_db_er_diagram.py --update-readme
 	@echo "✅ Database ER diagram generated and README updated"
+
+# Web crawling targets
+web-crawl-all:
+	@echo "🌐 Crawling all HTTP/HTTPS services..."
+	@PYTHONPATH=. uv run python scripts/web_crawl_discovery.py --action crawl-all
+	@echo "✅ Web crawling completed"
+
+web-crawl-service:
+	@echo "🌐 Crawling specific service..."
+	@PYTHONPATH=. uv run python scripts/web_crawl_discovery.py --action crawl-service --service-id $(service_id)
+	@echo "✅ Service crawling completed"
+
+web-list-services:
+	@echo "🌐 Listing HTTP/HTTPS services..."
+	@PYTHONPATH=. uv run python scripts/web_crawl_discovery.py --action list-services
+	@echo "✅ Services listed"
+
+web-stats:
+	@echo "📊 Showing web crawling statistics..."
+	@PYTHONPATH=. uv run python scripts/web_crawl_discovery.py --action stats
+	@echo "✅ Statistics displayed"
+
+web-test:
+	@echo "🧪 Testing web crawling functionality..."
+	@PYTHONPATH=. uv run python scripts/test_web_crawling.py
+	@echo "✅ Web crawling test completed"
 
 # Convenience targets
 dev: lint-fix format test

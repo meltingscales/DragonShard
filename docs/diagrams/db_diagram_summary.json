@@ -1,7 +1,7 @@
 {
-  "tables": 7,
-  "relationships": 7,
-  "columns": 66,
-  "primary_keys": 8,
-  "foreign_keys": 7
+  "tables": 11,
+  "relationships": 12,
+  "columns": 112,
+  "primary_keys": 12,
+  "foreign_keys": 12
 }

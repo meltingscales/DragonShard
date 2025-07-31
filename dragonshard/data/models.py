@@ -253,6 +253,7 @@ class Service(Base):
     # Relationships
     host = relationship("Host", back_populates="services")
     vulnerabilities = relationship("Vulnerability", back_populates="service")
+    websites = relationship("Website", back_populates="service", cascade="all, delete-orphan")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert service to dictionary."""
@@ -403,6 +404,233 @@ class HostVulnerability(Base):
     vuln_id = Column(String(255), ForeignKey("vulnerabilities.vuln_id"), primary_key=True)
 
 
+# Web crawling models
+class Website(Base):
+    """Information about a website discovered on a service."""
+
+    __tablename__ = "websites"
+
+    website_id = Column(String(255), primary_key=True)
+    service_id = Column(String(255), ForeignKey("services.service_id"), nullable=False)
+    base_url = Column(String(500), nullable=False)
+    title = Column(String(255), nullable=True)
+    description = Column(Text, nullable=True)
+    discovered_at = Column(Float, nullable=False, default=time.time)
+    last_crawled_at = Column(Float, nullable=False, default=time.time)
+    crawl_status = Column(String(50), default="pending")  # pending, crawling, completed, failed
+    total_pages = Column(Integer, default=0)
+    total_forms = Column(Integer, default=0)
+    total_endpoints = Column(Integer, default=0)
+    crawl_depth = Column(Integer, default=3)
+    max_pages = Column(Integer, default=100)
+
+    # Relationships
+    service = relationship("Service", back_populates="websites")
+    pages = relationship("WebsitePage", back_populates="website", cascade="all, delete-orphan")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert website to dictionary."""
+        return {
+            "website_id": self.website_id,
+            "service_id": self.service_id,
+            "base_url": self.base_url,
+            "title": self.title,
+            "description": self.description,
+            "discovered_at": self.discovered_at,
+            "last_crawled_at": self.last_crawled_at,
+            "crawl_status": self.crawl_status,
+            "total_pages": self.total_pages,
+            "total_forms": self.total_forms,
+            "total_endpoints": self.total_endpoints,
+            "crawl_depth": self.crawl_depth,
+            "max_pages": self.max_pages,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Website":
+        """Create website from dictionary."""
+        return cls(
+            website_id=data["website_id"],
+            service_id=data["service_id"],
+            base_url=data["base_url"],
+            title=data.get("title"),
+            description=data.get("description"),
+            discovered_at=data["discovered_at"],
+            last_crawled_at=data["last_crawled_at"],
+            crawl_status=data.get("crawl_status", "pending"),
+            total_pages=data.get("total_pages", 0),
+            total_forms=data.get("total_forms", 0),
+            total_endpoints=data.get("total_endpoints", 0),
+            crawl_depth=data.get("crawl_depth", 3),
+            max_pages=data.get("max_pages", 100),
+        )
+
+
+class WebsitePage(Base):
+    """Information about a page discovered on a website."""
+
+    __tablename__ = "website_pages"
+
+    page_id = Column(String(255), primary_key=True)
+    website_id = Column(String(255), ForeignKey("websites.website_id"), nullable=False)
+    url = Column(String(1000), nullable=False)
+    method = Column(String(10), default="GET")
+    status_code = Column(Integer, nullable=True)
+    content_type = Column(String(100), nullable=True)
+    title = Column(String(255), nullable=True)
+    discovered_at = Column(Float, nullable=False, default=time.time)
+    last_accessed_at = Column(Float, nullable=False, default=time.time)
+    response_size = Column(Integer, nullable=True)
+    response_time = Column(Float, nullable=True)
+    is_accessible = Column(Boolean, default=True)
+    depth = Column(Integer, default=0)
+    parent_page_id = Column(String(255), ForeignKey("website_pages.page_id"), nullable=True)
+
+    # Relationships
+    website = relationship("Website", back_populates="pages")
+    forms = relationship("WebsitePageForm", back_populates="page", cascade="all, delete-orphan")
+    endpoints = relationship("WebsitePageEndpoint", back_populates="page", cascade="all, delete-orphan")
+    parent_page = relationship("WebsitePage", remote_side=[page_id])
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert page to dictionary."""
+        return {
+            "page_id": self.page_id,
+            "website_id": self.website_id,
+            "url": self.url,
+            "method": self.method,
+            "status_code": self.status_code,
+            "content_type": self.content_type,
+            "title": self.title,
+            "discovered_at": self.discovered_at,
+            "last_accessed_at": self.last_accessed_at,
+            "response_size": self.response_size,
+            "response_time": self.response_time,
+            "is_accessible": self.is_accessible,
+            "depth": self.depth,
+            "parent_page_id": self.parent_page_id,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "WebsitePage":
+        """Create page from dictionary."""
+        return cls(
+            page_id=data["page_id"],
+            website_id=data["website_id"],
+            url=data["url"],
+            method=data.get("method", "GET"),
+            status_code=data.get("status_code"),
+            content_type=data.get("content_type"),
+            title=data.get("title"),
+            discovered_at=data["discovered_at"],
+            last_accessed_at=data["last_accessed_at"],
+            response_size=data.get("response_size"),
+            response_time=data.get("response_time"),
+            is_accessible=data.get("is_accessible", True),
+            depth=data.get("depth", 0),
+            parent_page_id=data.get("parent_page_id"),
+        )
+
+
+class WebsitePageForm(Base):
+    """Information about a form discovered on a website page."""
+
+    __tablename__ = "website_page_forms"
+
+    form_id = Column(String(255), primary_key=True)
+    page_id = Column(String(255), ForeignKey("website_pages.page_id"), nullable=False)
+    form_action = Column(String(1000), nullable=True)
+    form_method = Column(String(10), default="POST")
+    form_name = Column(String(255), nullable=True)
+    form_id_attribute = Column(String(255), nullable=True)
+    form_class = Column(String(255), nullable=True)
+    discovered_at = Column(Float, nullable=False, default=time.time)
+    is_login_form = Column(Boolean, default=False)
+    is_search_form = Column(Boolean, default=False)
+    form_fields = Column(Text, default="[]")  # JSON array of form fields
+
+    # Relationships
+    page = relationship("WebsitePage", back_populates="forms")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert form to dictionary."""
+        return {
+            "form_id": self.form_id,
+            "page_id": self.page_id,
+            "form_action": self.form_action,
+            "form_method": self.form_method,
+            "form_name": self.form_name,
+            "form_id_attribute": self.form_id_attribute,
+            "form_class": self.form_class,
+            "discovered_at": self.discovered_at,
+            "is_login_form": self.is_login_form,
+            "is_search_form": self.is_search_form,
+            "form_fields": json.loads(self.form_fields),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "WebsitePageForm":
+        """Create form from dictionary."""
+        return cls(
+            form_id=data["form_id"],
+            page_id=data["page_id"],
+            form_action=data.get("form_action"),
+            form_method=data.get("form_method", "POST"),
+            form_name=data.get("form_name"),
+            form_id_attribute=data.get("form_id_attribute"),
+            form_class=data.get("form_class"),
+            discovered_at=data["discovered_at"],
+            is_login_form=data.get("is_login_form", False),
+            is_search_form=data.get("is_search_form", False),
+            form_fields=json.dumps(data.get("form_fields", [])),
+        )
+
+
+class WebsitePageEndpoint(Base):
+    """Information about an API endpoint discovered on a website page."""
+
+    __tablename__ = "website_page_endpoints"
+
+    endpoint_id = Column(String(255), primary_key=True)
+    page_id = Column(String(255), ForeignKey("website_pages.page_id"), nullable=False)
+    endpoint_path = Column(String(1000), nullable=True)
+    method = Column(String(10), nullable=False)
+    content_type = Column(String(100), nullable=True)
+    discovered_at = Column(Float, nullable=False, default=time.time)
+    is_api_endpoint = Column(Boolean, default=False)
+    parameters = Column(Text, default="[]")  # JSON array of parameters
+
+    # Relationships
+    page = relationship("WebsitePage", back_populates="endpoints")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert endpoint to dictionary."""
+        return {
+            "endpoint_id": self.endpoint_id,
+            "page_id": self.page_id,
+            "endpoint_path": self.endpoint_path,
+            "method": self.method,
+            "content_type": self.content_type,
+            "discovered_at": self.discovered_at,
+            "is_api_endpoint": self.is_api_endpoint,
+            "parameters": json.loads(self.parameters),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "WebsitePageEndpoint":
+        """Create endpoint from dictionary."""
+        return cls(
+            endpoint_id=data["endpoint_id"],
+            page_id=data["page_id"],
+            endpoint_path=data.get("endpoint_path"),
+            method=data["method"],
+            content_type=data.get("content_type"),
+            discovered_at=data["discovered_at"],
+            is_api_endpoint=data.get("is_api_endpoint", False),
+            parameters=json.dumps(data.get("parameters", [])),
+        )
+
+
 # Event listeners for automatic timestamp updates
 @event.listens_for(Session, "before_update")
 def update_session_timestamp(mapper, connection, target):
@@ -425,4 +653,16 @@ def update_service_timestamp(mapper, connection, target):
 @event.listens_for(Connection, "before_update")
 def update_connection_timestamp(mapper, connection, target):
     """Update last_seen timestamp when connection is modified."""
-    target.last_seen = time.time() 
+    target.last_seen = time.time()
+
+
+@event.listens_for(Website, "before_update")
+def update_website_timestamp(mapper, connection, target):
+    """Update last_crawled_at timestamp when website is modified."""
+    target.last_crawled_at = time.time()
+
+
+@event.listens_for(WebsitePage, "before_update")
+def update_website_page_timestamp(mapper, connection, target):
+    """Update last_accessed_at timestamp when website page is modified."""
+    target.last_accessed_at = time.time() 
